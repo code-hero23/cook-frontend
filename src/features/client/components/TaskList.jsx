@@ -48,7 +48,7 @@ const TaskList = ({ tasks }) => {
       <h2 className="text-xl font-semibold mb-6">Project Stages</h2>
 
       <div className="space-y-4">
-        {stages.map((stageName) => {
+        {stages.map((stageName, index) => {
           const stageTasks = tasks.filter((t) => t.stage === stageName);
           if (stageTasks.length === 0) return null;
 
@@ -67,7 +67,7 @@ const TaskList = ({ tasks }) => {
                   {isExpanded ? <ChevronDown size={20} className="text-indigo-600" /> : <ChevronRight size={20} className="text-gray-400" />}
                   <div>
                     <h3 className={`font-bold ${isExpanded ? "text-indigo-700" : "text-gray-700"}`}>
-                      {stageName}
+                      Phase {index + 1} ➝ {stageName}
                     </h3>
                     <p className="text-xs text-gray-500 mt-0.5">
                       {completedCount} / {stageTasks.length} tasks completed
