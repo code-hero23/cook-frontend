@@ -36,10 +36,15 @@ export const TaskProvider = ({ children }) => {
     fetchData();
   }, []);
 
-  const updateTaskStatus = async (taskId, newStatus) => {
+  const updateTaskStatus = async (taskId, newStatus, fileData = null) => {
     try {
-      await axios.put(`/tasks/${taskId}`, { status: newStatus });
-      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
+      const payload = { status: newStatus };
+      if (fileData) {
+        payload.completionFileUrl = fileData.url;
+        payload.completionFileName = fileData.name;
+      }
+      await axios.put(`/tasks/${taskId}`, payload);
+      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus, ...payload } : t));
     } catch (err) {
       console.error("Error updating task status:", err);
     }

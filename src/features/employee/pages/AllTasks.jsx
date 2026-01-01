@@ -1,5 +1,6 @@
 import React, { useContext, useState, useEffect } from "react";
 import { useToast } from "../components/ToastProvider";
+import axios from "../../../shared/utils/axios";
 import { TaskContext } from "../context/TaskContext";
 import { useSearchParams } from "react-router-dom";
 import { ChevronDown, ChevronUp, User } from "lucide-react";
@@ -101,14 +102,36 @@ const AllTasks = () => {
   };
 
   // ✅ After file uploaded
-  const handleSubmitFile = () => {
+  const handleSubmitFile = async () => {
 
     if (!uploadedFile) {
       addToast("Please upload a file before marking task as completed.", "error");
       return;
     }
 
-    updateTaskStatus(selectedTask.id, "Completed");
+    try {
+      const formData = new FormData();
+      formData.append("file", uploadedFile);
+
+      // Upload the file first
+      const uploadRes = await axios.post("/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+
+      const fileData = {
+        url: uploadRes.data.url,
+        name: uploadedFile.name
+      };
+
+      // Update status with file data
+      await updateTaskStatus(selectedTask.id, "Completed", fileData);
+      addToast("Task completed and proof uploaded!", "success");
+
+    } catch (err) {
+      console.error("Upload failed", err);
+      addToast("File upload failed. Please try again.", "error");
+      return; // process stops here on fail
+    }
 
     // Reset
     setUploadedFile(null);
