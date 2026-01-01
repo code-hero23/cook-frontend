@@ -15,6 +15,20 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const DevPanel = () => {
     const { projects, tasks, employees, deleteProject, deleteTask, deleteEmployee, updateProject, updateTask, updateEmployee } = useApp();
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const isManager = (user.role || "").toUpperCase() === "MANAGER";
+
+    if (isManager) {
+        return (
+            <div className="flex flex-col items-center justify-center h-[60vh] text-center space-y-4">
+                <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center">
+                    <AlertTriangle size={40} />
+                </div>
+                <h1 className="text-2xl font-bold text-slate-900">Access Denied</h1>
+                <p className="text-slate-500 max-w-md">You do not have permission to access the System Control panel. Please contact a Super Admin.</p>
+            </div>
+        );
+    }
 
     // Determine default tab based on URL
     const location = window.location.pathname;

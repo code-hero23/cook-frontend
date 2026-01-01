@@ -30,6 +30,7 @@ const Sidebar = ({ open, onClose }) => {
 
   const filteredNavItems = navItems.filter(item => {
     if (isManager && item.label === "Employees") return false;
+    if (isManager && item.label === "System Control") return false;
     return true;
   });
 
