@@ -263,7 +263,7 @@ const ProjectProgress = ({ tasks = [] }) => {
                 { label: "Installation", target: "100%" }
               ].map((s, i) => (
                 <div key={i} className={`flex flex-col items-center px-1 ${i > 0 ? 'border-l border-slate-100' : ''}`}>
-                  <span className="text-xs sm:text-sm font-black text-slate-800 tracking-tight">{s.label}</span>
+                  <span className="text-xs sm:text-sm font-black text-slate-800 tracking-tight">Phase {i + 1} ➝ {s.label}</span>
                   <span className="text-[10px] sm:text-xs font-bold text-slate-400 mt-0.5">{s.target} Target</span>
                 </div>
               ))}
