@@ -110,21 +110,21 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-  const updateProject = async (projectId, updates) => {
+  const updateProject = async (id, updates) => {
     try {
-      const res = await axios.put(`/projects/${projectId}`, updates);
+      const res = await axios.put(`/projects/${id}`, updates);
       setProjects((prev) =>
-        prev.map((p) => (p.projectId === projectId ? res.data : p))
+        prev.map((p) => (p.id === id ? res.data : p))
       );
     } catch (err) {
       console.error("Error updating project:", err);
     }
   };
 
-  const deleteProject = async (projectId) => {
+  const deleteProject = async (id) => {
     try {
-      await axios.delete(`/projects/${projectId}`);
-      setProjects((prev) => prev.filter((p) => p.projectId !== projectId));
+      await axios.delete(`/projects/${id}`);
+      setProjects((prev) => prev.filter((p) => p.id !== id));
     } catch (err) {
       console.error("Error deleting project:", err);
     }

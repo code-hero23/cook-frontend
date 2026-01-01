@@ -27,11 +27,11 @@ const DevPanel = () => {
     const filteredData = () => {
         const q = searchQuery.toLowerCase().trim();
         if (activeTab === "projects") {
-            return projects.filter(p => p.name.toLowerCase().includes(q) || p.projectId.toLowerCase().includes(q));
+            return projects.filter(p => (p.name || "").toLowerCase().includes(q) || (p.projectCode || "").toLowerCase().includes(q));
         } else if (activeTab === "tasks") {
-            return tasks.filter(t => t.title.toLowerCase().includes(q) || t.projectId.toLowerCase().includes(q));
+            return tasks.filter(t => (t.title || "").toLowerCase().includes(q) || (t.projectId || "").toLowerCase().includes(q));
         } else {
-            return employees.filter(e => e.name.toLowerCase().includes(q) || e.role.toLowerCase().includes(q));
+            return employees.filter(e => (e.name || "").toLowerCase().includes(q) || (e.role || "").toLowerCase().includes(q));
         }
     };
 
@@ -92,7 +92,7 @@ const DevPanel = () => {
                     {filteredData().map((item, index) => (
                         <motion.div
                             layout
-                            key={item.projectId || item.id}
+                            key={item.id}
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.9 }}
@@ -103,7 +103,7 @@ const DevPanel = () => {
                                 <div className="space-y-1">
                                     <p className="font-bold text-slate-800 line-clamp-1">{item.name || item.title}</p>
                                     <p className="text-[10px] text-slate-400 font-mono uppercase tracking-wider">
-                                        ID: {item.projectId || item.id}
+                                        ID: {item.projectCode || item.projectId || item.id}
                                     </p>
                                 </div>
                                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
