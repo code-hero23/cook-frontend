@@ -6,8 +6,11 @@ const Chat = () => {
   const { projects } = useContext(TaskContext);
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-  // Only show projects assigned to this employee
-  const myProjects = projects.filter(p => p.assignedEmployees?.includes(user.id));
+  // Only show projects assigned to this employee (Directly or via Tasks)
+  const myProjects = projects.filter(p =>
+    p.assignedEmployees?.some(emp => emp.id === user.id) ||
+    p.tasks?.some(t => t.employeeId === user.id)
+  );
 
   return (
     <div className="p-4 sm:p-6 h-full">
