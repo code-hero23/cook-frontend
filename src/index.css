@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+@theme {
+    /* Merged Colors */
+
+    /* Employee Portal 'primary' (Indigo) */
+    --color-primary: #4f46e5;
+
+    /* Admin Portal 'primary' (Blue Scale) - Overrides allow specific shades */
+    --color-primary-50: #eef5ff;
+    --color-primary-100: #dce7ff;
+    --color-primary-500: #2563eb;
+    --color-primary-600: #1d4ed8;
+
+
+    /* Shared 'accent' / 'brand' (Orange) */
+    --color-accent: #FF7A00;
+    --color-brand-500: #f97316;
+
+    @keyframes spin-slow {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    --animate-spin-slow: spin-slow 3s linear infinite;
+}
+
+/* Global Reset */
+:root {
+    font-family: system-ui, sans-serif;
+}

@@ -1,0 +1,231 @@
+import React, { useState } from "react";
+import { useApp } from "../context/AppContext.jsx";
+import {
+    Trash2,
+    Edit3,
+    Search,
+    Users,
+    FolderKanban,
+    ListChecks,
+    AlertTriangle,
+    X,
+    Check
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+
+const DevPanel = () => {
+    const { projects, tasks, employees, deleteProject, deleteTask, deleteEmployee, updateProject, updateTask, updateEmployee } = useApp();
+
+    // Determine default tab based on URL
+    const location = window.location.pathname;
+    const defaultTab = location.includes("employees") ? "employees" : "projects";
+
+    const [activeTab, setActiveTab] = useState(defaultTab);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [confirmDelete, setConfirmDelete] = useState(null); // { type, id, name }
+
+    const filteredData = () => {
+        const q = searchQuery.toLowerCase().trim();
+        if (activeTab === "projects") {
+            return projects.filter(p => p.name.toLowerCase().includes(q) || p.projectId.toLowerCase().includes(q));
+        } else if (activeTab === "tasks") {
+            return tasks.filter(t => t.title.toLowerCase().includes(q) || t.projectId.toLowerCase().includes(q));
+        } else {
+            return employees.filter(e => e.name.toLowerCase().includes(q) || e.role.toLowerCase().includes(q));
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!confirmDelete) return;
+        const { type, id } = confirmDelete;
+        if (type === "project") await deleteProject(id);
+        else if (type === "task") await deleteTask(id);
+        else if (type === "employee") await deleteEmployee(id);
+        setConfirmDelete(null);
+    };
+
+    return (
+        <div className="space-y-6 pb-20">
+            {/* HEADER */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold text-slate-900">Developer Control Panel</h1>
+                    <p className="text-sm text-slate-500">System-wide management of all core entities.</p>
+                </div>
+
+                <div className="relative w-full md:w-72">
+                    <Search className="absolute left-3 top-2.5 text-slate-400" size={16} />
+                    <input
+                        type="text"
+                        placeholder={`Search ${activeTab}...`}
+                        className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-sm focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                </div>
+            </div>
+
+            {/* TABS */}
+            <div className="flex gap-2 p-1 bg-slate-100 rounded-2xl w-fit">
+                {[
+                    { id: "projects", label: "Projects", icon: FolderKanban },
+                    { id: "tasks", label: "Tasks", icon: ListChecks },
+                    { id: "employees", label: "Employees", icon: Users },
+                ].map(tab => (
+                    <button
+                        key={tab.id}
+                        onClick={() => { setActiveTab(tab.id); setSearchQuery(""); }}
+                        className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all
+                       ${activeTab === tab.id
+                                ? "bg-white text-orange-600 shadow-sm"
+                                : "text-slate-500 hover:text-slate-700 hover:bg-white/50"}`}
+                    >
+                        <tab.icon size={16} />
+                        {tab.label}
+                    </button>
+                ))}
+            </div>
+
+            {/* DATA GRID */}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                <AnimatePresence mode="popLayout">
+                    {filteredData().map((item, index) => (
+                        <motion.div
+                            layout
+                            key={item.projectId || item.id}
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            transition={{ duration: 0.2 }}
+                            className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow group"
+                        >
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="space-y-1">
+                                    <p className="font-bold text-slate-800 line-clamp-1">{item.name || item.title}</p>
+                                    <p className="text-[10px] text-slate-400 font-mono uppercase tracking-wider">
+                                        ID: {item.projectId || item.id}
+                                    </p>
+                                </div>
+                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                        className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                        title="Edit (Coming Soon)"
+                                    >
+                                        <Edit3 size={16} />
+                                    </button>
+                                    <button
+                                        onClick={() => setConfirmDelete({
+                                            type: activeTab.slice(0, -1),
+                                            id: item.id,
+                                            name: item.name || item.title
+                                        })}
+                                        className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* DETAILS METADATA */}
+                            <div className="grid grid-cols-2 gap-3 pt-4 border-t border-slate-50">
+                                {activeTab === "projects" && (
+                                    <>
+                                        <div>
+                                            <p className="text-[10px] text-slate-400 uppercase font-bold">Client</p>
+                                            <p className="text-xs font-medium text-slate-700">{item.clientName}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] text-slate-400 uppercase font-bold">Status</p>
+                                            <p className="text-xs font-medium text-slate-700">{item.status}</p>
+                                        </div>
+                                    </>
+                                )}
+                                {activeTab === "tasks" && (
+                                    <>
+                                        <div>
+                                            <p className="text-[10px] text-slate-400 uppercase font-bold">Project</p>
+                                            <p className="text-xs font-medium text-slate-700 truncate">{item.projectId}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] text-slate-400 uppercase font-bold">Priority</p>
+                                            <p className="text-xs font-medium text-slate-700">{item.priority}</p>
+                                        </div>
+                                    </>
+                                )}
+                                {activeTab === "employees" && (
+                                    <>
+                                        <div>
+                                            <p className="text-[10px] text-slate-400 uppercase font-bold">Role</p>
+                                            <p className="text-xs font-medium text-slate-700">{item.role}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] text-slate-400 uppercase font-bold">Email</p>
+                                            <p className="text-xs font-medium text-slate-700 truncate">{item.email}</p>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        </motion.div>
+                    ))}
+                </AnimatePresence>
+            </div>
+
+            {/* NO RESULTS */}
+            {filteredData().length === 0 && (
+                <div className="py-20 text-center space-y-4">
+                    <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto text-slate-300">
+                        <Search size={32} />
+                    </div>
+                    <p className="text-slate-400 font-medium">No results found for your search.</p>
+                </div>
+            )}
+
+            {/* DELETE CONFIRMATION MODAL */}
+            <AnimatePresence>
+                {confirmDelete && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setConfirmDelete(null)}
+                            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="relative bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full text-center space-y-6"
+                        >
+                            <div className="w-20 h-20 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto">
+                                <AlertTriangle size={40} />
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-black text-slate-900">Are you sure?</h3>
+                                <p className="text-sm text-slate-500 mt-2 leading-relaxed">
+                                    You are about to delete <strong>{confirmDelete.name}</strong>. This action is permanent and cannot be undone.
+                                </p>
+                            </div>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setConfirmDelete(null)}
+                                    className="flex-1 bg-slate-100 text-slate-700 font-bold py-3 rounded-2xl hover:bg-slate-200 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleDelete}
+                                    className="flex-1 bg-red-600 text-white font-bold py-3 rounded-2xl hover:bg-red-700 transition-colors shadow-lg shadow-red-200"
+                                >
+                                    Delete Now
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+};
+
+export default DevPanel;

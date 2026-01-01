@@ -1,0 +1,283 @@
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+    Shield,
+    User,
+    FolderKey,
+    Lock,
+    Eye,
+    EyeOff,
+    Loader2,
+    ChevronRight,
+    Info
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import axios from "../shared/utils/axios";
+
+// NOTE: We assume the mock axios instances are available and work for their respective endpoints.
+// For the unified login, we'll try to use the admin axios as a base if it points to the same API.
+
+const UnifiedLogin = () => {
+    const navigate = useNavigate();
+    const [role, setRole] = useState("admin"); // 'admin', 'employee', 'client'
+    const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+
+    // Form states
+    const [formData, setFormData] = useState({
+        email: "",
+        password: "",
+        projectId: ""
+    });
+
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError("");
+
+        try {
+            if (role === "admin" || role === "employee") {
+                const res = await axios.post("/auth/login", {
+                    email: formData.email,
+                    password: formData.password
+                });
+
+                // Store Auth Data
+                localStorage.setItem("token", res.data.token);
+                localStorage.setItem("user", JSON.stringify(res.data.user));
+
+                // Role Check & Redirect
+                if (res.data.user.role === 'SUPER_ADMIN' || res.data.user.role === 'MANAGER') {
+                    navigate("/admin/dashboard");
+                } else if (res.data.user.role === 'EMPLOYEE') {
+                    navigate("/employee");
+                } else {
+                    setError("Unknown role.");
+                }
+
+            }
+            else if (role === "client") {
+                // Client login pending backend implementation
+                // For now, keeping original logic if needed or placeholder
+                const res = await axios.post("/client/login", {
+                    projectId: formData.projectId,
+                    password: formData.password
+                });
+                localStorage.setItem("clientToken", res.data.token);
+                localStorage.setItem("clientProject", JSON.stringify(res.data.project));
+                navigate("/client");
+            }
+        } catch (err) {
+            console.error("Login Error:", err);
+            setError(err.response?.data?.message || "Invalid credentials. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const roles = [
+        { id: "admin", label: "Admin", icon: Shield, color: "blue" },
+        { id: "employee", label: "Employee", icon: User, color: "green" },
+        { id: "client", label: "Client", icon: FolderKey, color: "orange" },
+    ];
+
+    return (
+        <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4">
+            {/* Background elements */}
+            <div className="fixed inset-0 pointer-events-none overflow-hidden">
+                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/5 rounded-full blur-3xl"></div>
+                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-orange-500/5 rounded-full blur-3xl"></div>
+            </div>
+
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="w-full max-w-md"
+            >
+                {/* Logo Section */}
+                <div className="flex flex-col items-center mb-8">
+                    <img
+                        src="/FINAL_LOGO.png"
+                        alt="Cookscape"
+                        className="h-16 mb-4 object-contain"
+                    />
+                    <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Cookscape Unified</h1>
+                    <p className="text-slate-500 text-sm mt-1">Select your portal to continue</p>
+                </div>
+
+                {/* Role Toggles */}
+                <div className="flex bg-slate-200/50 p-1 rounded-2xl mb-8 backdrop-blur-sm">
+                    {roles.map((r) => {
+                        const Icon = r.icon;
+                        const isActive = role === r.id;
+                        return (
+                            <button
+                                key={r.id}
+                                onClick={() => {
+                                    setRole(r.id);
+                                    setError("");
+                                }}
+                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 ${isActive
+                                    ? "bg-white text-slate-900 shadow-sm"
+                                    : "text-slate-500 hover:text-slate-700"
+                                    }`}
+                            >
+                                <Icon size={16} className={isActive ? `text-${r.color}-500` : ""} />
+                                {r.label}
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {/* Login Card */}
+                <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200 p-8">
+                    <AnimatePresence mode="wait">
+                        <motion.form
+                            key={role}
+                            initial={{ opacity: 0, x: role === "admin" ? -20 : 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: role === "admin" ? 20 : -20 }}
+                            onSubmit={handleLogin}
+                            className="space-y-5"
+                        >
+                            <div className="text-center mb-6">
+                                <h2 className="text-xl font-bold text-slate-900 capitalize">{role} Login</h2>
+                                {role === "client" && (
+                                    <p className="text-xs text-slate-500 mt-1">Track your project progress in real-time</p>
+                                )}
+                            </div>
+
+                            {error && (
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    className="bg-red-50 border border-red-100 text-red-600 px-4 py-2.5 rounded-xl text-xs flex items-center gap-2"
+                                >
+                                    <Info size={14} />
+                                    {error}
+                                </motion.div>
+                            )}
+
+                            {/* Dynamic Inputs */}
+                            {role === "client" ? (
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-bold text-slate-600 ml-1 uppercase tracking-wider">Project ID</label>
+                                    <div className="relative group">
+                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-orange-500 transition-colors">
+                                            <FolderKey size={18} />
+                                        </span>
+                                        <input
+                                            type="text"
+                                            name="projectId"
+                                            value={formData.projectId}
+                                            onChange={handleChange}
+                                            required
+                                            className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all text-sm outline-none placeholder:text-slate-400"
+                                            placeholder="e.g. PRJ-001"
+                                        />
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-bold text-slate-600 ml-1 uppercase tracking-wider">Email Address</label>
+                                    <div className="relative group">
+                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                                            <Shield size={18} />
+                                        </span>
+                                        <input
+                                            type="email"
+                                            name="email"
+                                            value={formData.email}
+                                            onChange={handleChange}
+                                            required
+                                            className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all text-sm outline-none placeholder:text-slate-400"
+                                            placeholder={role === "admin" ? "admin@cookscape.com" : "employee@cookscape.com"}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-slate-600 ml-1 uppercase tracking-wider">Password</label>
+                                <div className="relative group">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-500 transition-colors">
+                                        <Lock size={18} />
+                                    </span>
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        name="password"
+                                        value={formData.password}
+                                        onChange={handleChange}
+                                        required
+                                        className="w-full pl-11 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all text-sm outline-none placeholder:text-slate-400"
+                                        placeholder="••••••••"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                                    >
+                                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className={`w-full py-4 rounded-xl font-bold text-white shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2 group ${role === "admin" ? "bg-blue-600 shadow-blue-200 hover:bg-blue-700" :
+                                    role === "employee" ? "bg-green-600 shadow-green-200 hover:bg-green-700" :
+                                        "bg-orange-600 shadow-orange-200 hover:bg-orange-700"
+                                    } disabled:opacity-70 disabled:shadow-none`}
+                            >
+                                {loading ? (
+                                    <Loader2 className="animate-spin" size={20} />
+                                ) : (
+                                    <>
+                                        Sign In to {role.charAt(0).toUpperCase() + role.slice(1)}
+                                        <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                                    </>
+                                )}
+                            </button>
+                        </motion.form>
+                    </AnimatePresence>
+
+                    {/* Quick Hints */}
+                    <div className="mt-8 pt-6 border-t border-slate-100 text-center">
+                        <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mb-3">Demo Credentials</p>
+                        <div className="bg-slate-50 rounded-xl p-3 text-[11px] text-slate-600 font-medium">
+                            {role === "admin" && "admin@cookscape.com | admin123"}
+                            {role === "employee" && "Any credentials will work (Mock mode)"}
+                            {role === "client" && "PRJ001 | password123 (Try PRJ001 / password123)"}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Global Footer */}
+                <p className="text-center text-slate-400 text-xs mt-8">
+                    &copy; 2025 Cookscape Design Studio. All rights reserved.
+                </p>
+            </motion.div>
+
+            {/* In-page Styles */}
+            <style dangerouslySetInnerHTML={{
+                __html: `
+                @keyframes shake {
+                    0%, 100% { transform: translateX(0); }
+                    25% { transform: translateX(-5px); }
+                    75% { transform: translateX(5px); }
+                }
+                .animate-shake {
+                    animation: shake 0.3s ease-in-out;
+                }
+            `}} />
+        </div>
+    );
+};
+
+export default UnifiedLogin;
