@@ -209,6 +209,7 @@ const Employees = () => {
                     <option value="EMPLOYEE">Employee</option>
                     <option value="MANAGER">Manager</option>
                     <option value="SUPER_ADMIN">Super Admin</option>
+                    <option value="SITE_SUPERVISOR">Site Supervisor</option>
                   </select>
                 </div>
 
