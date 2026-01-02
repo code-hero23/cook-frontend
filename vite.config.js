@@ -67,6 +67,7 @@ export default defineConfig({
       '@admin': '/src/features/admin',
       '@employee': '/src/features/employee',
       '@client': '/src/features/client',
+      '@supervisor': '/src/features/supervisor',
     }
   }
 })
