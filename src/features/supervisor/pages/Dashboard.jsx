@@ -26,9 +26,15 @@ const Dashboard = () => {
 
     const fetchTasks = async () => {
         try {
+            const user = JSON.parse(localStorage.getItem('user'));
             const response = await axios.get('/tasks');
-            // Assuming response.data is the list. Filtering for supervisor context.
-            const activeTasks = response.data.filter(t => t.status !== 'COMPLETED');
+
+            // Filter: Active tasks assigned to CURRENT USER
+            const activeTasks = response.data.filter(t =>
+                t.status !== 'COMPLETED' &&
+                t.employeeId === user.id
+            );
+
             setTasks(activeTasks);
         } catch (error) {
             console.error("Error fetching tasks:", error);
