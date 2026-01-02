@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Menu, Bell, UserCircle2, LogOut, Search, X } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Menu, Bell, UserCircle2, LogOut, Search, X, FileText, Download, ChevronDown } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
 import { useApp } from "../../context/AppContext.jsx";
+import { downloadCsv } from "../../utils/exportToCsv";
 import logo from "../../assets/logo.png";
 
 const Topbar = ({ onToggleSidebar }) => {
@@ -12,13 +13,19 @@ const Topbar = ({ onToggleSidebar }) => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
-  const searchRef = useRef(null);
+  const [showExport, setShowExport] = useState(false);
 
-  // Close results when clicking outside
+  const searchRef = useRef(null);
+  const exportRef = useRef(null);
+
+  // Close menus when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setShowResults(false);
+      }
+      if (exportRef.current && !exportRef.current.contains(event.target)) {
+        setShowExport(false);
       }
     };
 
@@ -37,9 +44,9 @@ const Topbar = ({ onToggleSidebar }) => {
 
     // Limit results to 3 per category to avoid clutter
     const matchedProjects = projects
-      .filter(p => (p.name || "").toLowerCase().includes(lowerQ) || (p.projectId || "").toLowerCase().includes(lowerQ))
+      .filter(p => (p.name || "").toLowerCase().includes(lowerQ) || (p.projectCode || "").toLowerCase().includes(lowerQ)) // Updated to projectCode
       .slice(0, 3)
-      .map(p => ({ type: "Project", label: p.name, sub: p.projectId, id: p.projectId, path: "/admin/projects" }));
+      .map(p => ({ type: "Project", label: p.name, sub: p.projectCode, id: p.id, path: "/admin/projects" }));
 
     const matchedEmployees = employees
       .filter(e => (e.name || "").toLowerCase().includes(lowerQ))
@@ -70,6 +77,33 @@ const Topbar = ({ onToggleSidebar }) => {
   const clearSearch = () => {
     setQuery("");
     setShowResults(false);
+  };
+
+  // --- Export Logic ---
+  const handleQuickExport = (type) => {
+    const timestamp = new Date().toISOString().split('T')[0];
+
+    if (type === 'projects') {
+      // Project Headers
+      const map = {
+        projectCode: "Project ID", name: "Name", clientName: "Client",
+        startDate: "Start Date", deadline: "Deadline", status: "Status",
+        paymentPercentage: "Completion (%)"
+      };
+      downloadCsv(`Projects_Export_${timestamp}.csv`, projects, map);
+    } else if (type === 'tasks') {
+      const map = {
+        title: "Task", status: "Status", priority: "Priority",
+        stage: "Stage", startDate: "Start", dueDate: "Due", type: "Type"
+      };
+      downloadCsv(`Tasks_Export_${timestamp}.csv`, tasks, map);
+    } else if (type === 'employees') {
+      const map = {
+        name: "Name", role: "Role", email: "Email", phone: "Phone", status: "Status"
+      };
+      downloadCsv(`Employees_Export_${timestamp}.csv`, employees, map);
+    }
+    setShowExport(false);
   };
 
   return (
@@ -150,24 +184,63 @@ const Topbar = ({ onToggleSidebar }) => {
       </div>
 
       {/* Right Side Buttons */}
-      <div className="flex items-center gap-5">
-        <button className="relative p-2 rounded-full hover:bg-slate-100 transition">
+      <div className="flex items-center gap-3 sm:gap-5">
+
+        {/* GLOBAL REPORTS/EXPORT DROPDOWN */}
+        <div className="relative" ref={exportRef}>
+          <button
+            onClick={() => setShowExport(!showExport)}
+            className={`flex items-center gap-2 px-3 py-2 rounded-xl border transition-all
+                    ${showExport ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+          >
+            <FileText size={18} />
+            <span className="text-sm font-medium hidden sm:inline">Reports</span>
+            <ChevronDown size={14} className={`transition-transform ${showExport ? 'rotate-180' : ''}`} />
+          </button>
+
+          {showExport && (
+            <div className="absolute top-full right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden py-1 z-50 animate-in fade-in zoom-in-95 duration-200">
+              <div className="px-4 py-2 bg-slate-50 border-b border-slate-100">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Quick Export (CSV)</p>
+              </div>
+              <button onClick={() => handleQuickExport('projects')} className="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-600 flex items-center gap-2">
+                <Download size={14} /> All Projects
+              </button>
+              <button onClick={() => handleQuickExport('tasks')} className="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-600 flex items-center gap-2">
+                <Download size={14} /> All Tasks
+              </button>
+              <button onClick={() => handleQuickExport('employees')} className="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-600 flex items-center gap-2">
+                <Download size={14} /> All Employees
+              </button>
+              <div className="border-t border-slate-100 my-1"></div>
+              <Link
+                to="/admin/reports"
+                onClick={() => setShowExport(false)}
+                className="w-full text-left px-4 py-2.5 text-xs font-bold text-brand-600 hover:bg-brand-50 flex items-center justify-between"
+              >
+                Advanced Reports <span>→</span>
+              </Link>
+            </div>
+          )}
+        </div>
+
+        <button className="relative p-2 rounded-full hover:bg-slate-100 transition hidden sm:block">
           <Bell size={20} className="text-slate-600" />
           <span className="absolute top-1 right-1 h-2 w-2 bg-brand-500 rounded-full"></span>
         </button>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
           <UserCircle2 size={28} className="text-slate-700" />
-          <span className="text-sm font-medium hidden sm:block">{user?.name || "Super Admin"}</span>
+          <span className="text-sm font-medium hidden lg:block">{user?.name || "Super Admin"}</span>
         </div>
 
         <button
           onClick={handleLogout}
-          className="flex items-center gap-1 text-sm px-3 py-2 border border-slate-300 rounded-md
-           hover:bg-red-500 hover:text-white hover:border-red-500 transition"
+          className="flex items-center gap-1 text-sm px-3 py-2 border border-slate-200 rounded-lg text-slate-500
+           hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition"
+          title="Logout"
         >
-          <LogOut size={16} />
-          <span className="hidden sm:inline">Logout</span>
+          <LogOut size={18} />
         </button>
       </div>
     </header>
