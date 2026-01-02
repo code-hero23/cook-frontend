@@ -15,6 +15,7 @@ import ClientDashboard from "./pages/ClientDashboard.jsx";
 import ProjectManager from "./pages/ProjectManager.jsx";
 import Chat from "./pages/Chat.jsx";
 import DevPanel from "./pages/DevPanel.jsx";
+import Settings from "./pages/Settings.jsx"; // Added Settings Import
 
 // 🔐 Protected Route Wrapper
 const ProtectedRoute = ({ children, requiredRole }) => {
@@ -117,6 +118,15 @@ const App = () => {
           element={
             <ProtectedRoute>
               <Reports />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="settings"
+          element={
+            <ProtectedRoute>
+              <Settings />
             </ProtectedRoute>
           }
         />

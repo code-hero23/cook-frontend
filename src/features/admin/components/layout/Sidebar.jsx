@@ -21,6 +21,7 @@ const navItems = [
   { to: "/admin/chat", label: "Chat", icon: MessageSquare },  // 👈 NEW CHAT MENU
   { to: "/admin/reports", label: "Reports", icon: FileSpreadsheet },
   { to: "/admin/client-access", label: "Client Access", icon: Link2 },
+  { to: "/admin/settings", label: "Data & Backups", icon: ShieldCheck },
   { to: "/admin/dev-panel", label: "System Control", icon: ShieldCheck },
 ];
 
