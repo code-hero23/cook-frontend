@@ -47,15 +47,32 @@ const UnifiedLogin = () => {
                     password: formData.password
                 });
 
+                const userRole = res.data.user.role;
+
+                // Strict Role Validation based on selected tab
+                if (role === 'admin' && !['SUPER_ADMIN', 'MANAGER'].includes(userRole)) {
+                    setError("Access denied. You are not an authorized administrator.");
+                    setLoading(false);
+                    return;
+                }
+
+                if (role === 'employee' && !['EMPLOYEE', 'SITE_SUPERVISOR'].includes(userRole)) {
+                    setError("Access denied. Please use the Admin portal.");
+                    setLoading(false);
+                    return;
+                }
+
                 // Store Auth Data
                 localStorage.setItem("token", res.data.token);
                 localStorage.setItem("user", JSON.stringify(res.data.user));
 
-                // Role Check & Redirect
-                if (res.data.user.role === 'SUPER_ADMIN' || res.data.user.role === 'MANAGER') {
+                // Routing
+                if (userRole === 'SUPER_ADMIN' || userRole === 'MANAGER') {
                     navigate("/admin/dashboard");
-                } else if (res.data.user.role === 'EMPLOYEE') {
+                } else if (userRole === 'EMPLOYEE') {
                     navigate("/employee");
+                } else if (userRole === 'SITE_SUPERVISOR') {
+                    navigate("/supervisor");
                 } else {
                     setError("Unknown role.");
                 }

@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 import AdminApp from '@admin/App';
 import EmployeeApp from '@employee/App';
+import SupervisorApp from '@supervisor/App';
 import ClientApp from '@client/App';
 import Login from './pages/Login';
 import ReloadPrompt from './components/pwa/ReloadPrompt';
@@ -21,6 +22,7 @@ function App() {
                 {/* Feature Routes */}
                 <Route path="/admin/*" element={<AdminApp />} />
                 <Route path="/employee/*" element={<EmployeeApp />} />
+                <Route path="/supervisor/*" element={<SupervisorApp />} />
                 <Route path="/client/*" element={<ClientApp />} />
 
                 {/* Fallback */}

@@ -2,8 +2,19 @@ import React, { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useApp } from "../context/AppContext.jsx";
 import StatusBadge from "../components/common/StatusBadge.jsx";
-import { Plus, Pencil, Mail } from "lucide-react";
+import { Plus, Pencil, Mail, Eye, X, MapPin } from "lucide-react";
 import { isTaskOverdue } from "../utils/dateUtils.js";
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// Fix for default Leaflet markers in React/Vite
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 
 const STAGES = {
   "Freezing Mail": [
@@ -44,6 +55,10 @@ const Tasks = () => {
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyTask);
 
+  // Evidence Modal State
+  const [evidenceModalOpen, setEvidenceModalOpen] = useState(false);
+  const [viewingTask, setViewingTask] = useState(null);
+
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const isManager = (user.role || "").toUpperCase() === "MANAGER";
 
@@ -72,6 +87,11 @@ const Tasks = () => {
     setEditingId(task.id);
     setModalOpen(true);
   };
+
+  const openEvidence = (task) => {
+    setViewingTask(task);
+    setEvidenceModalOpen(true);
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -153,7 +173,7 @@ const Tasks = () => {
         {/* HEADER ROW + ROWS (scrollable on small screens) */}
         <div className="overflow-x-auto">
           <div className="min-w-[760px]">
-            <div className="grid grid-cols-[100px_2fr_1.5fr_1.5fr_1.5fr_1fr_1fr_1fr_100px] text-[11px] font-semibold text-slate-500 border-b px-2 py-2 bg-gray-300">
+            <div className="grid grid-cols-[100px_2fr_1.5fr_1.5fr_1.5fr_1fr_1fr_1fr_120px] text-[11px] font-semibold text-slate-500 border-b px-2 py-2 bg-gray-300">
               <div>ID</div>
               <div>Task</div>
               <div>Project</div>
@@ -174,7 +194,7 @@ const Tasks = () => {
               return (
                 <div
                   key={t.id}
-                  className="grid grid-cols-[100px_2fr_1.5fr_1.5fr_1.5fr_1fr_1fr_1fr_100px] items-center border-b py-2 text-xs"
+                  className="grid grid-cols-[100px_2fr_1.5fr_1.5fr_1.5fr_1fr_1fr_1fr_120px] items-center border-b py-2 text-xs"
                 >
                   <div className="font-mono text-xs text-orange-600 font-semibold">{t.id}</div>
                   <div>
@@ -206,13 +226,25 @@ const Tasks = () => {
 
                   <div><StatusBadge status={status} /></div>
 
-                  <div className="text-right space-x-2">
+                  <div className="text-right space-x-2 flex justify-end">
+                    {/* View Evidence Button */}
+                    {t.evidence && t.evidence.length > 0 && (
+                      <button
+                        onClick={() => openEvidence(t)}
+                        className="inline-flex items-center gap-1 text-indigo-600 hover:bg-indigo-50 p-1 rounded"
+                        title="View Evidence"
+                      >
+                        <Eye size={14} />
+                      </button>
+                    )}
+
                     {!isManager && (
                       <button
                         onClick={() => openEdit(t)}
                         className="inline-flex items-center gap-1 text-orange-600 hover:underline"
+                        title="Edit"
                       >
-                        <Pencil size={14} /> Edit
+                        <Pencil size={14} />
                       </button>
                     )}
 
@@ -222,8 +254,9 @@ const Tasks = () => {
                         alert(`Email sent to ${emp.email} for ${t.title} (simulated).`);
                       }}
                       className="inline-flex items-center gap-1 text-[#075E54] hover:underline"
+                      title="Send Mail"
                     >
-                      <Mail size={14} /> Mail
+                      <Mail size={14} />
                     </button>
                   </div>
 
@@ -240,7 +273,7 @@ const Tasks = () => {
         )}
       </div>
 
-      {/* MODAL */}
+      {/* CREATE/EDIT MODAL */}
       {
         modalOpen && (
           <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30">
@@ -406,7 +439,90 @@ const Tasks = () => {
         )
       }
 
-    </div >
+      {/* EVIDENCE VERIFICATION MODAL */}
+      {evidenceModalOpen && viewingTask && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col md:flex-row">
+            {/* Left: Image Proof */}
+            <div className="flex-1 bg-black relative min-h-[300px] md:h-auto group">
+              <img
+                src={`http://localhost:5000${viewingTask.evidence[0].url}`}
+                alt="Evidence"
+                className="absolute inset-0 w-full h-full object-contain"
+              />
+              <div className="absolute top-4 left-4 right-4 flex justify-between items-start">
+                <span className="bg-black/50 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-mono border border-white/20">
+                  {new Date(viewingTask.evidence[0].capturedAt).toLocaleString()}
+                </span>
+              </div>
+            </div>
+
+            {/* Right: Map & Details */}
+            <div className="w-full md:w-[350px] bg-slate-50 p-6 flex flex-col border-l border-slate-200">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-slate-800">Verify Work</h2>
+                <button
+                  onClick={() => setEvidenceModalOpen(false)}
+                  className="p-2 hover:bg-slate-200 rounded-full transition-colors"
+                >
+                  <X size={20} className="text-slate-500" />
+                </button>
+              </div>
+
+              <div className="space-y-6 flex-1 overflow-y-auto">
+                {/* Task Info */}
+                <div>
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Task Details</h3>
+                  <p className="font-bold text-slate-800">{viewingTask.title}</p>
+                  <p className="text-sm text-slate-500">{viewingTask.project?.name || 'Unknown Project'}</p>
+                </div>
+
+                {/* Location Map */}
+                <div className="h-48 rounded-2xl overflow-hidden border-2 border-white shadow-md relative">
+                  <MapContainer
+                    center={[viewingTask.evidence[0].latitude, viewingTask.evidence[0].longitude]}
+                    zoom={15}
+                    style={{ height: '100%', width: '100%' }}
+                    dragging={false}
+                    zoomControl={false}
+                  >
+                    <TileLayer
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+                    <Marker position={[viewingTask.evidence[0].latitude, viewingTask.evidence[0].longitude]} />
+                  </MapContainer>
+                  <div className="absolute bottom-2 left-2 bg-white/90 px-2 py-1 rounded-md text-[10px] font-bold shadow-sm z-[1000] flex items-center gap-1">
+                    <MapPin size={10} className="text-red-500" />
+                    GPS Location
+                  </div>
+                </div>
+
+                {/* Status */}
+                <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100">
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                    <span className="text-xs font-bold text-emerald-700 uppercase">Live Proof</span>
+                  </div>
+                  <p className="text-xs text-emerald-600">
+                    Supervisor captured this image at the specified location coordinates.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6 pt-6 border-t border-slate-200">
+                <button
+                  onClick={() => setEvidenceModalOpen(false)}
+                  className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition shadow-lg shadow-slate-200"
+                >
+                  Close Verification
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div>
   );
 };
 
