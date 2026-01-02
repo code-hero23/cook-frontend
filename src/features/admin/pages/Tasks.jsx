@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useApp } from "../context/AppContext.jsx";
 import StatusBadge from "../components/common/StatusBadge.jsx";
-import { Plus, Pencil, Mail, Eye, X, MapPin } from "lucide-react";
+import { Plus, Pencil, Mail, Eye, X, MapPin, Folder, ChevronRight, ArrowLeft, CheckCircle2, Clock, AlertCircle } from "lucide-react";
 import { isTaskOverdue } from "../utils/dateUtils.js";
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -55,6 +55,9 @@ const Tasks = () => {
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyTask);
 
+  // Navigation State
+  const [selectedProject, setSelectedProject] = useState(null);
+
   // Evidence Modal State
   const [evidenceModalOpen, setEvidenceModalOpen] = useState(false);
   const [viewingTask, setViewingTask] = useState(null);
@@ -64,20 +67,56 @@ const Tasks = () => {
 
   const tasksOnly = tasks.filter((t) => t.type?.toUpperCase() === "TASK");
 
-  const filtered = tasksOnly.filter((t) => {
-    const project = projects.find((p) => p.projectId === t.projectId);
-    const emp = employees.find((e) => e.id === t.employeeId);
-    const target =
-      (t.title +
-        (project?.name || "") +
-        (emp?.name || "") +
-        (t.id || "")
-      ).toLowerCase();
-    return target.includes(search.toLowerCase());
-  });
+  // Calculate Project Metrics
+  const projectMetrics = useMemo(() => {
+    return projects.map(project => {
+      const projectTasks = tasksOnly.filter(t => t.projectId === project.id);
+      const completed = projectTasks.filter(t => t.status === 'COMPLETED').length;
+      const pending = projectTasks.filter(t => t.status !== 'COMPLETED').length;
+      const overdue = projectTasks.filter(t => isTaskOverdue(t)).length;
+
+      return {
+        ...project,
+        taskCount: projectTasks.length,
+        completedCount: completed,
+        pendingCount: pending,
+        overdueCount: overdue,
+        progress: projectTasks.length > 0 ? Math.round((completed / projectTasks.length) * 100) : 0
+      };
+    });
+  }, [projects, tasksOnly]);
+
+  const filteredTasks = useMemo(() => {
+    let scopedTasks = tasksOnly;
+
+    // Filter by Project if selected
+    if (selectedProject) {
+      scopedTasks = scopedTasks.filter(t => t.projectId === selectedProject.id);
+    }
+
+    // Filter by Search
+    if (search) {
+      scopedTasks = scopedTasks.filter((t) => {
+        const project = projects.find((p) => p.projectId === t.projectId);
+        const emp = employees.find((e) => e.id === t.employeeId);
+        const target =
+          (t.title +
+            (project?.name || "") +
+            (emp?.name || "") +
+            (t.id || "")
+          ).toLowerCase();
+        return target.includes(search.toLowerCase());
+      });
+    }
+    return scopedTasks;
+  }, [tasksOnly, selectedProject, search, projects, employees]);
+
 
   const openCreate = () => {
     setForm(emptyTask);
+    if (selectedProject) {
+      setForm(prev => ({ ...prev, projectId: selectedProject.id }));
+    }
     setEditingId(null);
     setModalOpen(true);
   };
@@ -101,16 +140,13 @@ const Tasks = () => {
     }
 
     const payload = { ...form };
-    if (!payload.startDate) payload.startDate = null; // Convert "" to null
-    if (!payload.dueDate) payload.dueDate = null;       // Convert "" to null
+    if (!payload.startDate) payload.startDate = null;
+    if (!payload.dueDate) payload.dueDate = null;
     if (payload.startDate) payload.startDate = new Date(payload.startDate).toISOString();
     if (payload.dueDate) payload.dueDate = new Date(payload.dueDate).toISOString();
 
-    // Normalize Enums
     payload.priority = payload.priority.toUpperCase();
     payload.status = payload.status.toUpperCase();
-
-    // Ensure Stage is valid (or null if empty)
     if (!payload.stage) payload.stage = null;
 
     if (editingId) updateTask(editingId, payload);
@@ -130,16 +166,269 @@ const Tasks = () => {
     return t.status;
   };
 
+  // --- RENDER PROJECT GRID ---
+  if (!selectedProject) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h1 className="text-xl font-bold text-slate-800">Projects Overview</h1>
+            <p className="text-sm text-slate-500">Select a project to view and manage its tasks.</p>
+          </div>
+          {!isManager && (
+            <button
+              onClick={openCreate}
+              className="inline-flex items-center gap-2 rounded-xl bg-slate-900 text-white px-4 py-2 text-sm font-bold shadow-lg hover:bg-slate-800 transition"
+            >
+              <Plus size={16} />
+              Global Task
+            </button>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {projectMetrics.map(p => (
+            <div
+              key={p.id}
+              onClick={() => setSelectedProject(p)}
+              className="group bg-white rounded-2xl p-6 border border-slate-100 hover:border-indigo-500 hover:shadow-xl hover:shadow-indigo-100 transition-all cursor-pointer relative overflow-hidden"
+            >
+              <div className="flex justify-between items-start mb-4">
+                <div className="p-3 bg-indigo-50 rounded-xl group-hover:bg-indigo-600 transition-colors">
+                  <Folder className="w-6 h-6 text-indigo-600 group-hover:text-white" />
+                </div>
+                <div className={`px-2 py-1 rounded-lg text-xs font-bold ${p.overdueCount > 0 ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'}`}>
+                  {p.overdueCount > 0 ? `${p.overdueCount} Overdue` : 'On Track'}
+                </div>
+              </div>
+
+              <h3 className="text-lg font-bold text-slate-800 mb-1 line-clamp-1">{p.name}</h3>
+              <p className="text-xs text-slate-500 font-medium mb-6 flex items-center gap-1">
+                <MapPin size={12} /> {p.location || 'No Location'}
+              </p>
+
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                <div className="bg-slate-50 rounded-lg p-2 text-center">
+                  <div className="text-lg font-black text-slate-800">{p.taskCount}</div>
+                  <div className="text-[10px] uppercase font-bold text-slate-400">Total</div>
+                </div>
+                <div className="bg-orange-50 rounded-lg p-2 text-center">
+                  <div className="text-lg font-black text-orange-600">{p.pendingCount}</div>
+                  <div className="text-[10px] uppercase font-bold text-orange-400">Pending</div>
+                </div>
+                <div className="bg-emerald-50 rounded-lg p-2 text-center">
+                  <div className="text-lg font-black text-emerald-600">{p.completedCount}</div>
+                  <div className="text-[10px] uppercase font-bold text-emerald-400">Done</div>
+                </div>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                <div
+                  className="bg-indigo-500 h-full rounded-full transition-all duration-500"
+                  style={{ width: `${p.progress}%` }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Reuse Modal for Global Task Creation */}
+        {modalOpen && (
+          <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30">
+            <div className="bg-white rounded-2xl shadow-xl w-[95%] max-w-md md:max-w-lg p-3 overflow-auto max-h-[85vh]">
+              <h2 className="text-lg font-semibold mb-3">
+                {editingId ? "Edit Task" : "Create Task"}
+              </h2>
+              {/* Form (Simplified placeholder for brevity in grid view, real form below) */}
+              {/* Note: In a real app, I'd extract the Form to a component to avoid duplication. 
+                          For now, I'll allow the modal logic to be shared by moving the form rendering 
+                          outside the conditional return if I could, but React requires one return.
+                          
+                          SOLUTION: I will keep the modal logic at the very end and wrap the logic 
+                          in a Fragment or render conditionally.
+                          
+                          Actually, since I'm returning early, I must render the Modal HERE for the "Global Task" button to work.
+                      */}
+              <form onSubmit={handleSubmit} className="space-y-3 text-sm">
+                {/* ... Duplicated Form Logic for Grid View ... 
+                              Ideally, I'd refactor. But to be safe and quick, I will just paste the form code again or 
+                              structure the component so the returns are children of a layout that holds the modal.
+                              
+                              Let's restructure:
+                              renderContent() -> returns Grid or List
+                              return ( <div> {renderContent()} {modal} </div> )
+                          */}
+                {/* Wait, I cannot change the structure too much right now in this prompt block. 
+                              I will Render the Modal here too.
+                          */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs text-slate-500 mb-1">Select Project*</label>
+                    <select
+                      className="w-full border border-slate-200 rounded-lg px-2 py-1.5"
+                      value={form.projectId}
+                      onChange={(e) => setForm({ ...form, projectId: e.target.value })}
+                    >
+                      <option value="">-- Select Project --</option>
+                      {projects.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name} ({p.projectCode})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-500 mb-1">Assign Employee*</label>
+                    <select
+                      className="w-full border border-slate-200 rounded-lg px-2 py-1.5"
+                      value={form.employeeId}
+                      onChange={(e) => setForm({ ...form, employeeId: e.target.value })}
+                    >
+                      <option value="">-- Select Employee --</option>
+                      {employees.map((emp) => (
+                        <option key={emp.id} value={emp.id}>
+                          {emp.name} ({emp.role})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-500 mb-1">Type</label>
+                    <select
+                      className="w-full border border-slate-200 rounded-lg px-2 py-1.5"
+                      value={form.type}
+                      onChange={(e) => setForm({ ...form, type: e.target.value })}
+                    >
+                      <option value="TASK">Task</option>
+                      <option value="ISSUE">Issue</option>
+                    </select>
+                  </div>
+                  {form.type === "TASK" && (
+                    <div>
+                      <label className="block text-xs text-slate-500 mb-1">Stage</label>
+                      <select
+                        className="w-full border border-slate-200 rounded-lg px-2 py-1.5"
+                        value={form.stage || ""}
+                        onChange={(e) => {
+                          setForm({ ...form, stage: e.target.value, title: "" });
+                        }}
+                      >
+                        <option value="">-- Select Stage --</option>
+                        {Object.keys(STAGES).map((stage) => (
+                          <option key={stage} value={stage}>{stage}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                  <div className="md:col-span-2">
+                    <label className="block text-xs text-slate-500 mb-1">Task Title*</label>
+                    {form.type === "TASK" && form.stage && STAGES[form.stage] ? (
+                      <select
+                        className="w-full border border-slate-200 rounded-lg px-2 py-1.5"
+                        value={form.title}
+                        onChange={(e) => setForm({ ...form, title: e.target.value })}
+                      >
+                        <option value="">-- Select Standard Task --</option>
+                        {STAGES[form.stage].map((t) => (
+                          <option key={t} value={t}>{t}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        className="w-full border border-slate-200 rounded-lg px-2 py-1.5"
+                        value={form.title}
+                        onChange={(e) => setForm({ ...form, title: e.target.value })}
+                        placeholder={form.type === "TASK" ? "Select a stage first..." : "e.g. Fix login bug"}
+                        disabled={form.type === "TASK" && !form.stage}
+                      />
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-500 mb-1">Start Date</label>
+                    <input
+                      type="date"
+                      className="w-full border border-slate-200 rounded-lg px-2 py-1.5"
+                      value={form.startDate}
+                      onChange={(e) => setForm({ ...form, startDate: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-500 mb-1">Due Date</label>
+                    <input
+                      type="date"
+                      className="w-full border border-slate-200 rounded-lg px-2 py-1.5"
+                      value={form.dueDate}
+                      onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-500 mb-1">Priority</label>
+                    <select
+                      className="w-full border border-slate-200 rounded-lg px-2 py-1.5"
+                      value={form.priority}
+                      onChange={(e) => setForm({ ...form, priority: e.target.value })}
+                    >
+                      <option>Low</option>
+                      <option>Medium</option>
+                      <option>High</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-500 mb-1">Description</label>
+                  <textarea
+                    className="w-full border border-slate-200 rounded-lg px-2 py-1.5 h-20"
+                    value={form.description}
+                    onChange={(e) => setForm({ ...form, description: e.target.value })}
+                    placeholder="Additional details..."
+                  />
+                </div>
+                <div className="flex flex-col sm:flex-row justify-end gap-2 mt-4">
+                  <button
+                    type="button"
+                    onClick={() => setModalOpen(false)}
+                    className="px-3 py-1.5 text-sm rounded-lg border border-slate-200 w-full sm:w-auto"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-1.5 text-sm rounded-lg bg-[#075E54] text-white hover:bg-[#05483f] inline-flex items-center gap-1 transition w-full sm:w-auto justify-center"
+                  >
+                    <Mail size={14} />
+                    {editingId ? "Save & Notify" : "Create & Notify"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // --- RENDER TASK LIST (Drill-down) ---
   return (
     <div className="space-y-4">
 
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-semibold">Tasks</h1>
-          <p className="text-sm text-slate-500">
-            Assign tasks to employees. Email is triggered on assignment.
-          </p>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setSelectedProject(null)}
+            className="p-2 hover:bg-slate-100 rounded-lg transition-colors text-slate-500"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <div>
+            <h1 className="text-xl font-semibold flex items-center gap-2">
+              {selectedProject.name} <span className="text-slate-300">/</span> Tasks
+            </h1>
+            <p className="text-sm text-slate-500">
+              {selectedProject.location}
+            </p>
+          </div>
         </div>
 
         {!isManager && (
@@ -148,7 +437,7 @@ const Tasks = () => {
             className="inline-flex items-center gap-2 rounded-xl bg-orange-600 text-white px-4 py-2 text-sm hover:bg-orange-500 transition"
           >
             <Plus size={16} />
-            New Task
+            New Project Task
           </button>
         )}
       </div>
@@ -159,79 +448,93 @@ const Tasks = () => {
         <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
           <input
             type="text"
-            placeholder="Search by title, project, or employee..."
+            placeholder="Search tasks..."
             className="w-full sm:w-80 border border-slate-200 rounded-xl px-3 py-2 text-sm"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
 
           <p className="text-xs text-slate-500">
-            Total tasks: <span className="font-semibold">{tasksOnly.length}</span>
+            Showing <span className="font-semibold">{filteredTasks.length}</span> tasks
           </p>
         </div>
 
         {/* HEADER ROW + ROWS (scrollable on small screens) */}
         <div className="overflow-x-auto">
           <div className="min-w-[760px]">
-            <div className="grid grid-cols-[100px_2fr_1.5fr_1.5fr_1.5fr_1fr_1fr_1fr_120px] text-[11px] font-semibold text-slate-500 border-b px-2 py-2 bg-gray-300">
+            <div className="grid grid-cols-[80px_2fr_1.5fr_1.5fr_1.5fr_1fr_1fr_1fr_120px] text-[11px] font-semibold text-slate-500 border-b px-2 py-2 bg-gray-50">
               <div>ID</div>
               <div>Task</div>
-              <div>Project</div>
-              <div>Employee</div>
-              <div>Start / Due</div>
+              <div>Assigned To</div>
+              <div>Timeline</div>
               <div>Stage</div>
               <div>Priority</div>
               <div>Status</div>
+              <div>Last Update</div>
               <div className="text-right">Actions</div>
             </div>
 
             {/* ROWS */}
-            {filtered.map((t) => {
-              const project = projects.find((p) => p.projectId === t.projectId);
+            {filteredTasks.map((t) => {
               const emp = employees.find((e) => e.id === t.employeeId);
               const status = getStatus(t);
 
               return (
                 <div
                   key={t.id}
-                  className="grid grid-cols-[100px_2fr_1.5fr_1.5fr_1.5fr_1fr_1fr_1fr_120px] items-center border-b py-2 text-xs"
+                  className="grid grid-cols-[80px_2fr_1.5fr_1.5fr_1.5fr_1fr_1fr_1fr_120px] items-center border-b py-3 text-xs hover:bg-slate-50 transition-colors"
                 >
-                  <div className="font-mono text-xs text-orange-600 font-semibold">{t.id}</div>
+                  <div className="font-mono text-[10px] text-slate-400 font-medium">#{t.id.slice(0, 6)}</div>
                   <div>
-                    <p className="font-medium">{t.title}</p>
+                    <p className="font-bold text-slate-700 text-sm mb-0.5">{t.title}</p>
+                    {t.type === 'ISSUE' && <span className="bg-rose-100 text-rose-600 text-[10px] px-1.5 rounded font-bold">ISSUE</span>}
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center text-[10px] font-bold">
+                      {emp?.name?.charAt(0) || '?'}
+                    </div>
+                    <div>
+                      <p className="font-medium text-slate-700">{emp?.name || "Unassigned"}</p>
+                      <div className="text-[10px] text-slate-400">{emp?.role}</div>
+                    </div>
                   </div>
 
                   <div>
-                    <p>{project?.name || "—"}</p>
-                    <p className="text-[11px] text-slate-500">{t.projectId}</p>
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>
+                      <span className="text-slate-600">{t.startDate ? new Date(t.startDate).toLocaleDateString() : 'TBD'}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-rose-400"></div>
+                      <span className="text-slate-600">{t.dueDate ? new Date(t.dueDate).toLocaleDateString() : 'TBD'}</span>
+                    </div>
                   </div>
 
                   <div>
-                    <p>{emp?.name || "Unassigned"}</p>
-                    <p className="text-[11px] text-slate-500">{emp?.email || ""}</p>
-                  </div>
-
-                  <div>
-                    <p>{t.startDate}</p>
-                    <p className="text-[11px] text-slate-500">{t.dueDate}</p>
-                  </div>
-
-                  <div>
-                    <span className="px-2 py-1 rounded bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-wide">
-                      {t.stage || "—"}
-                    </span>
+                    {t.stage ? (
+                      <span className="px-2 py-1 rounded-md bg-white border border-slate-200 text-slate-500 text-[10px] font-bold uppercase tracking-wide shadow-sm">
+                        {t.stage}
+                      </span>
+                    ) : (
+                      <span className="text-slate-300">—</span>
+                    )}
                   </div>
 
                   <div><StatusBadge status={t.priority} /></div>
 
                   <div><StatusBadge status={status} /></div>
 
+                  <div className="text-slate-400 italic">
+                    {new Date(t.updatedAt).toLocaleDateString()}
+                  </div>
+
                   <div className="text-right space-x-2 flex justify-end">
                     {/* View Evidence Button */}
                     {t.evidence && t.evidence.length > 0 && (
                       <button
                         onClick={() => openEvidence(t)}
-                        className="inline-flex items-center gap-1 text-indigo-600 hover:bg-indigo-50 p-1 rounded"
+                        className="inline-flex items-center gap-1 text-slate-600 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 p-1.5 rounded-lg transition-colors border border-slate-200"
                         title="View Evidence"
                       >
                         <Eye size={14} />
@@ -241,7 +544,7 @@ const Tasks = () => {
                     {!isManager && (
                       <button
                         onClick={() => openEdit(t)}
-                        className="inline-flex items-center gap-1 text-orange-600 hover:underline"
+                        className="inline-flex items-center gap-1 text-slate-600 bg-slate-100 hover:bg-orange-50 hover:text-orange-600 p-1.5 rounded-lg transition-colors border border-slate-200"
                         title="Edit"
                       >
                         <Pencil size={14} />
@@ -253,7 +556,7 @@ const Tasks = () => {
                         if (!emp) return alert("No employee assigned.");
                         alert(`Email sent to ${emp.email} for ${t.title} (simulated).`);
                       }}
-                      className="inline-flex items-center gap-1 text-[#075E54] hover:underline"
+                      className="inline-flex items-center gap-1 text-slate-600 bg-slate-100 hover:bg-emerald-50 hover:text-emerald-600 p-1.5 rounded-lg transition-colors border border-slate-200"
                       title="Send Mail"
                     >
                       <Mail size={14} />
@@ -266,9 +569,15 @@ const Tasks = () => {
           </div>
         </div>
 
-        {filtered.length === 0 && (
-          <div className="py-4 text-center text-slate-500 text-sm">
-            No tasks found.
+        {filteredTasks.length === 0 && (
+          <div className="py-12 text-center">
+            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3">
+              <Folder className="w-8 h-8 text-slate-300" />
+            </div>
+            <p className="text-slate-500 font-medium">No tasks found in this project.</p>
+            <button onClick={openCreate} className="text-indigo-600 text-sm font-bold mt-2 hover:underline">
+              Create the first task
+            </button>
           </div>
         )}
       </div>
@@ -522,7 +831,7 @@ const Tasks = () => {
         </div>
       )}
 
-    </div>
+    </div >
   );
 };
 
