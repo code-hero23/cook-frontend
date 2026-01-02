@@ -17,6 +17,7 @@ const Dashboard = () => {
     // Safely consume context or default to empty
     const { searchTerm } = useOutletContext() || { searchTerm: '' };
     const [tasks, setTasks] = useState([]);
+    const [stats, setStats] = useState({ completed: 0, overdue: 0 });
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
@@ -29,13 +30,16 @@ const Dashboard = () => {
             const user = JSON.parse(localStorage.getItem('user'));
             const response = await axios.get('/tasks');
 
-            // Filter: Active tasks assigned to CURRENT USER
-            const activeTasks = response.data.filter(t =>
-                t.status !== 'COMPLETED' &&
-                t.employeeId === user.id
-            );
+            // Filter: All tasks for CURRENT USER
+            const userTasks = response.data.filter(t => t.employeeId === user.id);
 
-            setTasks(activeTasks);
+            // Calculate Stats
+            const completed = userTasks.filter(t => t.status === 'COMPLETED').length;
+            const active = userTasks.filter(t => t.status !== 'COMPLETED');
+            const overdue = active.filter(t => t.dueDate && new Date(t.dueDate) < new Date()).length;
+
+            setStats({ completed, overdue });
+            setTasks(active);
         } catch (error) {
             console.error("Error fetching tasks:", error);
         } finally {
@@ -99,7 +103,7 @@ const Dashboard = () => {
                         </div>
                     </div>
                     <div>
-                        <h3 className="text-3xl font-black text-slate-800 mb-1">12</h3>
+                        <h3 className="text-3xl font-black text-slate-800 mb-1">{stats.completed}</h3>
                         <p className="text-slate-400 text-sm font-bold">Completed this week</p>
                     </div>
                 </div>
@@ -111,7 +115,7 @@ const Dashboard = () => {
                         </div>
                     </div>
                     <div>
-                        <h3 className="text-3xl font-black text-slate-800 mb-1">2</h3>
+                        <h3 className="text-3xl font-black text-slate-800 mb-1">{stats.overdue}</h3>
                         <p className="text-slate-400 text-sm font-bold">Overdue Tasks</p>
                     </div>
                 </div>

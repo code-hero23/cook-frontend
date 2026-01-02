@@ -28,7 +28,9 @@ const MapView = () => {
 
     const fetchTasks = async () => {
         try {
+            const user = JSON.parse(localStorage.getItem('user'));
             const response = await axios.get('/tasks');
+            const myTasks = response.data.filter(t => t.employeeId === user.id);
 
             // Filter and Enhance tasks with Mock Coordinates if missing
             // In production, effective geocoding or saved lat/long on Project is required.
@@ -42,7 +44,7 @@ const MapView = () => {
                 return null;
             };
 
-            const enhancedTasks = response.data.map((task, index) => {
+            const enhancedTasks = myTasks.map((task, index) => {
                 // Generates a deterministic small offset based on task ID to prevent perfect overlap
                 const pseudoRandom = (seed) => {
                     let value = 0;
@@ -76,7 +78,7 @@ const MapView = () => {
                 }
 
                 // 3. Fallback Simulation (Bangalore Circle)
-                const angle = (index / (response.data.length || 1)) * Math.PI * 2;
+                const angle = (index / (myTasks.length || 1)) * Math.PI * 2;
                 const radius = 0.05;
                 return {
                     ...task,

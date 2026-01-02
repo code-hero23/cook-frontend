@@ -28,9 +28,10 @@ const Tasks = () => {
 
     const fetchTasks = async () => {
         try {
+            const user = JSON.parse(localStorage.getItem('user'));
             const response = await axios.get('/tasks');
-            // Mock filter for "My Tasks" - ideally backend handles this
-            const activeTasks = response.data; // Assuming all for now or filtered by backend
+            // Mock filter for "My Tasks" - ideal way is backend filtering, implementing frontend first
+            const activeTasks = response.data.filter(t => t.employeeId === user.id);
             setTasks(activeTasks);
         } catch (error) {
             console.error(error);
