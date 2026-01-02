@@ -6,13 +6,13 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const ClientAccess = () => {
   const { projects } = useApp();
-  const [selectedProjectId, setSelectedProjectId] = useState("");
+  const [selectedProjectCode, setSelectedProjectCode] = useState("");
   const [generatedLink, setGeneratedLink] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [showResults, setShowResults] = useState(false);
 
   // Get selected project details for display
-  const selectedProject = projects.find(p => p.projectId === selectedProjectId);
+  const selectedProject = projects.find(p => p.projectCode === selectedProjectCode);
 
   const filteredProjects = React.useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
@@ -20,28 +20,26 @@ const ClientAccess = () => {
     return projects.filter((p) => {
       return (
         p.name?.toLowerCase().includes(q) ||
-        p.projectId?.toLowerCase().includes(q) ||
+        p.projectCode?.toLowerCase().includes(q) ||
         p.clientName?.toLowerCase().includes(q)
       );
     });
   }, [projects, searchQuery]);
 
   const handleSelect = (p) => {
-    setSelectedProjectId(p.projectId);
+    setSelectedProjectCode(p.projectCode);
     setSearchQuery(""); // Clear search
     setShowResults(false);
     setGeneratedLink(""); // Reset link on new selection
   };
 
-
-
   const handleGenerate = async () => {
-    if (!selectedProjectId) {
+    if (!selectedProjectCode) {
       alert("Select a project first");
       return;
     }
 
-    const project = projects.find((p) => p.projectId === selectedProjectId);
+    const project = projects.find((p) => p.projectCode === selectedProjectCode);
 
     try {
       const res = await axios.get(`/projects/${project.id}/access-link`);
@@ -125,7 +123,7 @@ const ClientAccess = () => {
                       {filteredProjects.length > 0 ? (
                         filteredProjects.map((p) => (
                           <button
-                            key={p.projectId}
+                            key={p.projectCode}
                             onClick={() => handleSelect(p)}
                             className="w-full flex items-center gap-4 p-3.5 rounded-2xl hover:bg-brand-50 
                                        text-left transition-all group active:scale-[0.99]"
@@ -140,7 +138,7 @@ const ClientAccess = () => {
                               </p>
                               <div className="flex items-center gap-2 mt-0.5">
                                 <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-lg group-hover:bg-brand-200/50 group-hover:text-brand-700 transition-colors">
-                                  {p.projectId}
+                                  {p.projectCode}
                                 </span>
                                 <p className="text-[11px] text-slate-400 font-medium truncate">
                                   {p.clientName}
@@ -188,11 +186,11 @@ const ClientAccess = () => {
                       <div>
                         <p className="text-[10px] font-black text-brand-500 uppercase tracking-tighter">Current Selection</p>
                         <p className="font-black text-slate-900 text-lg leading-tight">{selectedProject.name}</p>
-                        <p className="text-xs text-slate-500 font-medium mt-0.5">{selectedProject.clientName} • ID: {selectedProject.projectId}</p>
+                        <p className="text-xs text-slate-500 font-medium mt-0.5">{selectedProject.clientName} • ID: {selectedProject.projectCode}</p>
                       </div>
                     </div>
                     <button
-                      onClick={() => setSelectedProjectId("")}
+                      onClick={() => setSelectedProjectCode("")}
                       className="bg-white text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all p-2.5 rounded-xl shadow-sm"
                     >
                       <X size={18} />
@@ -205,9 +203,9 @@ const ClientAccess = () => {
             {/* GENERATE BTN */}
             <button
               onClick={handleGenerate}
-              disabled={!selectedProjectId}
+              disabled={!selectedProjectCode}
               className={`w-full flex items-center justify-center gap-3 rounded-2xl px-8 py-5 font-black text-base transition-all shadow-2xl
-                         ${selectedProjectId
+                         ${selectedProjectCode
                   ? 'bg-brand-500 text-white hover:bg-orange-600 hover:shadow-brand-500/20 active:scale-[0.98]'
                   : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`}
             >
