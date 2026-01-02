@@ -15,7 +15,11 @@ const LiveCameraCapture = ({ onCapture }) => {
         try {
             setError(null);
             const mediaStream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: 'environment' }
+                video: {
+                    facingMode: 'environment',
+                    width: { ideal: 1920 },
+                    height: { ideal: 1080 }
+                }
             });
             setStream(mediaStream);
             if (videoRef.current) {
@@ -98,7 +102,7 @@ const LiveCameraCapture = ({ onCapture }) => {
                 },
                 { enableHighAccuracy: true }
             );
-        }, 'image/jpeg', 0.8);
+        }, 'image/jpeg', 1.0);
 
     }, [onCapture, stream]);
 
