@@ -10,9 +10,8 @@ const api = axios.create({
 // Request Interceptor: Attach Token
 api.interceptors.request.use(
     (config) => {
-        // Get token from localStorage (assuming it's stored as 'token')
-        // Adjust key if your Login.jsx stores it differently (e.g. inside a user object)
-        const token = localStorage.getItem("token");
+        // Get token from localStorage (token for Admin/Employee, clientToken for Client)
+        const token = localStorage.getItem("token") || localStorage.getItem("clientToken");
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
