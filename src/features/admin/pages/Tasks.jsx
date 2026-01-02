@@ -446,7 +446,7 @@ const Tasks = () => {
             {/* Left: Image Proof */}
             <div className="flex-1 bg-black relative min-h-[300px] md:h-auto group">
               <img
-                src={`http://localhost:5000${viewingTask.evidence[0].url}`}
+                src={`${(import.meta.env.VITE_API_URL || "http://localhost:5000/api").replace(/\/api$/, '')}${viewingTask.evidence[0].url}`}
                 alt="Evidence"
                 className="absolute inset-0 w-full h-full object-contain"
               />
