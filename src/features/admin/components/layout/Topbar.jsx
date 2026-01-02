@@ -84,22 +84,58 @@ const Topbar = ({ onToggleSidebar }) => {
     const timestamp = new Date().toISOString().split('T')[0];
 
     if (type === 'projects') {
-      // Project Headers
+      // Full Project Details
       const map = {
-        projectCode: "Project ID", name: "Name", clientName: "Client",
-        startDate: "Start Date", deadline: "Deadline", status: "Status",
-        paymentPercentage: "Completion (%)"
+        projectCode: "Project ID",
+        name: "Project Name",
+        clientFirstName: "Client First Name",
+        clientLastName: "Client Last Name",
+        clientEmail: "Client Email",
+        clientPhone: "Client Phone",
+        spouseName: "Spouse Name",
+        spousePhone: "Spouse Phone",
+        location: "Location",
+        budget: "Budget",
+        status: "Status",
+        paymentPercentage: "Completion (%)",
+        timelineDuration: "Timeline (Days)",
+        startDate: "Start Date",
+        deadline: "Deadline",
+        handingOverMonth: "Handover Month",
+        handingOverYear: "Handover Year",
+        billingName: "Billing Name",
+        billingAddress: "Billing Address",
+        billingPhone: "Billing Phone",
+        gstin: "GSTIN",
+        cpNumber: "CP Number"
       };
       downloadCsv(`Projects_Export_${timestamp}.csv`, projects, map);
     } else if (type === 'tasks') {
       const map = {
-        title: "Task", status: "Status", priority: "Priority",
-        stage: "Stage", startDate: "Start", dueDate: "Due", type: "Type"
+        id: "Task ID",
+        title: "Task Title",
+        description: "Description",
+        status: "Status",
+        priority: "Priority",
+        stage: "Stage",
+        type: "Type",
+        startDate: "Start Date",
+        dueDate: "Due Date",
+        completedAt: "Completed Date",
+        projectId: "Project ID",
+        employeeId: "Assigned To (ID)"
       };
       downloadCsv(`Tasks_Export_${timestamp}.csv`, tasks, map);
     } else if (type === 'employees') {
       const map = {
-        name: "Name", role: "Role", email: "Email", phone: "Phone", status: "Status"
+        id: "Employee ID",
+        name: "Name",
+        email: "Email",
+        phone: "Phone",
+        role: "Role",
+        department: "Department",
+        status: "Status",
+        joinedAt: "Joined Date"
       };
       downloadCsv(`Employees_Export_${timestamp}.csv`, employees, map);
     }
