@@ -103,6 +103,38 @@ const UnifiedLogin = () => {
         { id: "client", label: "Client", icon: FolderKey, color: "orange" },
     ];
 
+    // Auto-Login for Clients via Link
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get("token");
+        if (token) {
+            try {
+                const decoded = JSON.parse(atob(token));
+                if (decoded.projectId) {
+                    setRole("client");
+                    setFormData(prev => ({ ...prev, projectId: decoded.projectId }));
+                    // Optional: You could auto-submit here if you trust the token strictly
+                    // But for security, usually you want them to input password OR the token implies a temporary authed session.
+                    // The 'ClientAccess.jsx' prompt implies "one-click login", so let's try to auto-authenticate if the token IS the auth.
+                    // However, ClientAccess.jsx generates a simple base64 of ID+Email. That is NOT a secure auth token.
+                    // It's just a pre-fill mechanism unless we change the backend to accept this specific token type.
+                    // Given the current backend 'clientController.login' requires 'password', this token IS NOT enough for full login.
+                    // It only pre-fills the Project ID.
+
+                    // User Request: "Generate secure, one-click login links".
+                    // To support TRUE one-click, we need a backend change to accept a 'magic link' token or similar.
+                    // OR we change the frontend to just pre-fill.
+                    // Looking at ClientAccess.jsx: "This encrypted URL bypasses standard login... instant access".
+                    // PROPOSAL: We should implement a real 'magic-login' endpoint or update client login to accept this token if signed.
+                    // BUT for now, strict adherence to current backend:
+                    // I will purely Pre-fill the Project ID.
+                }
+            } catch (e) {
+                console.error("Invalid token");
+            }
+        }
+    }, []);
+
     return (
         <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4">
             {/* Background elements */}

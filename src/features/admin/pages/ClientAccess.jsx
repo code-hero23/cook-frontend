@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useApp } from "../context/AppContext.jsx";
+import axios from "../../../shared/utils/axios"; // Import Axios
 import { Link2, Copy, Search, User, Globe, Hash, X, Lock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -32,7 +33,9 @@ const ClientAccess = () => {
     setGeneratedLink(""); // Reset link on new selection
   };
 
-  const handleGenerate = () => {
+
+
+  const handleGenerate = async () => {
     if (!selectedProjectId) {
       alert("Select a project first");
       return;
@@ -40,16 +43,17 @@ const ClientAccess = () => {
 
     const project = projects.find((p) => p.projectId === selectedProjectId);
 
-    // We'll use a simple base64 token for now as per previous logic
-    const token = btoa(
-      JSON.stringify({
-        projectId: project.projectId,
-        email: project.clientEmail,
-      })
-    );
-
-    const url = `${window.location.origin}/client/login?token=${encodeURIComponent(token)}`;
-    setGeneratedLink(url);
+    try {
+      const res = await axios.get(`/projects/${project.id}/access-link`);
+      // The backend returns { token, url }
+      // We can use the URL directly provided by backend, OR construct it if we want custom domain control.
+      // Backend returns: url: `${process.env.FRONTEND_URL}/client/login?token=${token}`
+      // This is safer.
+      setGeneratedLink(res.data.url || `${window.location.origin}/client/login?token=${res.data.token}`);
+    } catch (err) {
+      console.error("Error generating link:", err);
+      alert("Failed to generate secure link");
+    }
   };
 
   const copyLink = async () => {
