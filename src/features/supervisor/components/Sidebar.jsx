@@ -8,7 +8,8 @@ import {
     Settings,
     UserCircle,
     ChevronLeft,
-    Shield
+    Shield,
+    MessageSquare
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -24,6 +25,7 @@ const Sidebar = ({ isOpen, setIsOpen, isMobile }) => {
     const links = [
         { label: 'Dashboard', path: '/supervisor/dashboard', icon: LayoutDashboard },
         { label: 'My Tasks', path: '/supervisor/tasks', icon: ClipboardList },
+        { label: 'Team Chat', path: '/supervisor/chat', icon: MessageSquare },
         { label: 'Map View', path: '/supervisor/map', icon: MapPin }, // Placeholder for future
         { label: 'Profile', path: '/supervisor/profile', icon: UserCircle },
     ];

@@ -5,6 +5,7 @@ import Tasks from './pages/Tasks';
 import TaskDetail from './pages/TaskDetail';
 import Profile from './pages/Profile';
 import MapView from './pages/MapView';
+import Chat from './pages/Chat';
 
 const SupervisorApp = () => {
     return (
@@ -15,6 +16,7 @@ const SupervisorApp = () => {
                 <Route path="tasks" element={<Tasks />} />
                 <Route path="tasks/:taskId" element={<TaskDetail />} />
                 <Route path="map" element={<MapView />} />
+                <Route path="chat" element={<Chat />} />
                 <Route path="profile" element={<Profile />} />
             </Route>
         </Routes>
