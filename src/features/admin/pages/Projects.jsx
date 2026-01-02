@@ -413,6 +413,17 @@ const Projects = () => {
                   />
                 </div>
                 <div>
+                  <label className="block text-xs text-slate-500 mb-1">Project Timeline</label>
+                  <select
+                    className="w-full border border-slate-200 rounded-lg px-2 py-1.5"
+                    value={form.timelineDuration || 45} // Default 45
+                    onChange={(e) => setForm({ ...form, timelineDuration: parseInt(e.target.value) })}
+                  >
+                    <option value={45}>45 Days (Standard)</option>
+                    <option value={30}>30 Days (Fast Track)</option>
+                  </select>
+                </div>
+                <div>
                   <label className="block text-xs text-slate-500 mb-1">Client Access Password</label>
                   <input
                     type="password"

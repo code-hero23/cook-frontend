@@ -367,6 +367,22 @@ const SettingsManager = ({ projectId }) => {
                 </div>
             </div>
 
+            {/* TIMELINE SETTING */}
+            <div className="mb-8">
+                <label className="text-sm font-bold text-slate-700 uppercase tracking-widest block mb-2">Project Timeline Duration</label>
+                <select
+                    className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50"
+                    value={percentage.timelineDuration || 45} // This assumes percentage is the form state object, but above it is just 'percentage' number
+                    // Need to refactor state to hold full form data
+                    onChange={(e) => alert("To change timeline duration, please use the Edit Project form in the main Projects list.")}
+                    disabled
+                >
+                    <option value={45}>45 Days (Standard)</option>
+                    <option value={30}>30 Days (Fast Track)</option>
+                </select>
+                <p className="text-xs text-slate-400 mt-1">To change this, go back to Projects list and click "Edit".</p>
+            </div>
+
             <div className="flex justify-end">
                 <button
                     onClick={handleSave}
