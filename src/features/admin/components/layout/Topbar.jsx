@@ -37,17 +37,17 @@ const Topbar = ({ onToggleSidebar }) => {
 
     // Limit results to 3 per category to avoid clutter
     const matchedProjects = projects
-      .filter(p => p.name.toLowerCase().includes(lowerQ) || p.projectId.toLowerCase().includes(lowerQ))
+      .filter(p => (p.name || "").toLowerCase().includes(lowerQ) || (p.projectId || "").toLowerCase().includes(lowerQ))
       .slice(0, 3)
       .map(p => ({ type: "Project", label: p.name, sub: p.projectId, id: p.projectId, path: "/projects" }));
 
     const matchedEmployees = employees
-      .filter(e => e.name.toLowerCase().includes(lowerQ))
+      .filter(e => (e.name || "").toLowerCase().includes(lowerQ))
       .slice(0, 3)
       .map(e => ({ type: "Employee", label: e.name, sub: e.role, id: e.id, path: "/employees" }));
 
     const matchedTasks = tasks
-      .filter(t => t.title.toLowerCase().includes(lowerQ))
+      .filter(t => (t.title || "").toLowerCase().includes(lowerQ))
       .slice(0, 3)
       .map(t => ({ type: "Task", label: t.title, sub: t.status, id: t.id, path: "/tasks" }));
 
