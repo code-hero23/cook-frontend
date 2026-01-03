@@ -15,42 +15,34 @@ import Issues from "./pages/Issues";
 import { TaskProvider } from "./context/TaskContext";
 
 
-import { ToastProvider } from "./components/ToastProvider";
+// ToastProvider removed
 
 function App() {
   return (
-    <ToastProvider>
-      <TaskProvider> {/* ✅ WRAP WHOLE APP */}
+    <TaskProvider>
+      <Routes>
+        {/* Public */}
+        <Route path="login" element={<Navigate to="/login" replace />} />
 
-        <>
-          <Routes>
+        {/* Protected Layout */}
+        <Route path="" element={<Layout />}>
+          <Route index element={<Dashboard />} />
 
-            {/* Public */}
-            <Route path="login" element={<Navigate to="/login" replace />} />
+          {/* All Tasks */}
+          <Route path="tasks" element={<AllTasks />} />
 
-            {/* Protected Layout */}
-            <Route path="" element={<Layout />}>
+          {/* Specific Project Tasks */}
+          <Route path="projects" element={<Projects />} />
+          <Route path="project/:projectId" element={<ProjectTasks />} />
 
-              <Route index element={<Dashboard />} />
+          <Route path="chat" element={<Chat />} />
+          {/* Notifications Removed */}
+          <Route path="email" element={<Email />} />
+          <Route path="issues" element={<Issues />} />
 
-              {/* All Tasks */}
-              <Route path="tasks" element={<AllTasks />} />
-
-              {/* Specific Project Tasks */}
-              <Route path="projects" element={<Projects />} />
-              <Route path="project/:projectId" element={<ProjectTasks />} />
-
-              <Route path="chat" element={<Chat />} />
-              {/* Notifications Removed */}
-              <Route path="email" element={<Email />} />
-              <Route path="issues" element={<Issues />} />
-
-            </Route>
-
-          </Routes>
-        </>
-      </TaskProvider>
-    </ToastProvider>
+        </Route>
+      </Routes>
+    </TaskProvider>
   );
 }
 

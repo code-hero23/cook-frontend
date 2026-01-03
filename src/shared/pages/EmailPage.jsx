@@ -1,0 +1,378 @@
+import React, { useState, useEffect } from 'react';
+import axios from '../utils/axios';
+import { Mail, Send, Plus, Inbox, FileText, Search, User, Paperclip, X, Menu, ChevronLeft } from 'lucide-react';
+import toast from 'react-hot-toast';
+
+const EmailPage = () => {
+    const [emails, setEmails] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState('inbox');
+    const [showCompose, setShowCompose] = useState(false);
+    const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+    // Compose State
+    const [toUser, setToUser] = useState(null); // { id, name, email }
+    const [userSearchQuery, setUserSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [subject, setSubject] = useState('');
+    const [message, setMessage] = useState('');
+    const [attachments, setAttachments] = useState([]);
+
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+    // Fetch Emails
+    useEffect(() => {
+        fetchEmails();
+        if (activeTab === 'inbox') {
+            markEmailsRead();
+        }
+        if (window.innerWidth < 640) setMobileSidebarOpen(false);
+    }, [activeTab]);
+
+    const markEmailsRead = async () => {
+        try {
+            await axios.post('/emails/mark-all-read', { userId: user.id });
+        } catch (error) {
+            console.error("Error marking emails as read:", error);
+        }
+    };
+
+    const fetchEmails = async () => {
+        setLoading(true);
+        try {
+            const res = await axios.get(`/emails?userId=${user.id}&folder=${activeTab}`);
+            setEmails(res.data);
+        } catch (error) {
+            console.error("Error fetching emails:", error);
+            toast.error("Failed to fetch emails");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // User Search
+    useEffect(() => {
+        if (!userSearchQuery) {
+            setSearchResults([]);
+            return;
+        }
+        const delayDebounceFn = setTimeout(async () => {
+            try {
+                const res = await axios.get(`/emails/users?query=${userSearchQuery}`);
+                setSearchResults(res.data);
+            } catch (error) {
+                console.error("Error searching users:", error);
+            }
+        }, 300);
+
+        return () => clearTimeout(delayDebounceFn);
+    }, [userSearchQuery]);
+
+
+    const handleSend = async (isDraft = false) => {
+        if (!isDraft && (!toUser || !subject || !message)) {
+            toast.error("Please fill all required fields");
+            return;
+        }
+
+        try {
+            await axios.post('/emails', {
+                senderId: user.id,
+                receiverId: toUser?.id,
+                subject,
+                content: message,
+                isDraft,
+                attachments: attachments.length > 0 ? attachments : null
+            });
+
+            toast.success(isDraft ? "Draft saved" : "Email sent successfully");
+            setShowCompose(false);
+            resetCompose();
+            if (activeTab === (isDraft ? 'draft' : 'sent')) {
+                fetchEmails(); // Refresh if in relevant folder
+            }
+        } catch (error) {
+            console.error("Error sending email:", error);
+            toast.error("Failed to send email");
+        }
+    };
+
+    const resetCompose = () => {
+        setToUser(null);
+        setUserSearchQuery('');
+        setSubject('');
+        setMessage('');
+        setAttachments([]);
+    };
+
+    const handleFileChange = (e) => {
+        const files = Array.from(e.target.files).map(f => ({ name: f.name, url: '#' }));
+        setAttachments(prev => [...prev, ...files]);
+    };
+
+    const removeAttachment = (index) => {
+        setAttachments(prev => prev.filter((_, i) => i !== index));
+    };
+
+    return (
+        <div className="flex flex-col h-full bg-gray-50 p-0 sm:p-6 relative">
+            {/* Header */}
+            <div className="flex justify-between items-center p-4 sm:p-0 sm:mb-6 bg-white sm:bg-transparent shadow-sm sm:shadow-none z-10">
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+                        className="sm:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-full"
+                    >
+                        <Menu size={20} />
+                    </button>
+                    <h1 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center gap-2">
+                        <Mail className="text-orange-600 hidden sm:block" /> Email Center
+                    </h1>
+                </div>
+                <button
+                    onClick={() => setShowCompose(true)}
+                    className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-full sm:rounded-lg flex items-center gap-2 shadow-lg shadow-orange-200 transition-all active:scale-95"
+                >
+                    <Plus size={18} /> <span className="hidden sm:inline">Compose</span>
+                </button>
+            </div>
+
+            <div className="flex-1 flex flex-col sm:flex-row gap-6 overflow-hidden relative">
+                {/* Sidebar Overlay for Mobile */}
+                {mobileSidebarOpen && (
+                    <div
+                        className="fixed inset-0 bg-black/50 z-20 sm:hidden"
+                        onClick={() => setMobileSidebarOpen(false)}
+                    />
+                )}
+
+                {/* Sidebar */}
+                <div className={`
+                    fixed sm:static inset-y-0 left-0 w-[280px] sm:w-64 bg-white rounded-r-2xl sm:rounded-xl shadow-2xl sm:shadow-sm border-r sm:border border-gray-100 p-4 h-full
+                    transform transition-transform duration-300 z-30
+                    ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full sm:translate-x-0'}
+                `}>
+                    <div className="flex justify-between items-center mb-6 sm:hidden">
+                        <h2 className="font-bold text-lg px-2">Mailboxes</h2>
+                        <button onClick={() => setMobileSidebarOpen(false)} className="p-2 hover:bg-gray-100 rounded-full">
+                            <ChevronLeft size={20} />
+                        </button>
+                    </div>
+
+                    <div className="space-y-2">
+                        {[
+                            { id: 'inbox', label: 'Inbox', icon: Inbox },
+                            { id: 'sent', label: 'Sent', icon: Send },
+                            { id: 'draft', label: 'Drafts', icon: FileText },
+                        ].map(tab => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-all duration-200
+                                ${activeTab === tab.id
+                                        ? 'bg-orange-50 text-orange-600 shadow-sm ring-1 ring-orange-100'
+                                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
+                            >
+                                <tab.icon size={18} className={activeTab === tab.id ? 'stroke-[2.5px]' : ''} />
+                                {tab.label}
+                                {activeTab === tab.id && (
+                                    <span className="ml-auto w-1.5 h-1.5 rounded-full bg-orange-500" />
+                                )}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Quick Stats */}
+                    <div className="mt-auto hidden sm:block p-4 bg-gray-50 rounded-xl mt-8">
+                        <p className="text-xs text-gray-400 font-medium uppercase tracking-wider mb-2">Storage</p>
+                        <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                            <div className="w-[15%] h-full bg-orange-500 rounded-full" />
+                        </div>
+                        <p className="text-[10px] text-gray-500 mt-2 text-right">1.2 GB of 15 GB used</p>
+                    </div>
+                </div>
+
+                {/* Email List */}
+                <div className="flex-1 bg-white rounded-none sm:rounded-xl shadow-none sm:shadow-sm border-0 sm:border border-gray-100 overflow-hidden flex flex-col h-full">
+                    <div className="p-4 border-b border-gray-100 bg-gray-50/30 flex justify-between items-center sticky top-0 backdrop-blur-sm z-10">
+                        <h2 className="font-bold text-gray-800 capitalize flex items-center gap-2">
+                            {activeTab} <span className="px-2 py-0.5 bg-gray-200 text-gray-600 rounded-full text-[10px] font-bold">{emails.length}</span>
+                        </h2>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto custom-scrollbar p-2 sm:p-0">
+                        {loading ? (
+                            <div className="flex justify-center items-center h-40">
+                                <div className="animate-spin w-8 h-8 border-4 border-orange-100 border-t-orange-600 rounded-full"></div>
+                            </div>
+                        ) : emails.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+                                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                                    <Mail size={24} className="opacity-20" />
+                                </div>
+                                <p className="font-medium text-sm">No emails in {activeTab}</p>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col sm:block divide-y divide-gray-50">
+                                {emails.map(email => (
+                                    <div key={email.id} className="p-4 hover:bg-orange-50/30 transition-all cursor-pointer group rounded-xl sm:rounded-none mb-2 sm:mb-0 bg-white sm:bg-transparent border border-gray-100 sm:border-0 shadow-sm sm:shadow-none mx-2 sm:mx-0">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <div className="flex items-center gap-3">
+                                                <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full shrink-0 flex items-center justify-center text-sm font-bold text-white shadow-sm ring-2 ring-white
+                                                    ${activeTab === 'sent' ? 'bg-gradient-to-br from-indigo-400 to-indigo-600' : 'bg-gradient-to-br from-emerald-400 to-emerald-600'}`}>
+                                                    {(activeTab === 'sent' ? email.receiver?.name : email.sender?.name)?.charAt(0) || '?'}
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="text-sm font-bold text-gray-900 truncate">
+                                                        {activeTab === 'sent' ? `To: ${email.receiver?.name || 'Unknown'}` : (email.sender?.name || 'Unknown')}
+                                                    </p>
+                                                    <p className="text-[11px] font-medium text-gray-400">
+                                                        {new Date(email.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} • {new Date(email.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            {email.attachments && JSON.parse(email.attachments).length > 0 && (
+                                                <div className="bg-gray-100 p-1.5 rounded-lg">
+                                                    <Paperclip size={14} className="text-gray-500" />
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="sm:pl-[52px]">
+                                            <p className="text-sm font-bold text-gray-800 mb-1 leading-tight">{email.subject}</p>
+                                            <p className="text-xs sm:text-sm text-gray-500 line-clamp-2 leading-relaxed">{email.content}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Compose Modal */}
+            {showCompose && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center sm:p-4">
+                    <div className="bg-white w-full h-[95vh] sm:h-auto sm:max-h-[85vh] sm:max-w-xl rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col animate-slide-up sm:animate-zoom-in">
+                        {/* Modal Header */}
+                        <div className="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-2xl">
+                            <h3 className="font-bold text-lg text-gray-800">New Message</h3>
+                            <button
+                                onClick={() => setShowCompose(false)}
+                                className="text-gray-400 hover:text-gray-600 hover:bg-gray-200 p-2 rounded-full transition-colors"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div className="p-5 space-y-4 overflow-y-auto flex-1 custom-scrollbar">
+                            {/* To Field with Search */}
+                            <div className="relative z-20">
+                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">To</label>
+                                {toUser ? (
+                                    <div className="flex items-center gap-2 bg-orange-50 text-orange-700 px-3 py-2.5 rounded-xl border border-orange-100 animate-fade-in group">
+                                        <div className="w-6 h-6 rounded-full bg-orange-200 flex items-center justify-center text-[10px] font-bold">
+                                            {toUser.name.charAt(0)}
+                                        </div>
+                                        <span className="text-sm font-semibold">{toUser.name} <span className="opacity-70 font-normal hidden sm:inline">({toUser.email})</span></span>
+                                        <button onClick={() => setToUser(null)} className="ml-auto p-1 hover:bg-orange-200 rounded-full transition-colors">
+                                            <X size={14} />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div className="relative">
+                                            <Search size={18} className="absolute left-3.5 top-3 text-gray-400" />
+                                            <input
+                                                type="text"
+                                                placeholder="Search user by name..."
+                                                value={userSearchQuery}
+                                                onChange={e => setUserSearchQuery(e.target.value)}
+                                                className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all outline-none"
+                                            />
+                                        </div>
+                                        {searchResults.length > 0 && (
+                                            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-100 max-h-56 overflow-y-auto custom-scrollbar ring-1 ring-black/5">
+                                                {searchResults.map(u => (
+                                                    <button
+                                                        key={u.id}
+                                                        onClick={() => { setToUser(u); setUserSearchQuery(''); setSearchResults([]); }}
+                                                        className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-3 border-b border-gray-50 last:border-0 transition-colors"
+                                                    >
+                                                        <div className="w-9 h-9 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm font-bold border border-indigo-100">
+                                                            {u.name.charAt(0)}
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-sm font-bold text-gray-800">{u.name}</p>
+                                                            <p className="text-xs text-gray-500 font-medium">{u.role}</p>
+                                                        </div>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </>
+                                )}
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Subject</label>
+                                <input
+                                    type="text"
+                                    value={subject}
+                                    onChange={e => setSubject(e.target.value)}
+                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all outline-none font-medium text-gray-800 placeholder:font-normal"
+                                    placeholder="Brief subject..."
+                                />
+                            </div>
+
+                            <div className="flex-1 flex flex-col">
+                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Message</label>
+                                <textarea
+                                    value={message}
+                                    onChange={e => setMessage(e.target.value)}
+                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all outline-none resize-none flex-1 min-h-[150px]"
+                                    placeholder="Type your message here..."
+                                />
+                            </div>
+
+                            {/* Attachments */}
+                            <div className="pt-2">
+                                <label className="flex items-center gap-2 cursor-pointer w-fit px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 text-sm font-medium text-gray-600 hover:text-orange-600 transition-colors border border-gray-200 border-dashed">
+                                    <Paperclip size={18} /> <span>Attach Files</span>
+                                    <input type="file" multiple className="hidden" onChange={handleFileChange} />
+                                </label>
+                                {attachments.length > 0 && (
+                                    <div className="flex flex-wrap gap-2 mt-3">
+                                        {attachments.map((file, idx) => (
+                                            <div key={idx} className="bg-gray-100 text-gray-700 text-xs px-3 py-1.5 rounded-full flex items-center gap-2 font-medium border border-gray-200">
+                                                {file.name}
+                                                <button onClick={() => removeAttachment(idx)} className="hover:text-red-500 p-0.5 rounded-full hover:bg-gray-200"><X size={12} /></button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="p-4 sm:p-5 border-t border-gray-100 bg-gray-50 rounded-b-2xl flex justify-between items-center gap-4">
+                            <button
+                                onClick={() => handleSend(true)}
+                                className="flex-1 sm:flex-none text-gray-500 hover:text-gray-800 hover:bg-gray-200 px-4 py-2.5 rounded-xl text-sm font-bold transition-all"
+                            >
+                                Save Draft
+                            </button>
+                            <button
+                                onClick={() => handleSend(false)}
+                                className="flex-1 sm:flex-none bg-orange-600 text-white px-8 py-2.5 rounded-xl shadow-lg shadow-orange-200 hover:shadow-orange-300 hover:bg-orange-700 active:scale-95 transition-all flex items-center justify-center gap-2 font-bold"
+                            >
+                                <Send size={18} /> Send
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default EmailPage;

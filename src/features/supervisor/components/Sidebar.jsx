@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import axios from '../../../shared/utils/axios';
 import {
     LayoutDashboard,
     ClipboardList,
@@ -9,12 +10,31 @@ import {
     UserCircle,
     ChevronLeft,
     Shield,
-    MessageSquare
+    MessageSquare,
+    Mail
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Sidebar = ({ isOpen, setIsOpen, isMobile }) => {
     const navigate = useNavigate();
+    const [unreadCount, setUnreadCount] = useState(0);
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+    useEffect(() => {
+        const fetchUnread = async () => {
+            try {
+                if (!user.id) return;
+                const res = await axios.get(`/emails/unread?userId=${user.id}`);
+                setUnreadCount(res.data.count);
+            } catch (error) {
+                console.error("Error fetching unread count:", error);
+            }
+        };
+
+        fetchUnread();
+        const interval = setInterval(fetchUnread, 30000); // 30s Poll
+        return () => clearInterval(interval);
+    }, [user.id]);
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -26,6 +46,7 @@ const Sidebar = ({ isOpen, setIsOpen, isMobile }) => {
         { label: 'Dashboard', path: '/supervisor/dashboard', icon: LayoutDashboard },
         { label: 'My Tasks', path: '/supervisor/tasks', icon: ClipboardList },
         { label: 'Team Chat', path: '/supervisor/chat', icon: MessageSquare },
+        { label: 'Email', path: '/supervisor/email', icon: Mail },
         { label: 'Map View', path: '/supervisor/map', icon: MapPin }, // Placeholder for future
         { label: 'Profile', path: '/supervisor/profile', icon: UserCircle },
     ];
@@ -96,6 +117,12 @@ const Sidebar = ({ isOpen, setIsOpen, isMobile }) => {
                                     <link.icon className={`w-5 h-5 ${isActive ? 'text-indigo-500' : 'text-slate-500 group-hover:text-slate-300'}`} />
                                     <span className="font-medium text-sm">{link.label}</span>
                                     {isActive && <div className="absolute inset-0 bg-indigo-500/5 pointer-events-none" />}
+
+                                    {link.label === "Email" && unreadCount > 0 && (
+                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 bg-indigo-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center shadow-sm">
+                                            {unreadCount > 99 ? '99+' : unreadCount}
+                                        </span>
+                                    )}
                                 </>
                             )}
                         </NavLink>

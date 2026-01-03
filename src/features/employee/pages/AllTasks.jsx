@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from "react";
-import { useToast } from "../components/ToastProvider";
+import toast from 'react-hot-toast';
 import axios from "../../../shared/utils/axios";
 import { TaskContext } from "../context/TaskContext";
 import { useSearchParams } from "react-router-dom";
@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 const AllTasks = () => {
 
   const { tasks, projects, users, updateTaskStatus } = useContext(TaskContext);
-  const { addToast } = useToast();
+  // useToast hook removed
   const [searchParams] = useSearchParams();
 
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -94,7 +94,7 @@ const AllTasks = () => {
     const fileExt = file.name.split(".").pop().toLowerCase();
 
     if (!allowedExtensions.includes(fileExt)) {
-      addToast("Invalid file type! Only PDF, JPG, JPEG, PNG, DWG, OBJ, GLTF allowed.", "error");
+      toast.error("Invalid file type! Only PDF, JPG, JPEG, PNG, DWG, OBJ, GLTF allowed.");
       return;
     }
 
@@ -105,7 +105,7 @@ const AllTasks = () => {
   const handleSubmitFile = async () => {
 
     if (!uploadedFile) {
-      addToast("Please upload a file before marking task as completed.", "error");
+      toast.error("Please upload a file before marking task as completed.");
       return;
     }
 
@@ -125,11 +125,11 @@ const AllTasks = () => {
 
       // Update status with file data
       await updateTaskStatus(selectedTask.id, "Completed", fileData);
-      addToast("Task completed and proof uploaded!", "success");
+      toast.success("Task completed and proof uploaded!");
 
     } catch (err) {
       console.error("Upload failed", err);
-      addToast("File upload failed. Please try again.", "error");
+      toast.error("File upload failed. Please try again.");
       return; // process stops here on fail
     }
 

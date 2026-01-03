@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
+import axios from "../../../../shared/utils/axios";
 import {
   LayoutDashboard,
   Users,
@@ -9,7 +10,8 @@ import {
   Link2,
   MessageSquare,
   Bug,
-  ShieldCheck
+  ShieldCheck,
+  Mail
 } from "lucide-react";
 
 const navItems = [
@@ -18,7 +20,8 @@ const navItems = [
   { to: "/admin/projects", label: "Projects", icon: FolderKanban },
   { to: "/admin/tasks", label: "Tasks", icon: CheckSquare },
   { to: "/admin/issues", label: "Issues", icon: Bug },
-  { to: "/admin/chat", label: "Chat", icon: MessageSquare },  // 👈 NEW CHAT MENU
+  { to: "/admin/chat", label: "Chat", icon: MessageSquare },
+  { to: "/admin/email", label: "Email", icon: Mail },
   { to: "/admin/reports", label: "Reports", icon: FileSpreadsheet },
   { to: "/admin/client-access", label: "Client Access", icon: Link2 },
   { to: "/admin/settings", label: "Data & Backups", icon: ShieldCheck },
@@ -26,8 +29,25 @@ const navItems = [
 ];
 
 const Sidebar = ({ open, onClose }) => {
+  const [unreadCount, setUnreadCount] = useState(0);
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const isManager = (user.role || "").toUpperCase() === "MANAGER";
+
+  useEffect(() => {
+    const fetchUnread = async () => {
+      try {
+        if (!user.id) return;
+        const res = await axios.get(`/emails/unread?userId=${user.id}`);
+        setUnreadCount(res.data.count);
+      } catch (error) {
+        console.error("Error fetching unread count:", error);
+      }
+    };
+
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 30000);
+    return () => clearInterval(interval);
+  }, [user.id]);
 
   const filteredNavItems = navItems.filter(item => {
     if (isManager && item.label === "Employees") return false;
@@ -75,7 +95,7 @@ const Sidebar = ({ open, onClose }) => {
               onClick={onClose}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-5 py-3 mx-3 rounded-lg text-sm
-                 transition-all duration-200
+                 transition-all duration-200 relative
                 ${isActive
                   ? "bg-brand-500 text-white shadow-md"
                   : "text-gray-300 hover:bg-white/10 hover:text-white"
@@ -84,6 +104,11 @@ const Sidebar = ({ open, onClose }) => {
             >
               <Icon size={20} />
               <span>{label}</span>
+              {label === "Email" && unreadCount > 0 && (
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
             </NavLink>
           ))}
         </nav>

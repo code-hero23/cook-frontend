@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
+import axios from "../../../shared/utils/axios";
 import {
   LayoutDashboard,
   ListTodo,
@@ -12,17 +13,32 @@ import {
 } from "lucide-react";
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
+  const [unreadCount, setUnreadCount] = useState(0);
 
-  const employee = {
-    name: "Aswanth",
-    role: "Interior Designer"
-  };
+  const employee = JSON.parse(localStorage.getItem('user') || '{}');
+
+  useEffect(() => {
+    const fetchUnread = async () => {
+      try {
+        if (!employee.id) return;
+        const res = await axios.get(`/emails/unread?userId=${employee.id}`);
+        setUnreadCount(res.data.count);
+      } catch (error) {
+        console.error("Error fetching unread count:", error);
+      }
+    };
+    fetchUnread();
+
+    // Optional: Poll every 30s
+    const interval = setInterval(fetchUnread, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const getInitials = (name) =>
-    name.split(" ").map(word => word[0]).join("").toUpperCase();
+    (name || "User").split(" ").map(word => word[0]).join("").toUpperCase();
 
   const navItem = ({ isActive }) =>
-    `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200
+    `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 relative
     ${isActive
       ? "bg-[#FF7A00] text-white shadow"
       : "text-gray-300 hover:bg-[#162040] hover:text-white"
@@ -70,8 +86,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
             {getInitials(employee.name)}
           </div>
           <div>
-            <p className="font-semibold text-sm">{employee.name}</p>
-            <p className="text-xs text-gray-400">{employee.role}</p>
+            <p className="font-semibold text-sm">{employee.name || 'Employee'}</p>
+            <p className="text-xs text-gray-400">{employee.role || 'Role'}</p>
           </div>
         </div>
 
@@ -100,6 +116,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
           <NavLink to="/employee/email" className={navItem} onClick={() => setSidebarOpen(false)}>
             <Mail size={20} />
             <span>Email</span>
+            {unreadCount > 0 && (
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
           </NavLink>
 
           <NavLink to="/employee/issues" className={navItem} onClick={() => setSidebarOpen(false)}>

@@ -14,8 +14,9 @@ import ClientAccess from "./pages/ClientAccess.jsx";
 import ClientDashboard from "./pages/ClientDashboard.jsx";
 import ProjectManager from "./pages/ProjectManager.jsx";
 import Chat from "./pages/Chat.jsx";
+import Email from "./pages/Email.jsx"; // New Email Import
 import DevPanel from "./pages/DevPanel.jsx";
-import Settings from "./pages/Settings.jsx"; // Added Settings Import
+import Settings from "./pages/Settings.jsx";
 
 // 🔐 Protected Route Wrapper
 const ProtectedRoute = ({ children, requiredRole }) => {
@@ -109,6 +110,15 @@ const App = () => {
           element={
             <ProtectedRoute>
               <Chat />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="email"
+          element={
+            <ProtectedRoute>
+              <Email />
             </ProtectedRoute>
           }
         />
