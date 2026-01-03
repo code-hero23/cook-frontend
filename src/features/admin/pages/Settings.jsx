@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "../../../shared/utils/axios";
-import { Database, Download, RefreshCw, Server, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Database, Download, RefreshCw, Server, AlertCircle, CheckCircle2, Trash2 } from "lucide-react";
 
 const Settings = () => {
     const [backups, setBackups] = useState([]);
@@ -55,6 +55,21 @@ const Settings = () => {
         } catch (err) {
             console.error("Download failed", err);
             alert("Failed to download backup");
+        }
+    };
+
+    // Delete Backup
+    const handleDeleteBackup = async (filename) => {
+        if (!window.confirm(`Are you sure you want to permanently delete ${filename}?`)) return;
+
+        try {
+            await axios.delete(`/admin/backups/${filename}`);
+            // Optimistic Update or Refetch
+            setBackups(prev => prev.filter(b => b.filename !== filename));
+            alert("Backup deleted successfully");
+        } catch (err) {
+            console.error("Delete failed", err);
+            alert("Failed to delete backup: " + (err.response?.data?.error || err.message));
         }
     };
 
@@ -127,6 +142,12 @@ const Settings = () => {
                                                 className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors"
                                             >
                                                 <Download size={14} /> Download
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteBackup(bk.filename)}
+                                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors ml-2"
+                                            >
+                                                <Trash2 size={14} />
                                             </button>
                                         </td>
                                     </tr>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "../../../shared/utils/axios";
-import { Image as ImageIcon } from "lucide-react";
+import { Image as ImageIcon, Download } from "lucide-react";
 
 const Gallery = () => {
   const [images, setImages] = useState([]);
@@ -48,7 +48,19 @@ const Gallery = () => {
                 alt={img.caption || "Site Image"}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors">
+                <a
+                  href={`${apiUrl}${img.url}`}
+                  download
+                  target="_blank"
+                  rel="noreferrer"
+                  className="absolute top-2 right-2 p-2 bg-white/90 text-slate-700 rounded-full opacity-0 group-hover:opacity-100 transition-all hover:bg-white hover:text-indigo-600 shadow-sm"
+                  title="Download Image"
+                  onClick={(e) => e.stopPropagation()} // Prevent triggering parent clicks if any
+                >
+                  <Download size={16} />
+                </a>
+              </div>
               {img.caption && (
                 <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent text-white text-xs truncate opacity-0 group-hover:opacity-100 transition-opacity">
                   {img.caption}
