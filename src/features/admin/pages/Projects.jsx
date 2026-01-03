@@ -83,33 +83,31 @@ const Projects = () => {
     }
 
     // Ensure numeric types are converted if necessary (budget handled as string in form, float in DB? Prisma handles implied conversion often, but clean up is good)
-    // Sanitize payload for Prisma
-    const secureForm = { ...form };
+    // ALLOWED FIELDS WHITELIST
+    const allowedFields = [
+      "name", "projectCode", "clientFirstName", "clientLastName",
+      "clientEmail", "clientPhone", "spouseName", "spousePhone",
+      "location", "handingOverMonth", "handingOverYear", "budget",
+      "billingName", "billingPhone", "gstin", "cpNumber",
+      "startDate", "deadline", "timelineDuration", "clientPassword"
+    ];
 
-    // Handle Float
-    if (secureForm.budget) {
-      secureForm.budget = parseFloat(secureForm.budget);
-    } else {
-      delete secureForm.budget; // or set to null
-    }
-
-    // Handle Dates (Prisma DateTime expects ISO-8601 or Date object)
-    if (secureForm.startDate) secureForm.startDate = new Date(secureForm.startDate).toISOString();
-    if (secureForm.deadline) {
-      secureForm.deadline = new Date(secureForm.deadline).toISOString();
-    } else {
-      delete secureForm.deadline;
-    }
-
-    // Clean up empty strings for optional fields to avoid "Provided String, expected Float/Int/Date" errors
-    Object.keys(secureForm).forEach(key => {
-      if (secureForm[key] === "") {
-        delete secureForm[key];
+    const secureForm = {};
+    allowedFields.forEach(key => {
+      if (form[key] !== undefined && form[key] !== null && form[key] !== "") {
+        secureForm[key] = form[key];
       }
     });
 
-    // Remove password if empty during edit to avoid overwriting with empty string
-    if (editingId && !secureForm.clientPassword) {
+    // Handle Float conversions explicitly
+    if (secureForm.budget) secureForm.budget = parseFloat(secureForm.budget);
+
+    // Handle Dates
+    if (secureForm.startDate) secureForm.startDate = new Date(secureForm.startDate).toISOString();
+    if (secureForm.deadline) secureForm.deadline = new Date(secureForm.deadline).toISOString();
+
+    // Remove password if empty (it's already handled by '!= ""' check above, but for clarity/safety if logic changes)
+    if (editingId && !form.clientPassword) {
       delete secureForm.clientPassword;
     }
 

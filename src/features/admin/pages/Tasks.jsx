@@ -139,15 +139,27 @@ const Tasks = () => {
       return;
     }
 
-    const payload = { ...form };
-    if (!payload.startDate) payload.startDate = null;
-    if (!payload.dueDate) payload.dueDate = null;
+    // Sanitize Payload (Whitelist)
+    const allowedFields = [
+      "title", "projectId", "employeeId", "startDate", "dueDate",
+      "status", "priority", "type", "stage", "description"
+    ];
+
+    const payload = {};
+    allowedFields.forEach(key => {
+      if (form[key] !== undefined && form[key] !== null && form[key] !== "") {
+        payload[key] = form[key];
+      }
+    });
+
     if (payload.startDate) payload.startDate = new Date(payload.startDate).toISOString();
     if (payload.dueDate) payload.dueDate = new Date(payload.dueDate).toISOString();
 
-    payload.priority = payload.priority.toUpperCase();
-    payload.status = payload.status.toUpperCase();
+    payload.priority = (payload.priority || "MEDIUM").toUpperCase();
+    payload.status = (payload.status || "PENDING").toUpperCase();
     if (!payload.stage) payload.stage = null;
+
+
 
     if (editingId) updateTask(editingId, payload);
     else addTask(payload);
