@@ -541,7 +541,7 @@ const Tasks = () => {
                       </button>
                     )}
 
-                    {!isManager && (
+                    {user.role === 'SUPER_ADMIN' && (
                       <button
                         onClick={() => openEdit(t)}
                         className="inline-flex items-center gap-1 text-slate-600 bg-slate-100 hover:bg-orange-50 hover:text-orange-600 p-1.5 rounded-lg transition-colors border border-slate-200"

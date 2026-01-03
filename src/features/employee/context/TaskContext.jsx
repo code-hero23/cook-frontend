@@ -53,18 +53,25 @@ export const TaskProvider = ({ children }) => {
   const updateIssueStatus = async (issueId, newStatus, metadata = {}) => {
     try {
       const updates = {
-        status: newStatus,
-        resolutionDetails: newStatus === "Completed" ? {
-          resolvedBy: metadata.resolverName,
-          resolvedAt: metadata.resolutionTime,
-          context: metadata.issueContext,
-          proofFile: metadata.proofFile?.name
-        } : null
+        status: newStatus
       };
+
+      if (newStatus === "Completed") {
+        // Append resolution details to description as the schema doesn't support a separate field
+        const resolutionText = `\n\n[RESOLVED]\nBy: ${metadata.resolverName}\nAt: ${metadata.resolutionTime}\nContext: ${metadata.issueContext}`;
+
+        // We can't easily append without reading first, but since we have 'issues' state, we can find the issue
+        const issue = issues.find(i => i.id === issueId);
+        if (issue) {
+          updates.description = (issue.description || "") + resolutionText;
+        }
+      }
+
       await axios.put(`/tasks/${issueId}`, updates);
       setIssues(prev => prev.map(i => i.id === issueId ? { ...i, ...updates } : i));
     } catch (err) {
       console.error("Error updating issue status:", err);
+      alert(err.response?.data?.error || "Failed to update issue status. Please try again.");
     }
   };
 

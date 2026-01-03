@@ -118,6 +118,7 @@ export const AppProvider = ({ children }) => {
       );
     } catch (err) {
       console.error("Error updating project:", err);
+      alert(err.response?.data?.error || "Failed to update project. Please try again.");
     }
   };
 
@@ -127,6 +128,7 @@ export const AppProvider = ({ children }) => {
       setProjects((prev) => prev.filter((p) => p.id !== id));
     } catch (err) {
       console.error("Error deleting project:", err);
+      alert(err.response?.data?.error || "Failed to delete project.");
     }
   };
 
@@ -137,6 +139,7 @@ export const AppProvider = ({ children }) => {
       setTasks((prev) => [...prev, res.data]);
     } catch (err) {
       console.error("Error adding task:", err);
+      alert(err.response?.data?.error || "Failed to add task.");
     }
   };
 
@@ -146,6 +149,7 @@ export const AppProvider = ({ children }) => {
       setTasks((prev) => prev.map((t) => (t.id === taskId ? res.data : t)));
     } catch (err) {
       console.error("Error updating task:", err);
+      alert(err.response?.data?.error || "Failed to update task. Please try again.");
     }
   };
 

@@ -205,7 +205,7 @@ const Projects = () => {
                       <StatusBadge status={overdue ? "Overdue" : "Active"} />
                     </td>
                     <td className="py-2 pr-4 text-right">
-                      {!isManager ? (
+                      {user.role === 'SUPER_ADMIN' ? (
                         <div className="flex justify-end gap-2">
                           <Link
                             to={`/admin/projects/${p.id}/manage`}
