@@ -83,17 +83,44 @@ const ChatInterface = ({ projects = [], currentUser, role }) => {
         }
     };
 
-    const handleFileSelect = (e) => {
+    const handleFileSelect = async (e) => {
         const files = Array.from(e.target.files);
-        if (files.length > 0) {
-            // Mock file upload - in real app, these would be uploaded to S3 first
-            const newAttachments = files.map(file => ({
-                name: file.name,
-                type: file.type,
-                url: URL.createObjectURL(file), // Local preview URL
-                size: (file.size / 1024).toFixed(1) + ' KB'
+        if (files.length === 0) return;
+
+        const formData = new FormData();
+        files.forEach(file => formData.append('files', file));
+
+        const loadingToast = toast.loading("Uploading...");
+
+        try {
+            const res = await axios.post('/upload', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            // Server returns [{name, url, type, size}] - URL is relative /uploads/...
+            // We need to prepend base URL if needed, but relative usually works if served from same domain or handled by axios baseID
+            // Actually axios base URL is set, so we might need full URL if showing in img tag?
+            // "url": "/uploads/..."
+            // If API base is http://localhost:5000/api, and uploads are at http://localhost:5000/uploads
+            // Then the Image src should be "http://localhost:5000/uploads/..."
+            // Let's adjust the URL on frontend if needed, or backend.
+            // Backend returns "/uploads/filename".
+            // Let's assume axios.defaults.baseURL is "http://localhost:5000/api".
+            // So we need to go up one level.
+
+            const uploadedFiles = res.data.map(f => ({
+                ...f,
+                // If we are developing locally, we might need the full URL for the image tag to work if frontend/backend are on different ports (usually vite 5173 vs 5000)
+                // Let's prepend the server origin.
+                // We'll rely on a helper or just assume localhost:5000 for now or extract from axios config.
+                url: `${axios.defaults.baseURL.replace('/api', '')}${f.url}`
             }));
-            setAttachments(prev => [...prev, ...newAttachments]);
+
+            setAttachments(prev => [...prev, ...uploadedFiles]);
+            toast.success("Uploaded!", { id: loadingToast });
+        } catch (error) {
+            console.error("Upload failed", error);
+            toast.error("Upload failed", { id: loadingToast });
         }
     };
 
