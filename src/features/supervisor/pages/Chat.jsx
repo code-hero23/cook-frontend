@@ -36,16 +36,18 @@ const Chat = () => {
     );
 
     return (
-        <div className="h-[calc(100vh-100px)]">
-            <div className="mb-6">
+        <div className="flex flex-col h-[calc(100vh-64px)] sm:h-[calc(100vh-100px)] p-0">
+            <div className="mb-6 hidden sm:block">
                 <h1 className="text-2xl font-black text-slate-800">Team Chat</h1>
                 <p className="text-slate-500 font-medium text-sm">Communicate with your project teams</p>
             </div>
-            <ChatInterface
-                projects={projects}
-                currentUser={{ name: user.name || "Supervisor", id: user.id }}
-                role="SITE_SUPERVISOR"
-            />
+            <div className="flex-1 overflow-hidden">
+                <ChatInterface
+                    projects={projects}
+                    currentUser={{ name: user.name || "Supervisor", id: user.id }}
+                    role="SITE_SUPERVISOR"
+                />
+            </div>
         </div>
     );
 };

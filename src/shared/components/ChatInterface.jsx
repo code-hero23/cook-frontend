@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import axios from "../utils/axios";
 import {
     MessageSquare, Send, Search, User, MoreVertical,
-    Phone, Video, Info, Paperclip, Smile, Check, CheckCheck
+    Phone, Video, Info, Paperclip, Smile, Check, CheckCheck, ArrowLeft
 } from "lucide-react";
 
 const ChatInterface = ({ projects = [], currentUser, role }) => {
@@ -13,12 +13,18 @@ const ChatInterface = ({ projects = [], currentUser, role }) => {
     const messagesEndRef = useRef(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-    // Auto-select first project if available
+    // Auto-select first project if available - ONLY ON DESKTOP
     useEffect(() => {
-        if (projects.length > 0 && !activeProjectId) {
+        const isMobile = window.innerWidth < 640; // sm breakpoint
+        if (projects.length > 0 && !activeProjectId && !isMobile) {
             setActiveProjectId(projects[0].id);
         }
     }, [projects]);
+
+    // Handle back button on mobile
+    const handleBackToProjects = () => {
+        setActiveProjectId(null);
+    };
 
     // Fetch messages with polling
     useEffect(() => {
@@ -85,12 +91,12 @@ const ChatInterface = ({ projects = [], currentUser, role }) => {
     }, {});
 
     return (
-        <div className="flex h-[calc(100vh-100px)] bg-white rounded-2xl overflow-hidden shadow-2xl border border-gray-100 font-sans">
+        <div className="flex flex-col sm:flex-row h-full sm:h-[calc(100vh-100px)] bg-white sm:rounded-2xl overflow-hidden sm:shadow-2xl sm:border border-gray-100 font-sans">
 
             {/* SIDEBAR */}
-            <div className={`${isSidebarOpen ? 'w-full sm:w-80' : 'w-0'} bg-gray-50/50 border-r border-gray-100 flex flex-col transition-all duration-300 relative ${activeProjectId ? 'hidden sm:flex' : 'flex'}`}>
+            <div className={`w-full sm:w-80 bg-gray-50/50 border-r border-gray-100 flex flex-col transition-all duration-300 ${activeProjectId ? 'hidden sm:flex' : 'flex h-full'}`}>
                 {/* Sidebar Header */}
-                <div className="p-5 border-b border-gray-100 bg-white sticky top-0 z-10">
+                <div className="p-4 sm:p-5 border-b border-gray-100 bg-white sticky top-0 z-10">
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="text-xl font-bold text-gray-800 tracking-tight">Messages</h2>
                         <div className="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center">
@@ -147,9 +153,9 @@ const ChatInterface = ({ projects = [], currentUser, role }) => {
             </div>
 
             {/* MAIN CHAT AREA */}
-            <div className={`flex-1 flex flex-col bg-white overflow-hidden relative ${!activeProjectId ? 'hidden sm:flex' : 'flex'}`}>
+            <div className={`flex-1 flex flex-col bg-white overflow-hidden relative w-full h-full ${!activeProjectId ? 'hidden sm:flex' : 'flex'}`}>
                 {!activeProject ? (
-                    <div className="h-full flex flex-col items-center justify-center bg-gray-50/30 text-center p-8">
+                    <div className="h-full flex flex-col items-center justify-center bg-gray-50/30 text-center p-8 hidden sm:flex">
                         <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mb-6 animate-pulse">
                             <MessageSquare size={32} className="text-indigo-400" />
                         </div>
@@ -159,25 +165,25 @@ const ChatInterface = ({ projects = [], currentUser, role }) => {
                 ) : (
                     <>
                         {/* Chat Header */}
-                        <div className="h-16 px-6 bg-white border-b border-gray-100 flex items-center justify-between shadow-sm z-20">
-                            <div className="flex items-center gap-4">
-                                <button onClick={() => setActiveProjectId(null)} className="sm:hidden text-gray-500 hover:text-indigo-600">
-                                    <Search size={20} className="transform rotate-90" /> {/* Back Icon Placeholder */}
+                        <div className="h-16 px-4 sm:px-6 bg-white border-b border-gray-100 flex items-center justify-between shadow-sm z-20 shrink-0">
+                            <div className="flex items-center gap-3 sm:gap-4 overflow-hidden">
+                                <button onClick={handleBackToProjects} className="sm:hidden text-gray-500 hover:text-indigo-600 p-1">
+                                    <ArrowLeft size={20} />
                                 </button>
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-indigo-200">
+                                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-indigo-200 shrink-0">
                                     {activeProject.name.charAt(0)}
                                 </div>
-                                <div>
-                                    <h2 className="font-bold text-gray-800 text-sm sm:text-base">{activeProject.name}</h2>
+                                <div className="min-w-0">
+                                    <h2 className="font-bold text-gray-800 text-sm sm:text-base truncate">{activeProject.name}</h2>
                                     <div className="flex items-center gap-1.5">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                                        <span className="text-xs text-green-600 font-medium tracking-wide">Active Project</span>
+                                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse shrink-0"></span>
+                                        <span className="text-xs text-green-600 font-medium tracking-wide truncate">Active Project</span>
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-4 text-gray-400">
-                                <button className="hover:text-indigo-600 hover:bg-indigo-50 p-2 rounded-full transition-all"><Phone size={18} /></button>
-                                <button className="hover:text-indigo-600 hover:bg-indigo-50 p-2 rounded-full transition-all"><Video size={18} /></button>
+                            <div className="flex items-center gap-2 sm:gap-4 text-gray-400 shrink-0">
+                                <button className="hover:text-indigo-600 hover:bg-indigo-50 p-2 rounded-full transition-all hidden sm:block"><Phone size={18} /></button>
+                                <button className="hover:text-indigo-600 hover:bg-indigo-50 p-2 rounded-full transition-all hidden sm:block"><Video size={18} /></button>
                                 <button className="hover:text-indigo-600 hover:bg-indigo-50 p-2 rounded-full transition-all"><MoreVertical size={18} /></button>
                             </div>
                         </div>
@@ -205,7 +211,7 @@ const ChatInterface = ({ projects = [], currentUser, role }) => {
                                                             </span>
                                                         )}
                                                         <div
-                                                            className={`px-4 py-3 shadow-sm text-sm relative leading-relaxed
+                                                            className={`px-4 py-3 shadow-sm text-sm relative leading-relaxed break-words
                                                     ${isMe ?
                                                                     'bg-indigo-600 text-white rounded-2xl rounded-tr-sm shadow-indigo-100' :
                                                                     'bg-white text-gray-800 border border-gray-100 rounded-2xl rounded-tl-sm shadow-[0_2px_8px_rgba(0,0,0,0.02)]'}`
@@ -229,9 +235,9 @@ const ChatInterface = ({ projects = [], currentUser, role }) => {
                         </div>
 
                         {/* Input Area */}
-                        <div className="p-4 bg-white border-t border-gray-100">
+                        <div className="p-3 sm:p-4 bg-white border-t border-gray-100 shrink-0">
                             <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-2xl border border-transparent focus-within:border-indigo-200 focus-within:ring-4 focus-within:ring-indigo-50/50 transition-all shadow-inner">
-                                <button className="p-2 text-gray-400 hover:text-indigo-600 transition-colors"><Paperclip size={20} /></button>
+                                <button className="p-2 text-gray-400 hover:text-indigo-600 transition-colors hidden sm:block"><Paperclip size={20} /></button>
                                 <input
                                     type="text"
                                     value={newMessage}
@@ -240,7 +246,7 @@ const ChatInterface = ({ projects = [], currentUser, role }) => {
                                     placeholder="Type your message..."
                                     className="flex-1 bg-transparent border-none outline-none text-sm px-2 text-gray-700 placeholder:text-gray-400 font-medium"
                                 />
-                                <button className="p-2 text-gray-400 hover:text-indigo-600 transition-colors"><Smile size={20} /></button>
+                                <button className="p-2 text-gray-400 hover:text-indigo-600 transition-colors hidden sm:block"><Smile size={20} /></button>
                                 <button
                                     onClick={handleSend}
                                     disabled={!newMessage.trim()}
