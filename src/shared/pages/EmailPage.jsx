@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from '../utils/axios';
-import { Mail, Send, Plus, Inbox, FileText, Search, User, Paperclip, X, Menu, ChevronLeft } from 'lucide-react';
+import { Mail, Send, Plus, Inbox, FileText, Search, User, Paperclip, X, Menu, ChevronLeft, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const EmailPage = () => {
@@ -9,6 +9,7 @@ const EmailPage = () => {
     const [activeTab, setActiveTab] = useState('inbox');
     const [showCompose, setShowCompose] = useState(false);
     const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+    const [selectedEmail, setSelectedEmail] = useState(null);
 
     // Compose State
     const [toUser, setToUser] = useState(null); // { id, name, email }
@@ -192,18 +193,99 @@ const EmailPage = () => {
                     </div>
                 </div>
 
-                {/* Email List */}
+                {/* Email List or Detail View */}
                 <div className="flex-1 bg-white rounded-none sm:rounded-xl shadow-none sm:shadow-sm border-0 sm:border border-gray-100 overflow-hidden flex flex-col h-full">
-                    <div className="p-4 border-b border-gray-100 bg-gray-50/30 flex justify-between items-center sticky top-0 backdrop-blur-sm z-10">
-                        <h2 className="font-bold text-gray-800 capitalize flex items-center gap-2">
-                            {activeTab} <span className="px-2 py-0.5 bg-gray-200 text-gray-600 rounded-full text-[10px] font-bold">{emails.length}</span>
-                        </h2>
-                    </div>
 
-                    <div className="flex-1 overflow-y-auto custom-scrollbar p-2 sm:p-0">
+                    {/* Detail View Header */}
+                    {selectedEmail ? (
+                        <div className="flex items-center p-4 border-b border-gray-100 sticky top-0 bg-white z-10">
+                            <button
+                                onClick={() => setSelectedEmail(null)}
+                                className="mr-4 p-2 hover:bg-gray-100 rounded-full text-gray-500 transition-colors"
+                            >
+                                <ArrowLeft size={20} />
+                            </button>
+                            <h2 className="font-bold text-gray-800 text-lg truncate flex-1">{selectedEmail.subject}</h2>
+                            <span className="text-xs text-gray-500 font-medium bg-gray-50 px-3 py-1 rounded-full whitespace-nowrap">
+                                {new Date(selectedEmail.createdAt).toLocaleDateString()} • {new Date(selectedEmail.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                        </div>
+                    ) : (
+                        <div className="p-4 border-b border-gray-100 bg-gray-50/30 flex justify-between items-center sticky top-0 backdrop-blur-sm z-10">
+                            <h2 className="font-bold text-gray-800 capitalize flex items-center gap-2">
+                                {activeTab} <span className="px-2 py-0.5 bg-gray-200 text-gray-600 rounded-full text-[10px] font-bold">{emails.length}</span>
+                            </h2>
+                        </div>
+                    )}
+
+                    <div className="flex-1 overflow-y-auto custom-scrollbar p-2 sm:p-4">
                         {loading ? (
                             <div className="flex justify-center items-center h-40">
                                 <div className="animate-spin w-8 h-8 border-4 border-orange-100 border-t-orange-600 rounded-full"></div>
+                            </div>
+                        ) : selectedEmail ? (
+                            // DETAIL VIEW CONTENT
+                            <div className="max-w-3xl mx-auto space-y-6 animate-fade-in">
+                                {/* Sender/Receiver Info */}
+                                <div className="flex items-center justify-between bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                    <div className="flex items-center gap-4">
+                                        <div className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold text-white shadow-sm ring-4 ring-white
+                                            ${activeTab === 'sent' ? 'bg-gradient-to-br from-indigo-400 to-indigo-600' : 'bg-gradient-to-br from-emerald-400 to-emerald-600'}`}>
+                                            {(activeTab === 'sent' ? selectedEmail.receiver?.name : selectedEmail.sender?.name)?.charAt(0) || '?'}
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-bold text-gray-900">
+                                                {activeTab === 'sent' ? `To: ${selectedEmail.receiver?.name || 'Unknown'}` : `From: ${selectedEmail.sender?.name || 'Unknown'}`}
+                                            </p>
+                                            <p className="text-xs text-gray-500 font-medium">
+                                                {activeTab === 'sent' ? selectedEmail.receiver?.email : selectedEmail.sender?.email}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Body */}
+                                <div className="prose prose-sm max-w-none text-gray-800 leading-relaxed whitespace-pre-wrap pl-1">
+                                    {selectedEmail.content}
+                                </div>
+
+                                {/* Attachments */}
+                                {selectedEmail.attachments && (
+                                    <div className="border-t border-gray-100 pt-6 mt-8">
+                                        <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                            <Paperclip size={14} /> Attachments
+                                        </h4>
+                                        <div className="flex flex-wrap gap-4">
+                                            {(() => {
+                                                try {
+                                                    const atts = typeof selectedEmail.attachments === 'string'
+                                                        ? JSON.parse(selectedEmail.attachments)
+                                                        : selectedEmail.attachments;
+
+                                                    return atts.map((file, idx) => (
+                                                        <a
+                                                            key={idx}
+                                                            href={file.url}
+                                                            target="_blank"
+                                                            rel="noreferrer"
+                                                            className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-xl hover:border-orange-300 hover:shadow-md transition-all group min-w-[200px]"
+                                                        >
+                                                            <div className="w-10 h-10 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                                                <FileText size={20} />
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-sm font-bold text-gray-700 truncate">{file.name}</p>
+                                                                <p className="text-[10px] text-gray-400">Click to view</p>
+                                                            </div>
+                                                        </a>
+                                                    ));
+                                                } catch (e) {
+                                                    return <p className="text-sm text-red-500">Error loading attachments</p>;
+                                                }
+                                            })()}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         ) : emails.length === 0 ? (
                             <div className="flex flex-col items-center justify-center h-64 text-gray-400">
@@ -215,7 +297,11 @@ const EmailPage = () => {
                         ) : (
                             <div className="flex flex-col sm:block divide-y divide-gray-50">
                                 {emails.map(email => (
-                                    <div key={email.id} className="p-4 hover:bg-orange-50/30 transition-all cursor-pointer group rounded-xl sm:rounded-none mb-2 sm:mb-0 bg-white sm:bg-transparent border border-gray-100 sm:border-0 shadow-sm sm:shadow-none mx-2 sm:mx-0">
+                                    <div
+                                        key={email.id}
+                                        onClick={() => setSelectedEmail(email)}
+                                        className="p-4 hover:bg-orange-50/30 transition-all cursor-pointer group rounded-xl sm:rounded-none mb-2 sm:mb-0 bg-white sm:bg-transparent border border-gray-100 sm:border-0 shadow-sm sm:shadow-none mx-2 sm:mx-0"
+                                    >
                                         <div className="flex justify-between items-start mb-2">
                                             <div className="flex items-center gap-3">
                                                 <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full shrink-0 flex items-center justify-center text-sm font-bold text-white shadow-sm ring-2 ring-white
@@ -231,7 +317,7 @@ const EmailPage = () => {
                                                     </p>
                                                 </div>
                                             </div>
-                                            {email.attachments && JSON.parse(email.attachments).length > 0 && (
+                                            {email.attachments && (
                                                 <div className="bg-gray-100 p-1.5 rounded-lg">
                                                     <Paperclip size={14} className="text-gray-500" />
                                                 </div>
