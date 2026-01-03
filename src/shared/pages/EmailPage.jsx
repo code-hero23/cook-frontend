@@ -289,6 +289,7 @@ const EmailPage = () => {
                                                         <a
                                                             key={idx}
                                                             href={file.url}
+                                                            download
                                                             target="_blank"
                                                             rel="noreferrer"
                                                             className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-xl hover:border-orange-300 hover:shadow-md transition-all group min-w-[200px]"

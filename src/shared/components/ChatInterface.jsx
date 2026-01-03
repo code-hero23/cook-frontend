@@ -288,20 +288,26 @@ const ChatInterface = ({ projects = [], currentUser, role }) => {
                                                             {msgAttachments.length > 0 && (
                                                                 <div className="flex flex-wrap gap-2 mb-2">
                                                                     {msgAttachments.map((att, i) => (
-                                                                        <div key={i} className={`p-2 rounded-lg flex items-center gap-2 max-w-full 
-                                                                            ${isMe ? 'bg-indigo-500/50 hover:bg-indigo-500' : 'bg-gray-100 hover:bg-gray-200'} transition-colors cursor-pointer`}>
+                                                                        <a
+                                                                            key={i}
+                                                                            href={att.url}
+                                                                            download
+                                                                            target="_blank"
+                                                                            rel="noopener noreferrer"
+                                                                            className={`p-2 rounded-lg flex items-center gap-2 max-w-full text-left
+                                                                            ${isMe ? 'bg-indigo-500/50 hover:bg-indigo-500' : 'bg-gray-100 hover:bg-gray-200'} transition-colors cursor-pointer decoration-0`}
+                                                                        >
                                                                             {att.type?.startsWith('image/') ? (
                                                                                 <div className="relative group/img">
                                                                                     <ImageIcon size={16} />
-                                                                                    <img src={att.url} alt="attachment" className="w-20 h-20 object-cover rounded-md mt-1 hidden" />
                                                                                 </div>
                                                                             ) : <FileText size={16} />}
-                                                                            <div className="overflow-hidden">
+                                                                            <div className="overflow-hidden flex-1 min-w-0">
                                                                                 <p className="truncate text-xs font-medium">{att.name}</p>
                                                                                 <p className="text-[10px] opacity-70">{att.size}</p>
                                                                             </div>
-                                                                            <Download size={14} className="ml-1 opacity-70" />
-                                                                        </div>
+                                                                            <Download size={14} className="ml-1 opacity-70 shrink-0" />
+                                                                        </a>
                                                                     ))}
                                                                 </div>
                                                             )}

@@ -67,7 +67,7 @@ const Settings = () => {
 
             {/* DATA & BACKUPS CARD */}
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <div className="p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50/50">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-indigo-100 text-indigo-600 rounded-lg">
                             <Database size={24} />
@@ -81,14 +81,14 @@ const Settings = () => {
                     <button
                         onClick={handleCreateBackup}
                         disabled={creating}
-                        className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {creating ? <RefreshCw size={18} className="animate-spin" /> : <Server size={18} />}
                         {creating ? "Creating..." : "Trigger Backup Now"}
                     </button>
                 </div>
 
-                <div className="p-0">
+                <div className="p-0 overflow-x-auto">
                     {loading ? (
                         <div className="p-8 text-center text-slate-400">Loading backups...</div>
                     ) : backups.length === 0 ? (
