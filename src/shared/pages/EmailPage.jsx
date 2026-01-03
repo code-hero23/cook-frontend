@@ -106,9 +106,32 @@ const EmailPage = () => {
         setAttachments([]);
     };
 
-    const handleFileChange = (e) => {
-        const files = Array.from(e.target.files).map(f => ({ name: f.name, url: '#' }));
-        setAttachments(prev => [...prev, ...files]);
+    const handleFileChange = async (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
+
+        const formData = new FormData();
+        files.forEach(file => formData.append('files', file));
+
+        const loadingToast = toast.loading("Uploading attachments...");
+
+        try {
+            const res = await axios.post('/upload', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            const uploadedFiles = res.data.map(f => ({
+                ...f,
+                // Construct full URL relative to server root
+                url: `${axios.defaults.baseURL.replace('/api', '')}${f.url}`
+            }));
+
+            setAttachments(prev => [...prev, ...uploadedFiles]);
+            toast.success("Attachments uploaded", { id: loadingToast });
+        } catch (error) {
+            console.error("Upload failed", error);
+            toast.error("Failed to upload attachments", { id: loadingToast });
+        }
     };
 
     const removeAttachment = (index) => {
