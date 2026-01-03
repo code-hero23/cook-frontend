@@ -46,6 +46,8 @@ const ProjectProgress = ({ tasks = [] }) => {
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter((t) => t.status === "Completed").length;
 
+  const [projectData, setProjectData] = useState(null);
+
   // -------------------------------------------------------------------------
   // 3. CORE LOGIC: WEIGHTED PROGRESS & CAPPING
   // -------------------------------------------------------------------------
@@ -69,10 +71,22 @@ const ProjectProgress = ({ tasks = [] }) => {
   // Progress is limited by the Admin's Unlocked Stage % (targetPaymentVal)
   const targetPercentage = Math.min(taskPercentage, targetPaymentVal || 0);
 
-  const TOTAL_DAYS = 45;
-  const daysPassed = 20;
-  const daysLeft = TOTAL_DAYS - daysPassed;
-  const daysPercentage = Math.round((daysPassed / TOTAL_DAYS) * 100);
+  // Dynamic Timeline Logic
+  const timelineDuration = projectData?.timelineDuration || 45;
+  const startDate = projectData?.startDate ? new Date(projectData.startDate) : null;
+  const today = new Date();
+
+  let daysPassed = 0;
+  if (startDate) {
+    const diffTime = Math.abs(today - startDate);
+    daysPassed = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  }
+
+  // Cap daysPassed to be within 0 and timelineDuration range for progress bar logic
+  const effectiveDaysPassed = Math.min(Math.max(0, daysPassed), timelineDuration);
+
+  const daysLeft = Math.max(0, timelineDuration - effectiveDaysPassed);
+  const daysPercentage = Math.round((effectiveDaysPassed / timelineDuration) * 100);
 
   // -------------------------------------------------------------------------
   // 4. SIDE EFFECTS (Data Fetching & Animations)
@@ -82,6 +96,7 @@ const ProjectProgress = ({ tasks = [] }) => {
     if (project.projectCode) {
       axios.get(`/client/${project.projectCode}`)
         .then(res => {
+          setProjectData(res.data);
           setTargetPaymentVal(res.data.paymentPercentage || 0);
         })
         .catch(err => console.error("Error fetching project details", err));
@@ -329,9 +344,9 @@ const ProjectProgress = ({ tasks = [] }) => {
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Day 1</p>
                 <div className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-pink-500 animate-pulse"></span>
-                  <p className="text-[10px] font-black text-pink-600 uppercase tracking-widest">Current: Day {daysPassed}</p>
+                  <p className="text-[10px] font-black text-pink-600 uppercase tracking-widest">Current: Day {effectiveDaysPassed}</p>
                 </div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Day {TOTAL_DAYS}</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Day {timelineDuration}</p>
               </div>
             </div>
 
