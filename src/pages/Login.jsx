@@ -19,7 +19,7 @@ import axios from "../shared/utils/axios";
 
 const UnifiedLogin = () => {
     const navigate = useNavigate();
-    const [role, setRole] = useState("admin"); // 'admin', 'employee', 'client'
+    const [activePortal, setActivePortal] = useState("admin"); // 'admin', 'employee', 'client'
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
@@ -41,7 +41,7 @@ const UnifiedLogin = () => {
         setError("");
 
         try {
-            if (role === "admin" || role === "employee") {
+            if (activePortal === "admin" || activePortal === "employee") {
                 const res = await axios.post("/auth/login", {
                     email: formData.email,
                     password: formData.password
@@ -50,13 +50,13 @@ const UnifiedLogin = () => {
                 const userRole = res.data.user.role;
 
                 // Strict Role Validation based on selected tab
-                if (role === 'admin' && !['SUPER_ADMIN', 'MANAGER'].includes(userRole)) {
+                if (activePortal === 'admin' && !['SUPER_ADMIN', 'MANAGER'].includes(userRole)) {
                     setError("Access denied. You are not an authorized administrator.");
                     setLoading(false);
                     return;
                 }
 
-                if (role === 'employee' && !['EMPLOYEE', 'SITE_SUPERVISOR'].includes(userRole)) {
+                if (activePortal === 'employee' && !['EMPLOYEE', 'SITE_SUPERVISOR'].includes(userRole)) {
                     setError("Access denied. Please use the Admin portal.");
                     setLoading(false);
                     return;
@@ -78,7 +78,7 @@ const UnifiedLogin = () => {
                 }
 
             }
-            else if (role === "client") {
+            else if (activePortal === "client") {
                 // Client login pending backend implementation
                 // For now, keeping original logic if needed or placeholder
                 const res = await axios.post("/client/login", {
@@ -97,7 +97,7 @@ const UnifiedLogin = () => {
         }
     };
 
-    const roles = [
+    const portals = [
         { id: "admin", label: "Admin", icon: Shield, color: "blue" },
         { id: "employee", label: "Employee", icon: User, color: "green" },
         { id: "client", label: "Client", icon: FolderKey, color: "orange" },
@@ -111,7 +111,7 @@ const UnifiedLogin = () => {
             try {
                 const decoded = JSON.parse(atob(token));
                 if (decoded.projectId) {
-                    setRole("client");
+                    setActivePortal("client");
                     setFormData(prev => ({ ...prev, projectId: decoded.projectId }));
                     // Optional: You could auto-submit here if you trust the token strictly
                     // But for security, usually you want them to input password OR the token implies a temporary authed session.
