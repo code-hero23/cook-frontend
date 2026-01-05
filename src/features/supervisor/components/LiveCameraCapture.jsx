@@ -169,7 +169,7 @@ const LiveCameraCapture = ({ onCapture }) => {
                     // 5. Branding
                     ctx.fillStyle = "#FFD700"; // Gold
                     ctx.font = "italic bold 20px sans-serif";
-                    ctx.fillText("Powered by Cookscape GPS Cam", canvas.width - 320, canvas.height - 20);
+                    ctx.fillText("Powered by Orbix Projects GPS Cam", canvas.width - 320, canvas.height - 20);
 
                     // --- FINALIZE ---
                     setStatus("Processing...");

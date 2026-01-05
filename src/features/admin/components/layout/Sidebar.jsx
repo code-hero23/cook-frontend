@@ -79,9 +79,7 @@ const Sidebar = ({ open, onClose }) => {
             C
           </div>
           <div>
-            <p className="text-xs uppercase text-white font-bold text-2xl tracking-wide">
-              Cookscape Projects
-            </p>
+            <p className="text-xs uppercase text-white font-bold text-2xl tracking-wide">Orbix Projects</p>
             <p className="font-semibold text-sm text-white">
               {isManager ? "Admin Manager" : "Super Admin"}
             </p>

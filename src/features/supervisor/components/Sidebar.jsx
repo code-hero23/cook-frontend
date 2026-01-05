@@ -84,7 +84,7 @@ const Sidebar = ({ isOpen, setIsOpen, isMobile }) => {
                             <Shield className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                            <h1 className="font-bold text-lg tracking-tight">Cookscape</h1>
+                            <h1 className="font-bold text-lg tracking-tight">Orbix Projects</h1>
                             <p className="text-[10px] uppercase font-bold text-slate-500 tracking-widest">Site Operations</p>
                         </div>
                     </div>

@@ -48,7 +48,7 @@ const InstallPrompt = () => {
                                     <Smartphone size={24} />
                                 </div>
                                 <div className="min-w-0">
-                                    <h3 className="text-lg font-black text-slate-800 tracking-tight">Install Cookscape</h3>
+                                    <h3 className="text-lg font-black text-slate-800 tracking-tight">Install Orbix Projects</h3>
                                     <p className="text-sm font-medium text-slate-500">Get the best experience on your home screen.</p>
                                 </div>
                             </div>

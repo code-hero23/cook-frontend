@@ -223,7 +223,7 @@ const ChatInterface = ({ projects = [], currentUser, role, initialProjectId }) =
                         <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-6 shadow-xl shadow-indigo-100">
                             <MessageSquare size={40} className="text-indigo-600" />
                         </div>
-                        <h3 className="text-2xl font-bold text-gray-800 mb-2">Welcome to Cookscape Chat</h3>
+                        <h3 className="text-2xl font-bold text-gray-800 mb-2">Welcome to Orbix Projects Chat</h3>
                         <p className="text-gray-500 text-sm max-w-xs leading-relaxed">Select a project from the sidebar to start collaborating with your team.</p>
                         <div className="mt-8 flex items-center gap-2 text-xs text-gray-400">
                             <LockIcon /> End-to-end encrypted

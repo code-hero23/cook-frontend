@@ -63,7 +63,7 @@ const ClientDashboard = () => {
                             C
                         </div>
                         <div>
-                            <h1 className="text-sm font-bold text-slate-800 leading-none">Cookscape</h1>
+                            <h1 className="text-sm font-bold text-slate-800 leading-none">Orbix Projects</h1>
                             <p className="text-[10px] text-slate-400 font-semibold tracking-wider uppercase">Client Portal</p>
                         </div>
                     </div>

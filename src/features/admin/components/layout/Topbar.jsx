@@ -157,7 +157,7 @@ const Topbar = ({ onToggleSidebar }) => {
 
         <img
           src={logo}
-          alt="Cookscape Logo"
+          alt="Orbix Projects Logo"
           className="h-12 w-auto object-contain hidden md:block" // Hide text logo on small screens if needed
         />
       </div>
