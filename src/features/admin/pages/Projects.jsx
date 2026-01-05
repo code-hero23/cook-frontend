@@ -85,19 +85,43 @@ const Projects = () => {
 
     const secureForm = { ...formData };
 
-    // Type conversions
-    if (secureForm.budget) secureForm.budget = parseFloat(secureForm.budget);
-    if (secureForm.timelineDuration) secureForm.timelineDuration = parseInt(secureForm.timelineDuration, 10);
+    // Type conversions and cleanup for Prisma types (Float/Date cannot be "")
+    if (secureForm.budget) {
+      secureForm.budget = parseFloat(secureForm.budget);
+    } else {
+      delete secureForm.budget;
+    }
 
-    // Dates
-    if (secureForm.startDate) secureForm.startDate = new Date(secureForm.startDate).toISOString();
-    if (secureForm.deadline) secureForm.deadline = new Date(secureForm.deadline).toISOString();
+    if (secureForm.timelineDuration) {
+      secureForm.timelineDuration = parseInt(secureForm.timelineDuration, 10);
+    } else {
+      delete secureForm.timelineDuration;
+    }
 
-    // Handle optional unique fields: Set empty strings to undefined to avoid unique constraint violations
+    // Dates - specific cleanup for empty strings
+    if (secureForm.startDate) {
+      secureForm.startDate = new Date(secureForm.startDate).toISOString();
+    } else {
+      delete secureForm.startDate;
+    }
+
+    if (secureForm.deadline) {
+      secureForm.deadline = new Date(secureForm.deadline).toISOString();
+    } else {
+      delete secureForm.deadline;
+    }
+
+    // Handle optional unique fields
     if (!secureForm.cpNumber) delete secureForm.cpNumber;
-    if (!secureForm.gstin) delete secureForm.gstin; // Optional, cleaner to store null/undefined
+    if (!secureForm.gstin) delete secureForm.gstin;
     if (!secureForm.spouseName) delete secureForm.spouseName;
     if (!secureForm.spousePhone) delete secureForm.spousePhone;
+
+    // Cleanup other optional strings to be safe
+    if (!secureForm.billingName) delete secureForm.billingName;
+    if (!secureForm.billingPhone) delete secureForm.billingPhone;
+    if (!secureForm.location) delete secureForm.location; // Though strictly required in validation
+    if (!secureForm.projectCode) delete secureForm.projectCode; // Backend generates it
 
     // Remove empty password on update
     if (editingId && !secureForm.clientPassword) {
