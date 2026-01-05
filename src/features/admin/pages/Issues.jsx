@@ -2,8 +2,11 @@ import React, { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useApp } from "../context/AppContext.jsx";
 import StatusBadge from "../components/common/StatusBadge.jsx";
-import { Plus, Pencil, Mail } from "lucide-react";
+import { Plus, Pencil, Mail, Filter, Search as SearchIcon, X } from "lucide-react";
 import { isTaskOverdue } from "../utils/dateUtils.js";
+
+import IssueStats from "../components/IssueStats.jsx";
+import IssueDrawer from "../components/IssueDrawer.jsx";
 
 const emptyIssue = {
   title: "",
@@ -18,30 +21,36 @@ const emptyIssue = {
 };
 
 const Issues = () => {
-  const { tasks, projects, employees, addTask, updateTask } = useApp();
+  const { tasks, projects, employees, addTask, updateTask, deleteTask } = useApp();
   const [searchParams] = useSearchParams();
   const [search, setSearch] = useState(searchParams.get("q") || "");
-  const [modalOpen, setModalOpen] = useState(false);
+  const [activeFilter, setActiveFilter] = useState("All"); // All | Open | Closed
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyIssue);
 
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const isManager = (user.role || "").toUpperCase() === "MANAGER";
-
-  const issues = tasks.filter((t) => (t.type || "").toUpperCase() === "ISSUE");
+  // Filter Logic
+  const issues = tasks.filter((t) => (t.type || "").toLowerCase() === "issue");
 
   const filtered = issues.filter((t) => {
+    // 1. Search Query
     const project = projects.find((p) => p.id === t.projectId);
     const emp = employees.find((e) => e.id === t.employeeId);
-    const target =
-      (t.title + (project?.name || "") + (emp?.name || "") + (t.id || "")).toLowerCase();
-    return target.includes(search.toLowerCase());
+    const target = (t.title + (project?.name || "") + (emp?.name || "") + (t.id || "")).toLowerCase();
+    const matchesSearch = target.includes(search.toLowerCase());
+
+    // 2. Status Filter
+    let matchesFilter = true;
+    if (activeFilter === "Open") matchesFilter = t.status !== "Completed" && t.status !== "Resolved";
+    if (activeFilter === "Closed") matchesFilter = t.status === "Completed" || t.status === "Resolved";
+
+    return matchesSearch && matchesFilter;
   });
 
   const openCreate = () => {
     setForm(emptyIssue);
     setEditingId(null);
-    setModalOpen(true);
+    setDrawerOpen(true);
   };
 
   const openEdit = (task) => {
@@ -53,73 +62,103 @@ const Issues = () => {
       dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : "",
     });
     setEditingId(task.id);
-    setModalOpen(true);
+    setDrawerOpen(true);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!form.title || !form.projectId || !form.employeeId) {
+  const handleSubmit = (formData) => {
+    if (!formData.title || !formData.projectId || !formData.employeeId) {
       alert("Title, project and employee are required");
       return;
     }
 
-    if (editingId) updateTask(editingId, form);
-    else addTask(form);
+    if (editingId) updateTask(editingId, formData);
+    else addTask(formData);
 
-    const emp = employees.find((e) => e.id === form.employeeId);
+    const emp = employees.find((e) => e.id === formData.employeeId);
     if (emp) {
-      alert(`Email sent to ${emp.email} (simulated).`);
+      // In real app, toast notification logic here
+      // toast.success(`Email sent to ${emp.email}`);
     }
 
-    setModalOpen(false);
+    setDrawerOpen(false);
+  };
+
+  const handleDelete = (id) => {
+    deleteTask(id);
+    setDrawerOpen(false);
   };
 
   const getStatus = (t) => {
     if (t.status === "Completed") return "Completed";
+    if (t.status === "Resolved") return "Resolved";
     if (isTaskOverdue(t)) return "Overdue";
     return t.status;
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div className="space-y-8 animate-in fade-in duration-500">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold">Issues</h1>
-          <p className="text-sm text-slate-500">Track and triage issues raised against projects.</p>
+          <h1 className="text-3xl font-black text-slate-800 tracking-tight">Issues</h1>
+          <p className="text-slate-500 font-medium">Track and triage feedback and problems</p>
         </div>
 
         <button
           onClick={openCreate}
-          className="inline-flex items-center gap-2 rounded-xl bg-orange-600 text-white px-4 py-2 text-sm hover:bg-orange-500 transition"
+          className="bg-orange-600 hover:bg-orange-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-orange-200 transition-all flex items-center gap-2 hover:-translate-y-0.5 active:translate-y-0"
         >
-          <Plus size={16} />
+          <Plus size={18} />
           New Issue
         </button>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 space-y-4">
-        <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+      {/* Stats Section */}
+      <IssueStats issues={issues} />
+
+      {/* Controls / Search */}
+      <div className="bg-white p-2 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-2">
+        <div className="relative flex-1">
+          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
           <input
             type="text"
-            placeholder="Search by title, project, or employee..."
-            className="w-full sm:w-80 border border-slate-200 rounded-xl px-3 py-2 text-sm"
+            placeholder="Search issues..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-10 pr-4 py-3 bg-slate-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-indigo-100 transition-all text-sm font-medium"
           />
-
-          <p className="text-xs text-slate-500">
-            Total issues: <span className="font-semibold">{issues.length}</span>
-          </p>
         </div>
 
-        <div className="overflow-x-auto">
-          <div className="min-w-[760px]">
-            <div className="grid grid-cols-[100px_2fr_1.5fr_1.5fr_1.5fr_1fr_1fr_100px] text-[11px] font-semibold text-slate-500 border-b px-2 py-2 bg-gray-300">
+        {/* Filter Pills */}
+        <div className="flex bg-slate-50 p-1 rounded-xl">
+          {["All", "Open", "Closed"].map((f) => (
+            <button
+              key={f}
+              onClick={() => setActiveFilter(f)}
+              className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeFilter === f ? "bg-white text-slate-800 shadow-sm" : "text-slate-400 hover:text-slate-600"}`}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Issues List */}
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+        {filtered.length === 0 ? (
+          <div className="text-center py-20">
+            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-2xl">🎉</span>
+            </div>
+            <p className="text-slate-500 font-bold">No issues found.</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-slate-50">
+            <div className="grid grid-cols-[80px_2fr_1.5fr_1.5fr_1fr_1fr_100px] text-[11px] font-bold text-slate-400 uppercase tracking-wider px-6 py-4 bg-slate-50/50">
               <div>ID</div>
               <div>Issue</div>
               <div>Project</div>
-              <div>Employee</div>
-              <div>Start / Due</div>
+              <div>Assignee</div>
               <div>Priority</div>
               <div>Status</div>
               <div className="text-right">Actions</div>
@@ -131,154 +170,73 @@ const Issues = () => {
               const status = getStatus(t);
 
               return (
-                <div key={t.id} className="grid grid-cols-[100px_2fr_1.5fr_1.5fr_1.5fr_1fr_1fr_100px] items-center border-b py-2 text-xs">
-                  <div className="font-mono text-xs text-orange-600 font-semibold">{t.id}</div>
-                  <div>
-                    <p className="font-medium">{t.title}</p>
+                <div key={t.id} className="grid grid-cols-[80px_2fr_1.5fr_1.5fr_1fr_1fr_100px] items-center px-6 py-4 hover:bg-slate-50/50 transition-colors group">
+                  <div className="font-mono text-xs text-orange-600 font-bold">#{t.id.slice(-4)}</div>
+
+                  <div className="pr-4">
+                    <p className="font-bold text-slate-800 truncate">{t.title}</p>
+                    <p className="text-xs text-slate-400 truncate max-w-[200px]">{t.description || "No description provided."}</p>
                   </div>
 
                   <div>
-                    <p>{project?.name || "—"}</p>
-                    <p className="text-[11px] text-slate-500">{t.projectId}</p>
+                    <p className="font-medium text-slate-700 truncate">{project?.name || "—"}</p>
+                    <p className="text-[10px] font-mono text-slate-400">{project?.projectCode}</p>
                   </div>
 
                   <div>
-                    <p>{emp?.name || "Unassigned"}</p>
-                    <p className="text-[11px] text-slate-500">{emp?.email || ""}</p>
-                  </div>
-
-                  <div>
-                    <p>{t.startDate}</p>
-                    <p className="text-[11px] text-slate-500">{t.dueDate}</p>
+                    {emp ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-[10px] font-bold">
+                          {emp.name.charAt(0)}
+                        </div>
+                        <span className="text-sm text-slate-600 font-medium truncate">{emp.name}</span>
+                      </div>
+                    ) : (
+                      <span className="text-slate-400 italic text-xs">Unassigned</span>
+                    )}
                   </div>
 
                   <div><StatusBadge status={t.priority} /></div>
 
                   <div><StatusBadge status={status} /></div>
 
-                  <div className="text-right space-x-2">
-                    <button
-                      onClick={() => openEdit(t)}
-                      className="inline-flex items-center gap-1 text-orange-600 hover:underline"
-                    >
-                      <Pencil size={14} /> Edit
-                    </button>
-
+                  <div className="text-right opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-2">
                     <button
                       onClick={() => {
                         if (!emp) return alert("No employee assigned.");
                         alert(`Email sent to ${emp.email} for ${t.title} (simulated).`);
                       }}
-                      className="inline-flex items-center gap-1 text-[#075E54] hover:underline"
+                      className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                      title="Send Email"
                     >
-                      <Mail size={14} /> Mail
+                      <Mail size={16} />
+                    </button>
+                    <button
+                      onClick={() => openEdit(t)}
+                      className="px-3 py-1.5 bg-white border border-slate-200 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-50 flex items-center gap-1"
+                    >
+                      <Pencil size={12} /> Edit
                     </button>
                   </div>
                 </div>
               );
             })}
           </div>
-        </div>
-
-        {filtered.length === 0 && (
-          <div className="py-4 text-center text-slate-500 text-sm">No issues found.</div>
         )}
       </div>
 
-      {/* Modal */}
-      {
-        modalOpen && (
-          <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30">
-            <div className="bg-white rounded-2xl shadow-xl w-[95%] max-w-md md:max-w-lg p-3 overflow-auto max-h-[85vh]">
-              <h2 className="text-lg font-semibold mb-3">{editingId ? "Edit Issue" : "Create Issue"}</h2>
-
-              <form onSubmit={handleSubmit} className="space-y-3 text-sm">
-                <div>
-                  <label className="block text-xs text-slate-500 mb-1">Issue Title*</label>
-                  <input
-                    className="w-full border border-slate-200 rounded-lg px-2 py-1.5"
-                    value={form.title}
-                    onChange={(e) => setForm({ ...form, title: e.target.value })}
-                    placeholder="Issue description"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs text-slate-500 mb-1">Select Project*</label>
-                    <select
-                      className="w-full border border-slate-200 rounded-lg px-2 py-1.5"
-                      value={form.projectId}
-                      onChange={(e) => setForm({ ...form, projectId: e.target.value })}
-                    >
-                      <option value="">-- Select Project --</option>
-                      {projects.map((p) => (
-                        <option key={p.id} value={p.id}>{p.name} ({p.projectCode})</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs text-slate-500 mb-1">Assign Employee*</label>
-                    <select
-                      className="w-full border border-slate-200 rounded-lg px-2 py-1.5"
-                      value={form.employeeId}
-                      onChange={(e) => setForm({ ...form, employeeId: e.target.value })}
-                    >
-                      <option value="">-- Select Employee --</option>
-                      {employees.map((emp) => (
-                        <option key={emp.id} value={emp.id}>{emp.name} ({emp.role})</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs text-slate-500 mb-1">Start Date</label>
-                    <input type="date" className="w-full border border-slate-200 rounded-lg px-2 py-1.5" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs text-slate-500 mb-1">Due Date</label>
-                    <input type="date" className="w-full border border-slate-200 rounded-lg px-2 py-1.5" value={form.dueDate} onChange={(e) => setForm({ ...form, dueDate: e.target.value })} />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs text-slate-500 mb-1">Priority</label>
-                    <select className="w-full border border-slate-200 rounded-lg px-2 py-1.5" value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value })}>
-                      <option>Low</option>
-                      <option>Medium</option>
-                      <option>High</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs text-slate-500 mb-1">Type</label>
-                    <select className="w-full border border-slate-200 rounded-lg px-2 py-1.5" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
-                      <option>Issue</option>
-                      <option>Task</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs text-slate-500 mb-1">Description</label>
-                  <textarea className="w-full border border-slate-200 rounded-lg px-2 py-1.5 h-20" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Additional details..." />
-                </div>
-
-                <div className="flex flex-col sm:flex-row justify-end gap-2 mt-4">
-                  <button type="button" onClick={() => setModalOpen(false)} className="px-3 py-1.5 text-sm rounded-lg border border-slate-200 w-full sm:w-auto">Cancel</button>
-                  <button type="submit" className="px-4 py-1.5 text-sm rounded-lg bg-[#075E54] text-white hover:bg-[#05483f] inline-flex items-center gap-1 transition w-full sm:w-auto justify-center">
-                    <Mail size={14} />
-                    {editingId ? "Save & Notify" : "Create & Notify"}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )
-      }
-
-    </div >
+      {/* Drawer */}
+      <IssueDrawer
+        isOpen={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        initialData={form}
+        isEditing={!!editingId}
+        onSubmit={handleSubmit}
+        onDelete={handleDelete}
+        projects={projects}
+        employees={employees}
+      />
+    </div>
   );
 };
 
