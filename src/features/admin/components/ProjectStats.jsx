@@ -1,5 +1,5 @@
 import React from "react";
-import { Briefcase, IndianRupee, Clock, AlertCircle } from "lucide-react";
+import { Briefcase, Clock, AlertCircle } from "lucide-react";
 
 const StatCard = ({ title, value, icon: Icon, color, subtext }) => (
     <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
@@ -18,9 +18,6 @@ const StatCard = ({ title, value, icon: Icon, color, subtext }) => (
 
 const ProjectStats = ({ projects }) => {
     const total = projects.length;
-    const activeValue = projects
-        .filter((p) => p.status !== "COMPLETED")
-        .reduce((sum, p) => sum + (parseFloat(p.budget) || 0), 0);
 
     const upcomingDeadlines = projects.filter((p) => {
         if (!p.deadline) return false;
@@ -35,27 +32,14 @@ const ProjectStats = ({ projects }) => {
         return days > (p.timelineDuration || 45) && p.status !== "COMPLETED";
     }).length;
 
-    const formatCurrency = (val) => {
-        if (val >= 10000000) return `₹${(val / 10000000).toFixed(2)} Cr`;
-        if (val >= 100000) return `₹${(val / 100000).toFixed(2)} L`;
-        return `₹${val.toLocaleString()}`;
-    };
-
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
             <StatCard
                 title="Total Projects"
                 value={total}
                 icon={Briefcase}
                 color="bg-indigo-500"
                 subtext="All active & completed sites"
-            />
-            <StatCard
-                title="Active Pipeline Value"
-                value={formatCurrency(activeValue)}
-                icon={IndianRupee}
-                color="bg-emerald-500"
-                subtext="Total budget of ongoing work"
             />
             <StatCard
                 title="Upcoming Handovers"
