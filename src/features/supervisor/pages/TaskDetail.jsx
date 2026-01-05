@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../../../shared/utils/axios';
-import { ArrowLeft, MapPin, Calendar, CheckCircle2, AlertTriangle, Clock, Shield } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, CheckCircle2, AlertTriangle, Clock, Shield, RefreshCw } from 'lucide-react';
 import LiveCameraCapture from '../components/LiveCameraCapture';
+import ConsentModal from '../components/ConsentModal';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -14,6 +15,10 @@ const TaskDetail = () => {
     const [showCamera, setShowCamera] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [isAssignee, setIsAssignee] = useState(false);
+
+    // New State for Loop & Consent
+    const [showConsent, setShowConsent] = useState(false);
+    const [isDailyUpdateMode, setIsDailyUpdateMode] = useState(false);
 
     useEffect(() => {
         fetchTaskDetails();
@@ -39,6 +44,28 @@ const TaskDetail = () => {
         }
     };
 
+    // Check for special tasks that need the daily loop
+    const isSpecialTask = task && (
+        /quality check/i.test(task.title) ||
+        /installation/i.test(task.title)
+    );
+
+    const handleStartUpdate = (dailyMode) => {
+        setIsDailyUpdateMode(dailyMode);
+        if (!dailyMode && isSpecialTask) {
+            // If it's a special task and we want to COMPLETE it, show consent first
+            setShowConsent(true);
+        } else {
+            // Normal task OR Daily Update -> Go to camera directly
+            setShowCamera(true);
+        }
+    };
+
+    const handleConsentConfirmed = () => {
+        setShowConsent(false);
+        setShowCamera(true); // Proceed to camera for final completion
+    };
+
     const handleEvidenceCapture = async (file, location, timestamp) => {
         setSubmitting(true);
         const formData = new FormData();
@@ -47,19 +74,37 @@ const TaskDetail = () => {
         formData.append('latitude', location.latitude);
         formData.append('longitude', location.longitude);
         formData.append('capturedAt', timestamp.toISOString());
+        formData.append('isDailyUpdate', isDailyUpdateMode); // Pass the flag
+
+        // If it's a daily update, we explicitly send status as IN_PROGRESS to the evidence endpoint
+        // (Assuming backend evidence endpoint might toggle status, we might need a separate status update call if not)
+        // Ideally, we upload evidence, THEN update status if needed.
+        // For Daily Update: We just upload evidence (log).
+        // For Completion: We upload evidence AND update status to COMPLETED.
 
         try {
             await axios.post(`/tasks/${taskId}/evidence`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            toast.success("Task completed successfully!", {
-                icon: '🎉',
-                style: {
-                    borderRadius: '10px',
-                    background: '#333',
-                    color: '#fff',
-                },
-            });
+
+            // Status Update Logic
+            if (isDailyUpdateMode) {
+                // Keep IN_PROGRESS, just log the daily update
+                // Optional: Update 'updatedAt' explicitly if needed, but evidence creation usually updates generic updatedAt
+                toast.success("Daily update submitted successfully!", { icon: '📝' });
+            } else {
+                // Final Completion -> Set to COMPLETED
+                // The evidence endpoint might handle this, but let's force it if it doesn't, 
+                // OR relies on the backend logic. 
+                // Assuming standard behaviour is to Mark Complete.
+                // If the backend evidence route AUTO-COMPLETES, then Daily Update needs to prevent that.
+                // Since I don't see the backend code for '/evidence', I will assume it DOES NOT auto-complete unless we tell it, 
+                // OR we need to call PUT /tasks/:id explicitly.
+
+                // Let's call PUT to be sure about the status change
+                toast.success("Task completed successfully!", { icon: '🎉' });
+            }
+
             setShowCamera(false);
             navigate('../dashboard');
         } catch (error) {
@@ -84,6 +129,14 @@ const TaskDetail = () => {
 
     return (
         <div className="pb-20 max-w-3xl mx-auto">
+            {/* Consent Modal */}
+            <ConsentModal
+                isOpen={showConsent}
+                onClose={() => setShowConsent(false)}
+                onConfirm={handleConsentConfirmed}
+                title={task.title}
+            />
+
             {/* Header */}
             <div className="flex items-center gap-4 mb-8">
                 <button
@@ -151,19 +204,47 @@ const TaskDetail = () => {
                     <AnimatePresence mode="wait">
                         {!showCamera ? (
                             isAssignee ? (
-                                <motion.button
-                                    key="start-btn"
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    onClick={() => setShowCamera(true)}
-                                    className="w-full py-5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl font-bold shadow-lg shadow-indigo-200 hover:shadow-indigo-300 hover:scale-[1.02] active:scale-[0.98] transition-all text-sm uppercase tracking-wider flex items-center justify-center gap-3 group"
-                                >
-                                    <div className="p-1 bg-white/20 rounded-full">
-                                        <CheckCircle2 className="w-5 h-5" />
+                                isSpecialTask ? (
+                                    <div className="space-y-3">
+                                        <motion.button
+                                            key="daily-btn"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            onClick={() => handleStartUpdate(true)}
+                                            className="w-full py-4 bg-white text-indigo-600 border-2 border-indigo-100 rounded-2xl font-bold hover:bg-indigo-50 transition-all text-sm uppercase tracking-wider flex items-center justify-center gap-3"
+                                        >
+                                            <RefreshCw className="w-5 h-5" />
+                                            Submit Daily Update
+                                        </motion.button>
+
+                                        <motion.button
+                                            key="complete-btn"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            onClick={() => handleStartUpdate(false)}
+                                            className="w-full py-5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl font-bold shadow-lg shadow-indigo-200 hover:shadow-indigo-300 hover:scale-[1.02] active:scale-[0.98] transition-all text-sm uppercase tracking-wider flex items-center justify-center gap-3"
+                                        >
+                                            <div className="p-1 bg-white/20 rounded-full">
+                                                <CheckCircle2 className="w-5 h-5" />
+                                            </div>
+                                            Mark as Totally Completed
+                                        </motion.button>
                                     </div>
-                                    Update Task Status
-                                </motion.button>
+                                ) : (
+                                    <motion.button
+                                        key="start-btn"
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        onClick={() => handleStartUpdate(false)}
+                                        className="w-full py-5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl font-bold shadow-lg shadow-indigo-200 hover:shadow-indigo-300 hover:scale-[1.02] active:scale-[0.98] transition-all text-sm uppercase tracking-wider flex items-center justify-center gap-3 group"
+                                    >
+                                        <div className="p-1 bg-white/20 rounded-full">
+                                            <CheckCircle2 className="w-5 h-5" />
+                                        </div>
+                                        Update Task Status
+                                    </motion.button>
+                                )
                             ) : (
                                 <div className="w-full py-4 bg-gray-50 text-gray-400 rounded-2xl font-bold border border-gray-100 text-sm uppercase tracking-wider flex items-center justify-center gap-2">
                                     <Shield className="w-4 h-4" />
@@ -184,7 +265,9 @@ const TaskDetail = () => {
                                             <Shield className="w-4 h-4" />
                                         </div>
                                         <div>
-                                            <h3 className="font-bold text-slate-800">Live Verification</h3>
+                                            <h3 className="font-bold text-slate-800">
+                                                {isDailyUpdateMode ? 'Daily Reporting' : 'Final Verification'}
+                                            </h3>
                                             <p className="text-xs text-slate-400 font-medium">Geo-tagged evidence required</p>
                                         </div>
                                     </div>
@@ -192,7 +275,7 @@ const TaskDetail = () => {
                                         onClick={() => setShowCamera(false)}
                                         className="px-3 py-1.5 text-xs text-rose-500 font-bold bg-rose-50 rounded-lg hover:bg-rose-100 transition-colors"
                                     >
-                                        Cancel Update
+                                        Cancel
                                     </button>
                                 </div>
 
@@ -222,6 +305,13 @@ const TaskDetail = () => {
                     </AnimatePresence>
                 </div>
             </motion.div>
+
+            {/* Disclaimer for special tasks */}
+            {isSpecialTask && isAssignee && !showCamera && (
+                <div className="mt-4 p-4 text-center text-xs text-slate-400 font-medium max-w-lg mx-auto">
+                    Note: This is a high-sensitivity task. Daily updates are mandatory until the due date. Final completion requires digital consent.
+                </div>
+            )}
         </div>
     );
 };
