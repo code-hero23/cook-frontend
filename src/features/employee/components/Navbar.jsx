@@ -14,9 +14,18 @@ const Navbar = ({ setSidebarOpen }) => {
   const location = useLocation();
   const [searchValue, setSearchValue] = useState("");
 
+  const [user, setUser] = useState({});
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
   const employee = {
-    name: "Aswanth",
-    role: "Interior Designer",
+    name: user.name || "Employee",
+    role: user.role || "Team Member",
   };
 
   const getInitials = (name) =>
