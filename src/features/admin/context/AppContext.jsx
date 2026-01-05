@@ -170,7 +170,7 @@ export const AppProvider = ({ children }) => {
 
     // Project Metrics
     const openProjects = projects.filter(p => !isProjectOverdue(p)).length;
-    const closedProjects = projects.filter(p => p.status === "Completed").length;
+    const closedProjects = projects.filter(p => ['completed', 'hold'].includes((p.status || "").toLowerCase())).length;
     const overdueProjects = projects.filter((p) => isProjectOverdue(p)).length;
 
     // Issue Metrics (Type === 'Issue' or 'ISSUE')
@@ -186,8 +186,8 @@ export const AppProvider = ({ children }) => {
     const taskOnly = tasks.filter(t => (t.type || "").toLowerCase() !== "issue");
 
     const totalTasks = taskOnly.length;
-    const openTasks = taskOnly.filter(t => t.status !== "Completed").length;
-    const closedTasks = taskOnly.filter(t => t.status === "Completed").length;
+    const openTasks = taskOnly.filter(t => !['completed', 'done'].includes((t.status || "").toLowerCase())).length;
+    const closedTasks = taskOnly.filter(t => ['completed', 'done'].includes((t.status || "").toLowerCase())).length;
     const overdueTasks = taskOnly.filter(t => isTaskOverdue(t)).length;
 
     // Redundant aliases kept for compatibility if used elsewhere

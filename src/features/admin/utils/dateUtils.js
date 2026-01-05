@@ -21,7 +21,7 @@ export const isProjectOverdue = (project) => {
 
 export const isTaskOverdue = (task) => {
   if (!task.dueDate) return false;
-  if (task.status === "Completed") return false;
+  if (['completed', 'done'].includes((task.status || "").toLowerCase())) return false;
 
   const due = new Date(task.dueDate);
   const today = new Date(todayISO());

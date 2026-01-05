@@ -71,8 +71,10 @@ const Tasks = () => {
   const projectMetrics = useMemo(() => {
     return projects.map(project => {
       const projectTasks = tasksOnly.filter(t => t.projectId === project.id);
-      const completed = projectTasks.filter(t => t.status === 'COMPLETED').length;
-      const pending = projectTasks.filter(t => t.status !== 'COMPLETED').length;
+
+      // Case-insensitive check for reliability
+      const completed = projectTasks.filter(t => ['completed', 'done'].includes((t.status || "").toLowerCase())).length;
+      const pending = projectTasks.filter(t => !['completed', 'done'].includes((t.status || "").toLowerCase())).length;
       const overdue = projectTasks.filter(t => isTaskOverdue(t)).length;
 
       return {
