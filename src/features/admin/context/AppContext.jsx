@@ -165,19 +165,13 @@ export const AppProvider = ({ children }) => {
   // Derived metrics for dashboard
   const metrics = useMemo(() => {
     const totalProjects = projects.length;
-    const totalTasks = tasks.length;
+
+    // Project Metrics
     const openProjects = projects.filter(p => !isProjectOverdue(p)).length;
     const closedProjects = projects.filter(p => p.status === "Completed").length;
-
-    const openTasks = tasks.filter(t => t.status !== "Completed").length;
-    const closedTasks = tasks.filter(t => t.status === "Completed").length;
-
     const overdueProjects = projects.filter((p) => isProjectOverdue(p)).length;
 
-    const completedTasks = tasks.filter((t) => t.status === "Completed").length;
-    const overdueTasks = tasks.filter((t) => isTaskOverdue(t)).length;
-    const pendingTasks = totalTasks - completedTasks - overdueTasks;
-
+    // Issue Metrics (Type === 'Issue')
     const openIssues = tasks.filter(
       (t) => t.type === "Issue" && t.status !== "Completed"
     ).length;
@@ -185,17 +179,32 @@ export const AppProvider = ({ children }) => {
       (t) => t.type === "Issue" && t.status === "Completed"
     ).length;
 
+    // Task Metrics (Type !== 'Issue')
+    // We filter out issues so "Tasks" and "Issues" are mutually exclusive on dashboard
+    const taskOnly = tasks.filter(t => t.type !== "Issue");
+
+    const totalTasks = taskOnly.length;
+    const openTasks = taskOnly.filter(t => t.status !== "Completed").length;
+    const closedTasks = taskOnly.filter(t => t.status === "Completed").length;
+    const overdueTasks = taskOnly.filter(t => isTaskOverdue(t)).length;
+
+    // Redundant aliases kept for compatibility if used elsewhere
+    const completedTasks = closedTasks;
+    const pendingTasks = totalTasks - completedTasks - overdueTasks;
+
     return {
       totalProjects,
       openProjects,
       closedProjects,
+      overdueProjects,
+
       openTasks,
       closedTasks,
       totalTasks,
-      overdueProjects,
+      overdueTasks,
       completedTasks,
       pendingTasks,
-      overdueTasks,
+
       openIssues,
       closedIssues,
     };
