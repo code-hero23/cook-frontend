@@ -87,8 +87,17 @@ const Projects = () => {
 
     // Type conversions
     if (secureForm.budget) secureForm.budget = parseFloat(secureForm.budget);
+    if (secureForm.timelineDuration) secureForm.timelineDuration = parseInt(secureForm.timelineDuration, 10);
+
+    // Dates
     if (secureForm.startDate) secureForm.startDate = new Date(secureForm.startDate).toISOString();
     if (secureForm.deadline) secureForm.deadline = new Date(secureForm.deadline).toISOString();
+
+    // Handle optional unique fields: Set empty strings to undefined to avoid unique constraint violations
+    if (!secureForm.cpNumber) delete secureForm.cpNumber;
+    if (!secureForm.gstin) delete secureForm.gstin; // Optional, cleaner to store null/undefined
+    if (!secureForm.spouseName) delete secureForm.spouseName;
+    if (!secureForm.spousePhone) delete secureForm.spousePhone;
 
     // Remove empty password on update
     if (editingId && !secureForm.clientPassword) {
