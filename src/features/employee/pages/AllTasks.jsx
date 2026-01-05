@@ -26,8 +26,8 @@ const AllTasks = () => {
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-  // ✅ Filter tasks for THIS employee
-  let filteredTasks = tasks.filter(t => t.employeeId === user.id);
+  // ✅ Filter tasks for THIS employee (Context already processes this, but we keep it referenced)
+  let filteredTasks = tasks;
 
   // ✅ Filtering
   if (filter === "Completed") {
