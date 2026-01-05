@@ -73,13 +73,43 @@ const ProjectProgress = ({ tasks = [] }) => {
 
   // Dynamic Timeline Logic
   const timelineDuration = projectData?.timelineDuration || 45;
-  const startDate = projectData?.startDate ? new Date(projectData.startDate) : null;
   const today = new Date();
 
+  // New Logic: Timeline starts ONLY after "Approval of finalized designs" is complete
+  const designStageName = "Approval of finalized designs";
+  const designStage = stageData.find(s => s.name === designStageName);
+  const designTasks = tasks.filter(t => t.stage === designStageName);
+
+  let startDate = null;
+  let timelineLabel = "Pending Start";
+
+  if (designStage && designStage.isDone) {
+    // Stage is done, find the latest completion time
+    const completionTimes = designTasks
+      .filter(t => t.completedAt)
+      .map(t => new Date(t.completedAt).getTime());
+
+    if (completionTimes.length > 0) {
+      // Use the latest task completion as the start date
+      startDate = new Date(Math.max(...completionTimes));
+    } else {
+      // Fallback for legacy data: Stage done but no timestamps -> Use Project Start Date
+      startDate = projectData?.startDate ? new Date(projectData.startDate) : null;
+    }
+    timelineLabel = "Active";
+  } else {
+    // Stage not done -> Timeline hasn't started
+    startDate = null;
+  }
+
+  // Calculate Days Passed
   let daysPassed = 0;
   if (startDate) {
-    const diffTime = Math.abs(today - startDate);
-    daysPassed = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const diffTime = today - startDate; // Can be negative if started in future (unlikely)
+    // We only count if positive
+    if (diffTime > 0) {
+      daysPassed = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    }
   }
 
   // Cap daysPassed to be within 0 and timelineDuration range for progress bar logic
@@ -344,7 +374,9 @@ const ProjectProgress = ({ tasks = [] }) => {
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Day 1</p>
                 <div className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-pink-500 animate-pulse"></span>
-                  <p className="text-[10px] font-black text-pink-600 uppercase tracking-widest">Current: Day {effectiveDaysPassed}</p>
+                  <p className="text-[10px] font-black text-pink-600 uppercase tracking-widest">
+                    {startDate ? `Current: Day ${effectiveDaysPassed}` : `Waiting for Design Approval`}
+                  </p>
                 </div>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Day {timelineDuration}</p>
               </div>
