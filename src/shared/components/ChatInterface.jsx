@@ -148,7 +148,7 @@ const ChatInterface = ({ projects = [], currentUser, role }) => {
     }, {});
 
     return (
-        <div className="flex flex-col sm:flex-row h-full sm:h-[calc(100vh-100px)] bg-white sm:rounded-2xl overflow-hidden sm:shadow-2xl sm:border border-gray-100 font-sans">
+        <div className="flex flex-col sm:flex-row h-full bg-white sm:rounded-2xl overflow-hidden sm:shadow-2xl sm:border border-gray-100 font-sans">
 
             {/* SIDEBAR */}
             <div className={`w-full sm:w-80 bg-white border-r border-gray-100 flex flex-col transition-all duration-300 ${activeProjectId ? 'hidden sm:flex' : 'flex h-full'}`}>

@@ -13,7 +13,7 @@ const Chat = () => {
   );
 
   return (
-    <div className="flex flex-col h-[calc(100vh-64px)] sm:h-full p-0 sm:p-6">
+    <div className="flex flex-col h-[calc(100vh-64px)] sm:h-[calc(100vh-64px)] p-0 sm:p-6">
       <h1 className="text-xl sm:text-2xl font-bold mb-0 sm:mb-6 text-gray-800 px-4 pt-4 sm:p-0 hidden sm:block">My Project Chats</h1>
       <div className="flex-1 overflow-hidden">
         <ChatInterface
