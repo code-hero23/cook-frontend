@@ -49,7 +49,10 @@ const Projects = () => {
       p.name.toLowerCase().includes(search.toLowerCase()) ||
       (p.clientFirstName?.toLowerCase() || "").includes(search.toLowerCase()) ||
       (p.clientLastName?.toLowerCase() || "").includes(search.toLowerCase()) ||
-      (p.projectCode?.toLowerCase() || "").includes(search.toLowerCase())
+      (p.projectCode?.toLowerCase() || "").includes(search.toLowerCase()) ||
+      (p.clientPhone || "").includes(search) || // Phone usually exact or partial number match
+      (p.clientEmail?.toLowerCase() || "").includes(search.toLowerCase()) ||
+      (p.location?.toLowerCase() || "").includes(search.toLowerCase())
   );
 
   const openCreate = () => {
@@ -152,7 +155,7 @@ const Projects = () => {
           <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
           <input
             type="text"
-            placeholder="Search projects by name, code, or client..."
+            placeholder="Search by name, code, client phone, email, or location..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-3 bg-slate-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-indigo-100 transition-all text-sm font-medium"

@@ -103,7 +103,9 @@ const Tasks = () => {
           (t.title +
             (project?.name || "") +
             (emp?.name || "") +
-            (t.id || "")
+            (t.id || "") +
+            (t.description || "") +
+            (t.status || "")
           ).toLowerCase();
         return target.includes(search.toLowerCase());
       });

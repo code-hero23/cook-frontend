@@ -74,7 +74,7 @@ const Issues = () => {
       // 1. Search Query
       const project = projects.find((p) => p.id === t.projectId);
       const emp = employees.find((e) => e.id === t.employeeId);
-      const target = (t.title + (project?.name || "") + (emp?.name || "") + (t.id || "")).toLowerCase();
+      const target = (t.title + (project?.name || "") + (emp?.name || "") + (t.id || "") + (t.description || "") + (t.status || "")).toLowerCase();
       const matchesSearch = target.includes(search.toLowerCase());
 
       // 2. Status Filter

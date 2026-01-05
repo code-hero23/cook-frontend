@@ -26,7 +26,10 @@ const Employees = () => {
     (e) =>
       e.name.toLowerCase().includes(search.toLowerCase()) ||
       e.email.toLowerCase().includes(search.toLowerCase()) ||
-      e.id.toLowerCase().includes(search.toLowerCase())
+      (e.id || "").toLowerCase().includes(search.toLowerCase()) ||
+      (e.phone || "").includes(search) ||
+      (e.department || "").toLowerCase().includes(search.toLowerCase()) ||
+      (e.role || "").toLowerCase().includes(search.toLowerCase())
   );
 
   const openCreate = () => {
@@ -87,7 +90,7 @@ const Employees = () => {
         <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
           <input
             type="text"
-            placeholder="Search by name, email, or ID..."
+            placeholder="Search by name, email, phone, role..."
             className="w-full sm:w-72 border border-slate-200 rounded-xl px-3 py-2 text-sm"
             value={search}
             onChange={(e) => setSearch(e.target.value)}

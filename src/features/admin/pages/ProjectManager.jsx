@@ -98,19 +98,35 @@ const GalleryManager = ({ projectId }) => {
         } catch (err) { alert('Delete failed'); }
     };
 
+    const [search, setSearch] = useState("");
+
+    const filteredImages = images.filter(img =>
+        (img.caption || "").toLowerCase().includes(search.toLowerCase())
+    );
+
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                 <h3 className="font-bold text-lg">Site Images</h3>
-                <label className={`flex items-center gap-2 px-4 py-2 bg-brand-500 text-white rounded-xl cursor-pointer hover:bg-brand-600 ${uploading ? 'opacity-50' : ''}`}>
-                    <Upload size={18} />
-                    {uploading ? 'Uploading...' : 'Upload Image'}
-                    <input type="file" accept="image/*" hidden onChange={handleUpload} disabled={uploading} />
-                </label>
+
+                <div className="flex gap-2 w-full sm:w-auto">
+                    <input
+                        type="text"
+                        placeholder="Search images..."
+                        className="border border-slate-200 rounded-xl px-3 py-2 text-sm flex-1 outline-none focus:ring-2 focus:ring-brand-100"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+                    <label className={`flex items-center gap-2 px-4 py-2 bg-brand-500 text-white rounded-xl cursor-pointer hover:bg-brand-600 ${uploading ? 'opacity-50' : ''}`}>
+                        <Upload size={18} />
+                        <span className="hidden sm:inline">{uploading ? 'Uploading...' : 'Upload'}</span>
+                        <input type="file" accept="image/*" hidden onChange={handleUpload} disabled={uploading} />
+                    </label>
+                </div>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {images.map(img => (
+                {filteredImages.map(img => (
                     <div key={img.id} className="group relative bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
                         <img src={`${import.meta.env.VITE_API_URL?.replace('/api', '')}${img.url}`} alt="Project" className="w-full h-32 object-cover rounded-lg" />
                         <button
@@ -122,7 +138,7 @@ const GalleryManager = ({ projectId }) => {
                         <p className="mt-2 text-xs text-slate-500 truncate px-1">{img.caption}</p>
                     </div>
                 ))}
-                {images.length === 0 && <p className="text-slate-400 text-sm col-span-full text-center py-10">No images uploaded yet.</p>}
+                {filteredImages.length === 0 && <p className="text-slate-400 text-sm col-span-full text-center py-10">No images found.</p>}
             </div>
         </div>
     );
@@ -170,19 +186,35 @@ const DocumentManager = ({ projectId }) => {
         } catch (err) { alert('Delete failed'); }
     };
 
+    const [search, setSearch] = useState("");
+
+    const filteredDocs = docs.filter(doc =>
+        (doc.name || "").toLowerCase().includes(search.toLowerCase())
+    );
+
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                 <h3 className="font-bold text-lg">Project Documents</h3>
-                <label className={`flex items-center gap-2 px-4 py-2 bg-brand-500 text-white rounded-xl cursor-pointer hover:bg-brand-600 ${uploading ? 'opacity-50' : ''}`}>
-                    <Upload size={18} />
-                    {uploading ? 'Uploading...' : 'Upload Doc'}
-                    <input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx" hidden onChange={handleUpload} disabled={uploading} />
-                </label>
+
+                <div className="flex gap-2 w-full sm:w-auto">
+                    <input
+                        type="text"
+                        placeholder="Search docs..."
+                        className="border border-slate-200 rounded-xl px-3 py-2 text-sm flex-1 outline-none focus:ring-2 focus:ring-brand-100"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+                    <label className={`flex items-center gap-2 px-4 py-2 bg-brand-500 text-white rounded-xl cursor-pointer hover:bg-brand-600 ${uploading ? 'opacity-50' : ''}`}>
+                        <Upload size={18} />
+                        <span className="hidden sm:inline">{uploading ? 'Uploading...' : 'Upload'}</span>
+                        <input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx" hidden onChange={handleUpload} disabled={uploading} />
+                    </label>
+                </div>
             </div>
 
             <div className="space-y-2">
-                {docs.map(doc => (
+                {filteredDocs.map(doc => (
                     <div key={doc.id} className="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-xl hover:shadow-sm transition-all">
                         <div className="flex items-center gap-4">
                             <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
@@ -208,7 +240,7 @@ const DocumentManager = ({ projectId }) => {
                         </div>
                     </div>
                 ))}
-                {docs.length === 0 && <p className="text-slate-400 text-sm text-center py-10">No documents uploaded yet.</p>}
+                {filteredDocs.length === 0 && <p className="text-slate-400 text-sm text-center py-10">No documents found.</p>}
             </div>
         </div>
     );
