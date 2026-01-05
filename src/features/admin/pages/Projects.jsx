@@ -78,7 +78,7 @@ const Projects = () => {
 
   const handleSubmit = (formData) => {
     // Basic validation
-    if (!formData.name || !formData.clientFirstName || !formData.clientLastName || !formData.startDate || !formData.clientPhone || !formData.projectCode) {
+    if (!formData.name || !formData.clientFirstName || !formData.clientLastName || !formData.startDate || !formData.clientPhone || !formData.clientEmail) {
       alert("Please fill in all required fields marked with *");
       return;
     }
