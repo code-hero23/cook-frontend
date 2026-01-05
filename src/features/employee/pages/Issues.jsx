@@ -252,25 +252,25 @@ const Issues = () => {
 
             <div className="space-y-6">
                 {projects.map(project => {
-                    const projectIssues = filteredIssues.filter(i => i.projectId === project.projectId);
+                    const projectIssues = filteredIssues.filter(i => i.projectId === project.id);
                     if (projectIssues.length === 0 && (filter || search)) return null;
 
-                    const isExpanded = expandedProjects[project.projectId] ?? true;
-                    const currentPage = projectPages[project.projectId] || 1;
+                    const isExpanded = expandedProjects[project.id] ?? true;
+                    const currentPage = projectPages[project.id] || 1;
                     const totalPages = Math.ceil(projectIssues.length / ISSUES_PER_PAGE);
                     const paginatedIssues = projectIssues.slice((currentPage - 1) * ISSUES_PER_PAGE, currentPage * ISSUES_PER_PAGE);
 
                     return (
-                        <div key={project.projectId} className="space-y-4">
+                        <div key={project.id} className="space-y-4">
                             <div
-                                onClick={() => toggleProject(project.projectId)}
+                                onClick={() => toggleProject(project.id)}
                                 className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-orange-100 flex items-center justify-between cursor-pointer hover:border-orange-300 transition-colors"
                                 role="button"
                                 tabIndex={0}
                                 aria-expanded={isExpanded}
-                                aria-controls={`project-issues-${project.projectId}`}
+                                aria-controls={`project-issues-${project.id}`}
                                 aria-label={isExpanded ? `Collapse ${project.name}` : `Expand ${project.name}`}
-                                onKeyPress={e => { if (e.key === 'Enter' || e.key === ' ') toggleProject(project.projectId); }}
+                                onKeyPress={e => { if (e.key === 'Enter' || e.key === ' ') toggleProject(project.id); }}
                             >
                                 <div className="flex items-center gap-3">
                                     {isExpanded ? <ChevronUp className="text-orange-600" /> : <ChevronDown className="text-gray-400" />}
@@ -284,7 +284,7 @@ const Issues = () => {
                             <AnimatePresence>
                                 {isExpanded && (
                                     <motion.div
-                                        id={`project-issues-${project.projectId}`}
+                                        id={`project-issues-${project.id}`}
                                         initial={{ height: 0, opacity: 0 }}
                                         animate={{ height: "auto", opacity: 1 }}
                                         exit={{ height: 0, opacity: 0 }}

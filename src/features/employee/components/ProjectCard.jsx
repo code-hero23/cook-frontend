@@ -6,7 +6,7 @@ const ProjectCard = ({ project }) => {
 
   return (
     <div
-      onClick={() => navigate(`/employee/project/${project.projectId}`)}
+      onClick={() => navigate(`/employee/project/${project.id}`)}
       className="group cursor-pointer bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl hover:border-indigo-100 transition-all duration-300 relative overflow-hidden flex flex-col min-w-0 w-full max-w-full"
       tabIndex={0}
       role="button"

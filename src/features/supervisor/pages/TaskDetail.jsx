@@ -13,10 +13,18 @@ const TaskDetail = () => {
     const [loading, setLoading] = useState(true);
     const [showCamera, setShowCamera] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [isAssignee, setIsAssignee] = useState(false);
 
     useEffect(() => {
         fetchTaskDetails();
     }, [taskId]);
+
+    useEffect(() => {
+        if (task) {
+            const user = JSON.parse(localStorage.getItem('user'));
+            setIsAssignee(task.employeeId === user?.id);
+        }
+    }, [task]);
 
     const fetchTaskDetails = async () => {
         try {
@@ -142,19 +150,26 @@ const TaskDetail = () => {
 
                     <AnimatePresence mode="wait">
                         {!showCamera ? (
-                            <motion.button
-                                key="start-btn"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                onClick={() => setShowCamera(true)}
-                                className="w-full py-5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl font-bold shadow-lg shadow-indigo-200 hover:shadow-indigo-300 hover:scale-[1.02] active:scale-[0.98] transition-all text-sm uppercase tracking-wider flex items-center justify-center gap-3 group"
-                            >
-                                <div className="p-1 bg-white/20 rounded-full">
-                                    <CheckCircle2 className="w-5 h-5" />
+                            isAssignee ? (
+                                <motion.button
+                                    key="start-btn"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    onClick={() => setShowCamera(true)}
+                                    className="w-full py-5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl font-bold shadow-lg shadow-indigo-200 hover:shadow-indigo-300 hover:scale-[1.02] active:scale-[0.98] transition-all text-sm uppercase tracking-wider flex items-center justify-center gap-3 group"
+                                >
+                                    <div className="p-1 bg-white/20 rounded-full">
+                                        <CheckCircle2 className="w-5 h-5" />
+                                    </div>
+                                    Update Task Status
+                                </motion.button>
+                            ) : (
+                                <div className="w-full py-4 bg-gray-50 text-gray-400 rounded-2xl font-bold border border-gray-100 text-sm uppercase tracking-wider flex items-center justify-center gap-2">
+                                    <Shield className="w-4 h-4" />
+                                    View Only - Assigned to {task.employee?.name || 'Another Employee'}
                                 </div>
-                                Update Task Status
-                            </motion.button>
+                            )
                         ) : (
                             <motion.div
                                 key="camera-ui"

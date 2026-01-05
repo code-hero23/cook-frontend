@@ -30,9 +30,10 @@ const Tasks = () => {
         try {
             const user = JSON.parse(localStorage.getItem('user'));
             const response = await axios.get('/tasks');
-            // Mock filter for "My Tasks" - ideal way is backend filtering, implementing frontend first
-            const activeTasks = response.data.filter(t => t.employeeId === user.id);
-            setTasks(activeTasks);
+
+            // STRICT FILTERING: Only show tasks assigned to this employee/supervisor
+            const assignedTasks = response.data.filter(t => t.employeeId === user.id);
+            setTasks(assignedTasks);
         } catch (error) {
             console.error(error);
         } finally {

@@ -15,6 +15,7 @@ import ClientDashboard from "./pages/ClientDashboard.jsx";
 import ProjectManager from "./pages/ProjectManager.jsx";
 import Chat from "./pages/Chat.jsx";
 import Email from "./pages/Email.jsx"; // New Email Import
+import Helpdesk from "./pages/Helpdesk.jsx";
 import DevPanel from "./pages/DevPanel.jsx";
 import Settings from "./pages/Settings.jsx";
 
@@ -119,6 +120,15 @@ const App = () => {
           element={
             <ProtectedRoute>
               <Email />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="helpdesk"
+          element={
+            <ProtectedRoute>
+              <Helpdesk />
             </ProtectedRoute>
           }
         />

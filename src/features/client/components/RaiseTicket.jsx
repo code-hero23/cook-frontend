@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
+import axios from "../../../shared/utils/axios"; // Use shared axios instance
 import { Upload, X, FileText, Image as ImageIcon, Send, Filter, ChevronDown, ChevronUp } from "lucide-react";
+import TicketDetailModal from "./TicketDetailModal";
 
 const RaiseTicket = () => {
   // Form state
   const [issue, setIssue] = useState("");
-  const [email, setEmail] = useState("");
   const [priority, setPriority] = useState("Medium");
   const [category, setCategory] = useState("Support");
   const [file, setFile] = useState(null);
@@ -15,22 +16,30 @@ const RaiseTicket = () => {
   const [tickets, setTickets] = useState([]);
   const [filterStatus, setFilterStatus] = useState("All");
   const [sortBy, setSortBy] = useState("Newest First");
-  const [expandedTicket, setExpandedTicket] = useState(null);
 
-  // Load tickets from localStorage on mount
-  useEffect(() => {
-    const savedTickets = localStorage.getItem("supportTickets");
-    if (savedTickets) {
-      setTickets(JSON.parse(savedTickets));
-    }
-  }, []);
+  // Modal State
+  const [selectedTicket, setSelectedTicket] = useState(null);
 
-  // Save tickets to localStorage whenever they change
+  // Get Project ID from Client Context/Storage
+  const project = JSON.parse(localStorage.getItem("clientProject") || "{}");
+  const projectId = project.id;
+  const apiUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+
+  // Load tickets from API
   useEffect(() => {
-    if (tickets.length > 0) {
-      localStorage.setItem("supportTickets", JSON.stringify(tickets));
+    if (projectId) {
+      const fetchTickets = async () => {
+        try {
+          const res = await axios.get(`/tickets?projectId=${projectId}`);
+          setTickets(res.data);
+        } catch (err) {
+          console.error("Failed to fetch tickets", err);
+          toast.error("Could not load your tickets");
+        }
+      };
+      fetchTickets();
     }
-  }, [tickets]);
+  }, [projectId]);
 
   const priorityColors = {
     Low: "bg-green-100 text-green-700 border-green-300",
@@ -48,23 +57,12 @@ const RaiseTicket = () => {
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
-      // Check file size (max 5MB)
       if (selectedFile.size > 5 * 1024 * 1024) {
         toast.error("File size must be less than 5MB");
         return;
       }
-
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFile({
-          name: selectedFile.name,
-          size: selectedFile.size,
-          type: selectedFile.type,
-          data: reader.result,
-        });
-        toast.success("File attached successfully");
-      };
-      reader.readAsDataURL(selectedFile);
+      setFile(selectedFile);
+      toast.success("File selected");
     }
   };
 
@@ -78,55 +76,68 @@ const RaiseTicket = () => {
       toast.error("Issue description must be at least 20 characters");
       return false;
     }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email.trim() || !emailRegex.test(email)) {
-      toast.error("Please enter a valid email address");
-      return false;
-    }
-
     return true;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validateForm()) return;
+    if (!projectId) {
+      toast.error("Project Session Invalid. Please Login Again.");
+      return;
+    }
 
     setIsSubmitting(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      const newTicket = {
-        id: `TICKET-${Date.now()}`,
-        issue,
-        email,
+    try {
+      let attachmentData = null;
+
+      // 1. Upload File if exists
+      if (file) {
+        const formData = new FormData();
+        formData.append('files', file);
+
+        const uploadRes = await axios.post('/upload', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+
+        const uploadedFile = uploadRes.data[0];
+        attachmentData = {
+          name: uploadedFile.name,
+          url: uploadedFile.url,
+          type: uploadedFile.type
+        };
+      }
+
+      // 2. Create Ticket
+      const ticketPayload = {
+        subject: category + " Request",
+        description: issue,
+        email: project.clientEmail || "", // Auto-fetched
         priority,
         category,
-        status: "Open",
-        createdAt: new Date().toISOString(),
-        file: file,
+        projectId,
+        attachment: attachmentData
       };
+
+      const res = await axios.post('/tickets', ticketPayload);
+      const newTicket = res.data;
 
       setTickets((prev) => [newTicket, ...prev]);
 
       // Clear form
       setIssue("");
-      setEmail("");
       setPriority("Medium");
       setCategory("Support");
       setFile(null);
+
+      toast.success(`✅ Ticket created successfully!`);
+
+    } catch (error) {
+      console.error("Submit Error:", error);
+      toast.error("Failed to submit ticket. Please try again.");
+    } finally {
       setIsSubmitting(false);
-
-      toast.success(`✅ Ticket ${newTicket.id} created successfully!`, {
-        duration: 4000,
-      });
-    }, 1000);
-  };
-
-  const updateTicketStatus = (ticketId, newStatus) => {
-    setTickets((prev) =>
-      prev.map((t) => (t.id === ticketId ? { ...t, status: newStatus } : t))
-    );
-    toast.success(`Ticket status updated to ${newStatus}`);
+    }
   };
 
   // Filter and sort tickets
@@ -159,6 +170,10 @@ const RaiseTicket = () => {
   const charMin = 20;
   const isCharCountValid = charCount >= charMin;
 
+  const handleTicketUpdate = (ticketId, updatedComments) => {
+    setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, comments: updatedComments } : t));
+  };
+
   return (
     <div className="min-h-[calc(100vh-6rem)] lg:h-[calc(100vh-6rem)] bg-gray-100 p-4 h-auto">
       <div className="max-w-7xl mx-auto lg:h-full h-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -173,19 +188,6 @@ const RaiseTicket = () => {
           </div>
 
           <div className="p-6 overflow-y-auto flex-1">
-            {/* Email Input */}
-            <div className="mb-4">
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
-                Email Address <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com"
-                className="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
-              />
-            </div>
 
             {/* Priority and Category */}
             <div className="grid grid-cols-2 gap-3 mb-4">
@@ -350,7 +352,8 @@ const RaiseTicket = () => {
                 {filteredTickets.map((ticket) => (
                   <div
                     key={ticket.id}
-                    className="bg-white border rounded-lg p-4 hover:shadow-sm transition duration-200"
+                    onClick={() => setSelectedTicket(ticket)}
+                    className="bg-white border rounded-lg p-4 hover:shadow-md hover:border-indigo-200 transition duration-200 cursor-pointer group"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                       {/* Status Badge */}
@@ -365,8 +368,8 @@ const RaiseTicket = () => {
                       {/* Content */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="text-sm font-semibold text-gray-800 truncate">
-                            {ticket.id}
+                          <h3 className="text-sm font-semibold text-gray-800 truncate group-hover:text-indigo-600 transition-colors">
+                            {ticket.ticketId}
                           </h3>
                           <span className="text-gray-300">•</span>
                           <span className={`text-xs font-medium px-2 py-0.5 rounded ${priorityColors[ticket.priority].replace('border', '')} bg-opacity-50`}>
@@ -380,44 +383,22 @@ const RaiseTicket = () => {
                           <span>{formatDate(ticket.createdAt)}</span>
                         </div>
 
-                        {/* Collapsible Content Trigger */}
-                        <div
-                          className="cursor-pointer group"
-                          onClick={() => setExpandedTicket(expandedTicket === ticket.id ? null : ticket.id)}
-                        >
-                          <div className={`text-sm text-gray-600 ${expandedTicket === ticket.id ? '' : 'line-clamp-2'}`}>
-                            {ticket.issue}
-                          </div>
-
-                          <div className="flex items-center gap-1 mt-2 text-indigo-600 text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                            {expandedTicket === ticket.id ? 'Show Less' : 'Show More'}
-                            <ChevronDown className={`w-3 h-3 transition-transform ${expandedTicket === ticket.id ? 'rotate-180' : ''}`} />
-                          </div>
+                        <div className="text-sm text-gray-600 line-clamp-1">
+                          {ticket.description}
                         </div>
 
-                        {/* Expanded Attachment View */}
-                        {expandedTicket === ticket.id && ticket.file && (
-                          <div className="mt-3 pt-3 border-t flex items-center gap-3">
-                            <div className="bg-indigo-50 p-2 rounded-lg">
-                              {ticket.file.type.startsWith("image/") ? (
-                                <ImageIcon className="w-4 h-4 text-indigo-600" />
-                              ) : (
-                                <FileText className="w-4 h-4 text-indigo-600" />
-                              )}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-xs font-medium text-gray-700 truncate">{ticket.file.name}</p>
-                              <p className="text-[10px] text-gray-500">{formatFileSize(ticket.file.size)}</p>
-                            </div>
-                            <a
-                              href={ticket.file.data}
-                              download={ticket.file.name}
-                              className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
-                            >
-                              Download
-                            </a>
-                          </div>
-                        )}
+                        {/* New Footer */}
+                        <div className="mt-2 flex items-center justify-between">
+                          <span className="text-xs text-indigo-500 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                            View Details & Chat →
+                          </span>
+                          {(ticket.comments?.length > 0) && (
+                            <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                              {ticket.comments.length} comments
+                            </span>
+                          )}
+                        </div>
+
                       </div>
                     </div>
                   </div>
@@ -427,6 +408,16 @@ const RaiseTicket = () => {
           </div>
         </div>
       </div>
+
+      {/* Detail Modal */}
+      {selectedTicket && (
+        <TicketDetailModal
+          ticket={selectedTicket}
+          onClose={() => setSelectedTicket(null)}
+          onUpdate={handleTicketUpdate}
+        />
+      )}
+
     </div>
   );
 };

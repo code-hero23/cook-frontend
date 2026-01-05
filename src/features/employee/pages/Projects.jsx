@@ -45,10 +45,10 @@ const Projects = () => {
         <AnimatePresence mode="popLayout">
           {filteredProjects.length > 0 ? (
             filteredProjects.map((project, index) => {
-              const stats = getProjectStats(project.projectId);
+              const stats = getProjectStats(project.id);
               return (
                 <motion.div
-                  key={project.projectId}
+                  key={project.id}
                   layout
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}

@@ -28,10 +28,10 @@ const Issues = () => {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const isManager = (user.role || "").toUpperCase() === "MANAGER";
 
-  const issues = tasks.filter((t) => t.type === "Issue");
+  const issues = tasks.filter((t) => (t.type || "").toUpperCase() === "ISSUE");
 
   const filtered = issues.filter((t) => {
-    const project = projects.find((p) => p.projectId === t.projectId);
+    const project = projects.find((p) => p.id === t.projectId);
     const emp = employees.find((e) => e.id === t.employeeId);
     const target =
       (t.title + (project?.name || "") + (emp?.name || "") + (t.id || "")).toLowerCase();
@@ -45,7 +45,13 @@ const Issues = () => {
   };
 
   const openEdit = (task) => {
-    setForm(task);
+    setForm({
+      ...task,
+      projectId: task.projectId || "",
+      employeeId: task.employeeId || "",
+      startDate: (task.startDate || task.createdAt) ? new Date(task.startDate || task.createdAt).toISOString().split('T')[0] : "",
+      dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : "",
+    });
     setEditingId(task.id);
     setModalOpen(true);
   };
@@ -120,7 +126,7 @@ const Issues = () => {
             </div>
 
             {filtered.map((t) => {
-              const project = projects.find((p) => p.projectId === t.projectId);
+              const project = projects.find((p) => p.id === t.projectId);
               const emp = employees.find((e) => e.id === t.employeeId);
               const status = getStatus(t);
 
@@ -207,7 +213,7 @@ const Issues = () => {
                     >
                       <option value="">-- Select Project --</option>
                       {projects.map((p) => (
-                        <option key={p.projectId} value={p.projectId}>{p.name} ({p.projectId})</option>
+                        <option key={p.id} value={p.id}>{p.name} ({p.projectCode})</option>
                       ))}
                     </select>
                   </div>

@@ -11,7 +11,8 @@ import {
   MessageSquare,
   Bug,
   ShieldCheck,
-  Mail
+  Mail,
+  LifeBuoy
 } from "lucide-react";
 
 const navItems = [
@@ -22,6 +23,7 @@ const navItems = [
   { to: "/admin/issues", label: "Issues", icon: Bug },
   { to: "/admin/chat", label: "Chat", icon: MessageSquare },
   { to: "/admin/email", label: "Email", icon: Mail },
+  { to: "/admin/helpdesk", label: "Helpdesk", icon: LifeBuoy },
   { to: "/admin/reports", label: "Reports", icon: FileSpreadsheet },
   { to: "/admin/client-access", label: "Client Access", icon: Link2 },
   { to: "/admin/settings", label: "Data & Backups", icon: ShieldCheck },

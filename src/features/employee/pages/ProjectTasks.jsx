@@ -9,7 +9,7 @@ const ProjectTasks = () => {
   const { tasks, projects, updateTaskStatus } = useContext(TaskContext);
 
   // ✅ Find the selected project
-  const project = projects.find(p => p.projectId === projectId);
+  const project = projects.find(p => p.id === projectId);
 
   // ✅ Filter only tasks of this project
   const projectTasks = tasks.filter(
