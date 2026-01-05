@@ -92,6 +92,7 @@ const Dashboard = () => {
           { label: "Open Tasks", value: safeMetrics.openTasks, icon: ListChecks },
           { label: "Closed Tasks", value: safeMetrics.closedTasks, icon: ClipboardCheck, accent: "success" },
           { label: "Overdue Projects", value: safeMetrics.overdueProjects, icon: ClockAlert, accent: "danger" },
+          { label: "Overdue Tasks", value: safeMetrics.overdueTasks, icon: ClockAlert, accent: "danger" },
           { label: "Open Issues", value: safeMetrics.openIssues, icon: Bug, accent: "warning" },
           { label: "Closed Issues", value: safeMetrics.closedIssues, icon: ShieldCheck, accent: "success" },
         ].map((card, i) => (
