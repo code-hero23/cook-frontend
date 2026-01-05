@@ -80,15 +80,17 @@ const ProjectDrawer = ({ isOpen, onClose, onSubmit, initialData, isEditing }) =>
                                             />
                                         </div>
                                         <div className="col-span-1">
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Project Code <span className="text-red-500">*</span></label>
-                                            <input
-                                                required
-                                                name="projectCode"
-                                                value={form.projectCode}
-                                                onChange={handleChange}
-                                                className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none font-mono"
-                                                placeholder="PRJ-XXX"
-                                            />
+                                            {isEditing && (
+                                                <>
+                                                    <label className="block text-sm font-medium text-slate-700 mb-1">Project Code</label>
+                                                    <input
+                                                        disabled
+                                                        name="projectCode"
+                                                        value={form.projectCode}
+                                                        className="w-full px-4 py-2 rounded-xl border border-slate-200 bg-slate-100 text-slate-500 font-mono cursor-not-allowed"
+                                                    />
+                                                </>
+                                            )}
                                         </div>
                                         <div className="col-span-1">
                                             <label className="block text-sm font-medium text-slate-700 mb-1">CP Number</label>
