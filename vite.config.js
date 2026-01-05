@@ -36,8 +36,8 @@ export default defineConfig({
         ],
       },
       manifest: {
-        name: 'Cookscape Unified Studio',
-        short_name: 'Cookscape',
+        name: 'Orbix Projects Unified Studio',
+        short_name: 'Orbix Projects',
         description: 'Elite Project Management & Interior Design Portal',
         theme_color: '#4F46E5', // Indigo-600 to match brand
         background_color: '#F8FAFC',
