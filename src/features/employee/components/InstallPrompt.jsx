@@ -52,7 +52,7 @@ const InstallPrompt = () => {
                         Install App
                     </h3>
                     <p className="mt-1 text-xs sm:text-sm text-gray-500 dark:text-gray-400 truncate">
-                        Install Cookscape Employee for a better experience with offline access and faster performance.
+                        Install Orbix Projects Employee for a better experience with offline access and faster performance.
                     </p>
                 </div>
                 <button

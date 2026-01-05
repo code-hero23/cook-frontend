@@ -68,9 +68,12 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-[#1E263A] md:mt-[70px]">
-          <h2 className="text-xs font-bold tracking-wide uppercase text-gray-400">
-            Employee Panel
-          </h2>
+          <div>
+            <h1 className="text-lg font-bold text-white tracking-tight leading-none">Orbix Projects</h1>
+            <h2 className="text-[10px] font-bold tracking-widest uppercase text-gray-500 mt-0.5">
+              Employee Panel
+            </h2>
+          </div>
 
           <button
             onClick={() => setSidebarOpen(false)}
