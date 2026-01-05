@@ -50,6 +50,7 @@ const Dashboard = () => {
     "Overdue Projects": () => navigate("/admin/projects"),
     "Open Tasks": () => navigate("/admin/tasks"),
     "Closed Tasks": () => navigate("/admin/tasks"),
+    "Overdue Tasks": () => navigate("/admin/tasks"),
     "Open Issues": () => navigate("/admin/issues"),
     "Closed Issues": () => navigate("/admin/issues"),
   };
