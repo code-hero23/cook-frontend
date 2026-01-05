@@ -14,10 +14,21 @@ export const TaskProvider = ({ children }) => {
   const fetchData = async () => {
     try {
       setLoading(true);
+
+      const userStr = localStorage.getItem("user");
+      const user = userStr ? JSON.parse(userStr) : null;
+
+      // If no user logic found, we might want to return or fetch nothing.
+      // But assuming protected route, user should exist.
+      const params = {};
+      if (user?.id) {
+        params.employeeId = user.id;
+      }
+
       const [taskRes, projRes, empRes] = await Promise.all([
-        axios.get("/tasks"),
-        axios.get("/projects"),
-        axios.get("/employees")
+        axios.get("/tasks", { params }),
+        axios.get("/projects", { params }), // Project controller now supports this
+        axios.get("/employees") // We probably still want all employees for dropdowns etc.
       ]);
 
       const allTasks = taskRes.data;
