@@ -9,7 +9,11 @@ import {
     EyeOff,
     Loader2,
     ChevronRight,
-    Info
+    Info,
+    Mail,
+    Hash,
+    ArrowRight,
+    AlertTriangle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "../shared/utils/axios";
