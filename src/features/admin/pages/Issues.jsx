@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useApp } from "../context/AppContext.jsx";
 import StatusBadge from "../components/common/StatusBadge.jsx";
-import { Plus, Pencil, Mail, Filter, Search as SearchIcon, X } from "lucide-react";
+import { Plus, Pencil, Mail, Filter, Search as SearchIcon, X, Folder, MapPin, ArrowLeft, Eye, AlertTriangle } from "lucide-react";
 import { isTaskOverdue } from "../utils/dateUtils.js";
 
 import IssueStats from "../components/IssueStats.jsx";
@@ -24,31 +24,75 @@ const Issues = () => {
   const { tasks, projects, employees, addTask, updateTask, deleteTask } = useApp();
   const [searchParams] = useSearchParams();
   const [search, setSearch] = useState(searchParams.get("q") || "");
-  const [activeFilter, setActiveFilter] = useState("All"); // All | Open | Closed
+  const [activeFilter, setActiveFilter] = useState("All");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyIssue);
 
-  // Filter Logic
-  const issues = tasks.filter((t) => (t.type || "").toLowerCase() === "issue");
+  // Navigation State
+  const [selectedProject, setSelectedProject] = useState(null);
 
-  const filtered = issues.filter((t) => {
-    // 1. Search Query
-    const project = projects.find((p) => p.id === t.projectId);
-    const emp = employees.find((e) => e.id === t.employeeId);
-    const target = (t.title + (project?.name || "") + (emp?.name || "") + (t.id || "")).toLowerCase();
-    const matchesSearch = target.includes(search.toLowerCase());
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const isManager = (user.role || "").toUpperCase() === "MANAGER";
 
-    // 2. Status Filter
-    let matchesFilter = true;
-    if (activeFilter === "Open") matchesFilter = t.status !== "Completed" && t.status !== "Resolved";
-    if (activeFilter === "Closed") matchesFilter = t.status === "Completed" || t.status === "Resolved";
+  // Filter only Issues
+  const issuesOnly = tasks.filter((t) => (t.type || "").toLowerCase() === "issue");
 
-    return matchesSearch && matchesFilter;
-  });
+  // Calculate Project Metrics (Issue Specific)
+  const projectMetrics = useMemo(() => {
+    return projects.map(project => {
+      const projectIssues = issuesOnly.filter(t => t.projectId === project.id);
+      const total = projectIssues.length;
+      const open = projectIssues.filter(t => t.status !== 'Completed' && t.status !== 'Resolved').length;
+      const highPriority = projectIssues.filter(t => (t.priority || "").toLowerCase() === 'high').length;
+      const resolved = projectIssues.filter(t => t.status === 'Resolved' || t.status === 'Completed').length;
+
+      // Calculate "health" or progress - for issues, lower open count is better, but let's show resolution rate
+      const progress = total > 0 ? Math.round((resolved / total) * 100) : 100;
+
+      return {
+        ...project,
+        issueCount: total,
+        openCount: open,
+        highPriorityCount: highPriority,
+        resolvedCount: resolved,
+        progress
+      };
+    });
+  }, [projects, issuesOnly]);
+
+  const filtered = useMemo(() => {
+    let scopedIssues = issuesOnly;
+
+    // Filter by Project if selected
+    if (selectedProject) {
+      scopedIssues = scopedIssues.filter(t => t.projectId === selectedProject.id);
+    }
+
+    // Filter by Search & Status
+    return scopedIssues.filter((t) => {
+      // 1. Search Query
+      const project = projects.find((p) => p.id === t.projectId);
+      const emp = employees.find((e) => e.id === t.employeeId);
+      const target = (t.title + (project?.name || "") + (emp?.name || "") + (t.id || "")).toLowerCase();
+      const matchesSearch = target.includes(search.toLowerCase());
+
+      // 2. Status Filter
+      let matchesFilter = true;
+      if (activeFilter === "Open") matchesFilter = t.status !== "Completed" && t.status !== "Resolved";
+      if (activeFilter === "Closed") matchesFilter = t.status === "Completed" || t.status === "Resolved";
+
+      return matchesSearch && matchesFilter;
+    });
+  }, [issuesOnly, selectedProject, search, activeFilter, projects, employees]);
+
 
   const openCreate = () => {
     setForm(emptyIssue);
+    // Auto-select project if we are inside a project view
+    if (selectedProject) {
+      setForm(prev => ({ ...prev, projectId: selectedProject.id }));
+    }
     setEditingId(null);
     setDrawerOpen(true);
   };
@@ -76,7 +120,6 @@ const Issues = () => {
 
     const emp = employees.find((e) => e.id === formData.employeeId);
     if (emp) {
-      // In real app, toast notification logic here
       // toast.success(`Email sent to ${emp.email}`);
     }
 
@@ -95,13 +138,114 @@ const Issues = () => {
     return t.status;
   };
 
+  // --- RENDER PROJECT GRID ---
+  if (!selectedProject) {
+    return (
+      <div className="space-y-8 animate-in fade-in duration-500">
+
+        {/* Global Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-black text-slate-800 tracking-tight">Issues Overview</h1>
+            <p className="text-slate-500 font-medium">Monitor project health and resolving bottlenecks.</p>
+          </div>
+
+          {!isManager && (
+            <button
+              onClick={openCreate}
+              className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg hover:-translate-y-0.5 transition-all flex items-center gap-2"
+            >
+              <Plus size={18} />
+              Global Issue
+            </button>
+          )}
+        </div>
+
+        {/* Global Stats - Kept for high-level overview */}
+        <IssueStats issues={issuesOnly} />
+
+        {/* Projects Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {projectMetrics.map(p => (
+            <div
+              key={p.id}
+              onClick={() => setSelectedProject(p)}
+              className="group bg-white rounded-2xl p-6 border border-slate-100 hover:border-indigo-500 hover:shadow-xl hover:shadow-indigo-100 transition-all cursor-pointer relative overflow-hidden"
+            >
+              <div className="flex justify-between items-start mb-4">
+                <div className="p-3 bg-rose-50 rounded-xl group-hover:bg-rose-500 transition-colors">
+                  <AlertTriangle className="w-6 h-6 text-rose-500 group-hover:text-white" />
+                </div>
+                <div className={`px-2 py-1 rounded-lg text-xs font-bold ${p.openCount > 0 ? 'bg-orange-50 text-orange-600' : 'bg-emerald-50 text-emerald-600'}`}>
+                  {p.openCount > 0 ? `${p.openCount} Open` : 'All Clear'}
+                </div>
+              </div>
+
+              <h3 className="text-lg font-bold text-slate-800 mb-1 line-clamp-1">{p.name}</h3>
+              <p className="text-xs text-slate-500 font-medium mb-6 flex items-center gap-1">
+                <MapPin size={12} /> {p.location || 'No Location'}
+              </p>
+
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                <div className="bg-slate-50 rounded-lg p-2 text-center">
+                  <div className="text-lg font-black text-slate-800">{p.issueCount}</div>
+                  <div className="text-[10px] uppercase font-bold text-slate-400">Total</div>
+                </div>
+                <div className="bg-rose-50 rounded-lg p-2 text-center">
+                  <div className="text-lg font-black text-rose-600">{p.highPriorityCount}</div>
+                  <div className="text-[10px] uppercase font-bold text-rose-400">High</div>
+                </div>
+                <div className="bg-emerald-50 rounded-lg p-2 text-center">
+                  <div className="text-lg font-black text-emerald-600">{p.resolvedCount}</div>
+                  <div className="text-[10px] uppercase font-bold text-emerald-400">Fixed</div>
+                </div>
+              </div>
+
+              {/* Progress Bar (Resolution Rate) */}
+              <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${p.progress === 100 ? 'bg-emerald-500' : 'bg-orange-500'}`}
+                  style={{ width: `${p.progress}%` }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Global Drawer */}
+        <IssueDrawer
+          isOpen={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          initialData={form}
+          isEditing={!!editingId}
+          onSubmit={handleSubmit}
+          onDelete={handleDelete}
+          projects={projects}
+          employees={employees}
+        />
+
+      </div>
+    );
+  }
+
+  // --- RENDER ISSUE LIST (Drill-down) ---
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-6 animate-in fade-in duration-300">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-black text-slate-800 tracking-tight">Issues</h1>
-          <p className="text-slate-500 font-medium">Track and triage feedback and problems</p>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setSelectedProject(null)}
+            className="p-2 hover:bg-slate-100 rounded-lg transition-colors text-slate-500"
+          >
+            <ArrowLeft size={24} />
+          </button>
+          <div>
+            <h1 className="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+              {selectedProject.name} <span className="text-slate-300">/</span> Issues
+            </h1>
+            <p className="text-slate-500 font-medium text-sm">{selectedProject.location || "Project Site"}</p>
+          </div>
         </div>
 
         <button
@@ -113,16 +257,13 @@ const Issues = () => {
         </button>
       </div>
 
-      {/* Stats Section */}
-      <IssueStats issues={issues} />
-
       {/* Controls / Search */}
       <div className="bg-white p-2 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-2">
         <div className="relative flex-1">
           <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
           <input
             type="text"
-            placeholder="Search issues..."
+            placeholder="Search project issues..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-3 bg-slate-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-indigo-100 transition-all text-sm font-medium"
@@ -151,81 +292,95 @@ const Issues = () => {
               <span className="text-2xl">🎉</span>
             </div>
             <p className="text-slate-500 font-bold">No issues found.</p>
+            <button onClick={openCreate} className="text-indigo-600 text-sm font-bold mt-2 hover:underline">
+              Log the first issue
+            </button>
           </div>
         ) : (
-          <div className="divide-y divide-slate-50">
-            <div className="grid grid-cols-[80px_2fr_1.5fr_1.5fr_1fr_1fr_100px] text-[11px] font-bold text-slate-400 uppercase tracking-wider px-6 py-4 bg-slate-50/50">
-              <div>ID</div>
-              <div>Issue</div>
-              <div>Project</div>
-              <div>Assignee</div>
-              <div>Priority</div>
-              <div>Status</div>
-              <div className="text-right">Actions</div>
-            </div>
+          <div className="overflow-x-auto">
+            <div className="min-w-[800px]">
+              <div className="grid grid-cols-[80px_2fr_1.5fr_1.5fr_1fr_1fr_100px] text-[11px] font-bold text-slate-400 uppercase tracking-wider px-6 py-4 bg-slate-50/50 border-b border-slate-100">
+                <div>ID</div>
+                <div>Issue</div>
+                <div>Assigned To</div>
+                <div>Timeline</div>
+                <div>Priority</div>
+                <div>Status</div>
+                <div className="text-right">Actions</div>
+              </div>
 
-            {filtered.map((t) => {
-              const project = projects.find((p) => p.id === t.projectId);
-              const emp = employees.find((e) => e.id === t.employeeId);
-              const status = getStatus(t);
+              {filtered.map((t) => {
+                const emp = employees.find((e) => e.id === t.employeeId);
+                const status = getStatus(t);
 
-              return (
-                <div key={t.id} className="grid grid-cols-[80px_2fr_1.5fr_1.5fr_1fr_1fr_100px] items-center px-6 py-4 hover:bg-slate-50/50 transition-colors group">
-                  <div className="font-mono text-xs text-orange-600 font-bold">#{t.id.slice(-4)}</div>
+                return (
+                  <div key={t.id} className="grid grid-cols-[80px_2fr_1.5fr_1.5fr_1fr_1fr_100px] items-center px-6 py-4 hover:bg-slate-50/50 transition-colors group border-b border-slate-50 last:border-0">
+                    <div className="font-mono text-xs text-orange-600 font-bold">#{t.id.slice(-4)}</div>
 
-                  <div className="pr-4">
-                    <p className="font-bold text-slate-800 truncate">{t.title}</p>
-                    <p className="text-xs text-slate-400 truncate max-w-[200px]">{t.description || "No description provided."}</p>
-                  </div>
+                    <div className="pr-4">
+                      <p className="font-bold text-slate-800 truncate text-sm">{t.title}</p>
+                      <p className="text-[11px] text-slate-400 truncate max-w-[200px] mt-0.5">{t.description || "No description provided."}</p>
+                    </div>
 
-                  <div>
-                    <p className="font-medium text-slate-700 truncate">{project?.name || "—"}</p>
-                    <p className="text-[10px] font-mono text-slate-400">{project?.projectCode}</p>
-                  </div>
-
-                  <div>
-                    {emp ? (
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-[10px] font-bold">
-                          {emp.name.charAt(0)}
+                    <div>
+                      {emp ? (
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-[10px] font-bold">
+                            {emp.name.charAt(0)}
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-slate-700 truncate">{emp.name}</p>
+                            <p className="text-[10px] text-slate-400">{emp.role}</p>
+                          </div>
                         </div>
-                        <span className="text-sm text-slate-600 font-medium truncate">{emp.name}</span>
+                      ) : (
+                        <span className="text-slate-400 italic text-xs">Unassigned</span>
+                      )}
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <MapPin size={10} className="text-emerald-500" />
+                        <span className="text-xs text-slate-600 font-medium">{t.startDate ? new Date(t.startDate).toLocaleDateString() : 'TBD'}</span>
                       </div>
-                    ) : (
-                      <span className="text-slate-400 italic text-xs">Unassigned</span>
-                    )}
+                      <div className="flex items-center gap-1.5">
+                        <AlertTriangle size={10} className="text-rose-500" />
+                        <span className="text-xs text-slate-600 font-medium">{t.dueDate ? new Date(t.dueDate).toLocaleDateString() : 'TBD'}</span>
+                      </div>
+                    </div>
+
+                    <div><StatusBadge status={t.priority} /></div>
+
+                    <div><StatusBadge status={status} /></div>
+
+                    <div className="text-right flex justify-end gap-2">
+                      <button
+                        onClick={() => {
+                          if (!emp) return alert("No employee assigned.");
+                          alert(`Email sent to ${emp.email} for ${t.title} (simulated).`);
+                        }}
+                        className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-colors border border-transparent hover:border-slate-200"
+                        title="Send Email"
+                      >
+                        <Mail size={16} />
+                      </button>
+                      <button
+                        onClick={() => openEdit(t)}
+                        className="p-1.5 text-slate-400 hover:text-orange-600 hover:bg-slate-100 rounded-lg transition-colors border border-transparent hover:border-slate-200"
+                        title="Edit"
+                      >
+                        <Pencil size={16} />
+                      </button>
+                    </div>
                   </div>
-
-                  <div><StatusBadge status={t.priority} /></div>
-
-                  <div><StatusBadge status={status} /></div>
-
-                  <div className="text-right opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-2">
-                    <button
-                      onClick={() => {
-                        if (!emp) return alert("No employee assigned.");
-                        alert(`Email sent to ${emp.email} for ${t.title} (simulated).`);
-                      }}
-                      className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                      title="Send Email"
-                    >
-                      <Mail size={16} />
-                    </button>
-                    <button
-                      onClick={() => openEdit(t)}
-                      className="px-3 py-1.5 bg-white border border-slate-200 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-50 flex items-center gap-1"
-                    >
-                      <Pencil size={12} /> Edit
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
 
-      {/* Drawer */}
+      {/* Drawer (Shared) */}
       <IssueDrawer
         isOpen={drawerOpen}
         onClose={() => setDrawerOpen(false)}
