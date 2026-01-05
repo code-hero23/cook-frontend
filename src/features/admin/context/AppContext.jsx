@@ -171,17 +171,17 @@ export const AppProvider = ({ children }) => {
     const closedProjects = projects.filter(p => p.status === "Completed").length;
     const overdueProjects = projects.filter((p) => isProjectOverdue(p)).length;
 
-    // Issue Metrics (Type === 'Issue')
+    // Issue Metrics (Type === 'Issue' or 'ISSUE')
     const openIssues = tasks.filter(
-      (t) => t.type === "Issue" && t.status !== "Completed"
+      (t) => (t.type || "").toLowerCase() === "issue" && t.status !== "Completed"
     ).length;
     const closedIssues = tasks.filter(
-      (t) => t.type === "Issue" && t.status === "Completed"
+      (t) => (t.type || "").toLowerCase() === "issue" && t.status === "Completed"
     ).length;
 
     // Task Metrics (Type !== 'Issue')
     // We filter out issues so "Tasks" and "Issues" are mutually exclusive on dashboard
-    const taskOnly = tasks.filter(t => t.type !== "Issue");
+    const taskOnly = tasks.filter(t => (t.type || "").toLowerCase() !== "issue");
 
     const totalTasks = taskOnly.length;
     const openTasks = taskOnly.filter(t => t.status !== "Completed").length;
