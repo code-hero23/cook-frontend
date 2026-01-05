@@ -222,8 +222,10 @@ const ProjectDrawer = ({ isOpen, onClose, onSubmit, initialData, isEditing }) =>
                                                 onChange={handleChange}
                                                 className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none bg-white"
                                             >
-                                                <option value={45}>45 Days (Standard)</option>
-                                                <option value={30}>30 Days (Express)</option>
+                                                <option value={30}>30 Days</option>
+                                                <option value={45}>45 Days</option>
+                                                <option value={60}>60 Days</option>
+                                                <option value={90}>90 Days</option>
                                             </select>
                                         </div>
                                     </div>
