@@ -89,7 +89,7 @@ const Sidebar = ({ open, onClose }) => {
         </div>
 
         {/* Menu */}
-        <nav className="flex-1 py-3 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10">
+        <nav className="flex-1 py-3 overflow-y-auto">
           {filteredNavItems.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
