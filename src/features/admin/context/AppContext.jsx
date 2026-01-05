@@ -107,6 +107,8 @@ export const AppProvider = ({ children }) => {
       setProjects((prev) => [...prev, res.data]);
     } catch (err) {
       console.error("Error adding project:", err);
+      const msg = err.response?.data?.error || err.message || "Failed to add project";
+      alert(msg);
     }
   };
 
