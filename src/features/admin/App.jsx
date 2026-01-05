@@ -107,7 +107,16 @@ const App = () => {
         />
 
         <Route
-          path="chat"   // 👈 NEW CHAT ROUTE
+          path="chat"
+          element={
+            <ProtectedRoute>
+              <Chat />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="project/:id/chat"
           element={
             <ProtectedRoute>
               <Chat />

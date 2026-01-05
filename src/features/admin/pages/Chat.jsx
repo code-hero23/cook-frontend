@@ -2,7 +2,10 @@ import React from "react";
 import ChatInterface from "../../../shared/components/ChatInterface";
 import { useApp } from "../context/AppContext";
 
+import { useParams } from "react-router-dom";
+
 const Chat = () => {
+  const { id } = useParams();
   const { projects } = useApp();
   // Admin user object (simulated or from auth context if available)
   const currentUser = { name: "Admin", id: "admin" };
@@ -15,6 +18,7 @@ const Chat = () => {
           projects={projects}
           currentUser={currentUser}
           role="ADMIN"
+          initialProjectId={id}
         />
       </div>
     </div>

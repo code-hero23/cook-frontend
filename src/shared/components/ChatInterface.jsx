@@ -6,8 +6,8 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 
-const ChatInterface = ({ projects = [], currentUser, role }) => {
-    const [activeProjectId, setActiveProjectId] = useState(null);
+const ChatInterface = ({ projects = [], currentUser, role, initialProjectId }) => {
+    const [activeProjectId, setActiveProjectId] = useState(initialProjectId || null);
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
@@ -15,13 +15,15 @@ const ChatInterface = ({ projects = [], currentUser, role }) => {
     const fileInputRef = useRef(null);
     const [attachments, setAttachments] = useState([]);
 
-    // Auto-select first project if available - ONLY ON DESKTOP
+    // Auto-select first project if available or use initialProjectId - ONLY ON DESKTOP
     useEffect(() => {
         const isMobile = window.innerWidth < 640; // sm breakpoint
-        if (projects.length > 0 && !activeProjectId && !isMobile) {
+        if (initialProjectId) {
+            setActiveProjectId(initialProjectId);
+        } else if (projects.length > 0 && !activeProjectId && !isMobile) {
             setActiveProjectId(projects[0].id);
         }
-    }, [projects]);
+    }, [projects, initialProjectId]);
 
     // Handle back button on mobile
     const handleBackToProjects = () => {
