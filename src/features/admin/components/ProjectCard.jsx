@@ -1,5 +1,5 @@
 import React from "react";
-import { MapPin, Calendar, MoreVertical, Building2 } from "lucide-react";
+import { MapPin, Calendar, MoreVertical, Building2, MessageSquare } from "lucide-react";
 import { Link } from "react-router-dom";
 import StatusBadge from "../components/common/StatusBadge";
 import { isProjectOverdue } from "../utils/dateUtils";
@@ -74,6 +74,13 @@ const ProjectCard = ({ project, onEdit }) => {
                         className="flex-1 py-2 text-center text-xs font-bold text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors"
                     >
                         Open Dashboard
+                    </Link>
+                    <Link
+                        to={`/admin/project/${project.id}/chat`}
+                        className="p-2 text-white bg-indigo-500 rounded-lg hover:bg-indigo-600 transition-colors flex items-center justify-center shadow-sm"
+                        title="Project Chat"
+                    >
+                        <MessageSquare size={16} />
                     </Link>
                 </div>
             </div>
