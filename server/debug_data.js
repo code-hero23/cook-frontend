@@ -9,7 +9,7 @@ async function debug() {
         const user = await prisma.user.findFirst({
             where: { name: { contains: 'Asvanth' } }
         });
-
+ 
         if (!user) {
             console.log("❌ User 'Asvanth' not found in DB.");
             return;
