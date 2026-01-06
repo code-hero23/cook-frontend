@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useApp } from "../context/AppContext.jsx";
 import StatusBadge from "../components/common/StatusBadge.jsx";
-import { Plus, Pencil, Mail, Eye, X, MapPin, Folder, ChevronRight, ArrowLeft, CheckCircle2, Clock, AlertCircle } from "lucide-react";
+import { Plus, Pencil, Mail, Eye, X, MapPin, Folder, ChevronRight, ArrowLeft, CheckCircle2, Clock, AlertCircle, Download } from "lucide-react";
 import { isTaskOverdue } from "../utils/dateUtils.js";
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -810,6 +810,25 @@ const Tasks = () => {
                     : "Task Completion Upload"
                   }
                 </span>
+
+                {(() => {
+                  const hasEvidence = viewingTask.evidence && viewingTask.evidence.length > 0;
+                  const urlPath = hasEvidence ? viewingTask.evidence[0].url : viewingTask.completionFileUrl;
+                  const dlUrl = `${(import.meta.env.VITE_API_URL || "http://localhost:5000/api").replace(/\/api$/, '')}${urlPath}`;
+
+                  return (
+                    <a
+                      href={dlUrl}
+                      download
+                      target="_blank"
+                      rel="noreferrer"
+                      className="bg-black/50 backdrop-blur-md text-white p-2 rounded-full border border-white/20 hover:bg-white/20 transition pointer-events-auto flex items-center justify-center"
+                      title="Download File"
+                    >
+                      <Download size={16} />
+                    </a>
+                  );
+                })()}
               </div>
             </div>
 
