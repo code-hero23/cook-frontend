@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useApp } from "../context/AppContext.jsx";
 import StatusBadge from "../components/common/StatusBadge.jsx";
@@ -57,6 +57,35 @@ const Tasks = () => {
 
   // Navigation State
   const [selectedProject, setSelectedProject] = useState(null);
+
+  // -------------------------------------------------------------------------
+  // Auto-Calculate Dates for "Factory Production"
+  // -------------------------------------------------------------------------
+  useEffect(() => {
+    if (form.title === "Factory Production" && form.projectId) {
+      const project = projects.find(p => p.id === form.projectId);
+      if (project) {
+        // Start Date: Project Start Date OR Today
+        const startDateObj = project.startDate ? new Date(project.startDate) : new Date();
+
+        // Duration: Use project timeline duration (default 45)
+        const duration = project.timelineDuration || 45;
+
+        // Calculate Due Date
+        const dueDateObj = new Date(startDateObj);
+        dueDateObj.setDate(dueDateObj.getDate() + duration);
+
+        // Format to YYYY-MM-DD for input[type="date"]
+        const toInputDate = (d) => d.toISOString().split('T')[0];
+
+        setForm(prev => ({
+          ...prev,
+          startDate: toInputDate(startDateObj),
+          dueDate: toInputDate(dueDateObj)
+        }));
+      }
+    }
+  }, [form.title, form.projectId, projects]);
 
   // Evidence Modal State
   const [evidenceModalOpen, setEvidenceModalOpen] = useState(false);
