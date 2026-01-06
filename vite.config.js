@@ -36,7 +36,7 @@ export default defineConfig({
         ],
       },
       manifest: {
-        name: 'Orbix Projects Unified Studio',
+        name: 'Orbix Projects',
         short_name: 'Orbix Projects',
         description: 'Elite Project Management & Interior Design Portal',
         theme_color: '#4F46E5', // Indigo-600 to match brand
