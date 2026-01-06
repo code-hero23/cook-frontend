@@ -90,6 +90,7 @@ const Tasks = () => {
   // Evidence Modal State
   const [evidenceModalOpen, setEvidenceModalOpen] = useState(false);
   const [viewingTask, setViewingTask] = useState(null);
+  const [evidenceIndex, setEvidenceIndex] = useState(0);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const isManager = (user.role || "").toUpperCase() === "MANAGER";
@@ -162,6 +163,7 @@ const Tasks = () => {
 
   const openEvidence = (task) => {
     setViewingTask(task);
+    setEvidenceIndex(0); // Reset gallery specific to this task
     setEvidenceModalOpen(true);
   }
 
@@ -801,48 +803,84 @@ const Tasks = () => {
             <div className="flex-1 bg-black relative min-h-[300px] md:h-auto group flex items-center justify-center">
               {(() => {
                 const hasEvidence = viewingTask.evidence && viewingTask.evidence.length > 0;
-                const imageUrl = hasEvidence
-                  ? viewingTask.evidence[0].url
-                  : viewingTask.completionFileUrl;
+                // If has evidence array, use index, otherwise fallback to completionFileUrl
+                const currentEvidence = hasEvidence ? viewingTask.evidence[evidenceIndex] : null;
+                const imageUrl = requestUrl = currentEvidence ? currentEvidence.url : viewingTask.completionFileUrl;
 
-                const fullUrl = `${(import.meta.env.VITE_API_URL || "http://localhost:5000/api").replace(/\/api$/, '')}${imageUrl}`;
+                // Helper to get full URL
+                const getFullUrl = (path) => `${(import.meta.env.VITE_API_URL || "http://localhost:5000/api").replace(/\/api$/, '')}${path}`;
+                const fullUrl = getFullUrl(imageUrl);
 
-                // Determine file type (simple check)
                 const isImage = imageUrl?.match(/\.(jpeg|jpg|png|gif|webp)$/i);
 
-                if (!isImage) {
-                  return (
-                    <div className="text-white text-center p-6">
-                      <Folder size={48} className="mx-auto mb-4 text-slate-400" />
-                      <p className="text-lg font-bold mb-2">File Attachment</p>
-                      <p className="text-sm text-slate-400 mb-6 break-all">{imageUrl}</p>
-                      <a href={fullUrl} target="_blank" rel="noreferrer" className="px-6 py-2 bg-indigo-600 rounded-full font-bold hover:bg-indigo-500 transition">
-                        Download / View File
-                      </a>
-                    </div>
-                  );
-                }
-
                 return (
-                  <img
-                    src={fullUrl}
-                    alt="Evidence"
-                    className="absolute inset-0 w-full h-full object-contain"
-                  />
+                  <>
+                    {!isImage ? (
+                      <div className="text-white text-center p-6">
+                        <Folder size={48} className="mx-auto mb-4 text-slate-400" />
+                        <p className="text-lg font-bold mb-2">File Attachment</p>
+                        <p className="text-sm text-slate-400 mb-6 break-all">{imageUrl}</p>
+                        <a href={fullUrl} target="_blank" rel="noreferrer" className="px-6 py-2 bg-indigo-600 rounded-full font-bold hover:bg-indigo-500 transition">
+                          Download / View File
+                        </a>
+                      </div>
+                    ) : (
+                      <img
+                        src={fullUrl}
+                        alt="Evidence"
+                        className="absolute inset-0 w-full h-full object-contain"
+                      />
+                    )}
+
+                    {/* Navigation Buttons (Only if multiple items) */}
+                    {hasEvidence && viewingTask.evidence.length > 1 && (
+                      <>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEvidenceIndex(prev => Math.max(0, prev - 1));
+                          }}
+                          disabled={evidenceIndex === 0}
+                          className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/80 disabled:opacity-30 transition"
+                        >
+                          <ChevronLeft size={24} />
+                        </button>
+
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEvidenceIndex(prev => Math.min(viewingTask.evidence.length - 1, prev + 1));
+                          }}
+                          disabled={evidenceIndex === viewingTask.evidence.length - 1}
+                          className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/80 disabled:opacity-30 transition"
+                        >
+                          <ChevronRight size={24} />
+                        </button>
+                      </>
+                    )}
+                  </>
                 );
               })()}
 
               <div className="absolute top-4 left-4 right-4 flex justify-between items-start pointer-events-none">
-                <span className="bg-black/50 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-mono border border-white/20">
-                  {viewingTask.evidence && viewingTask.evidence.length > 0
-                    ? new Date(viewingTask.evidence[0].capturedAt).toLocaleString()
-                    : "Task Completion Upload"
-                  }
-                </span>
+                <div className="flex flex-col gap-1 items-start">
+                  <span className="bg-black/50 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-mono border border-white/20">
+                    {viewingTask.evidence && viewingTask.evidence.length > 0
+                      ? new Date(viewingTask.evidence[evidenceIndex].capturedAt).toLocaleString()
+                      : "Task Completion Upload"
+                    }
+                  </span>
+                  {/* Counter Badge */}
+                  {viewingTask.evidence && viewingTask.evidence.length > 1 && (
+                    <span className="bg-indigo-600 text-white px-2 py-0.5 rounded text-[10px] font-bold">
+                      {evidenceIndex + 1} / {viewingTask.evidence.length}
+                    </span>
+                  )}
+                </div>
 
                 {(() => {
                   const hasEvidence = viewingTask.evidence && viewingTask.evidence.length > 0;
-                  const urlPath = hasEvidence ? viewingTask.evidence[0].url : viewingTask.completionFileUrl;
+                  const urlPath = hasEvidence ? viewingTask.evidence[evidenceIndex].url : viewingTask.completionFileUrl;
                   const dlUrl = `${(import.meta.env.VITE_API_URL || "http://localhost:5000/api").replace(/\/api$/, '')}${urlPath}`;
 
                   return (
@@ -886,7 +924,8 @@ const Tasks = () => {
                   <>
                     <div className="h-48 rounded-2xl overflow-hidden border-2 border-white shadow-md relative">
                       <MapContainer
-                        center={[viewingTask.evidence[0].latitude, viewingTask.evidence[0].longitude]}
+                        key={evidenceIndex} // Re-render map when index changes to flyTo new center
+                        center={[viewingTask.evidence[evidenceIndex].latitude, viewingTask.evidence[evidenceIndex].longitude]}
                         zoom={15}
                         style={{ height: '100%', width: '100%' }}
                         dragging={false}
@@ -895,7 +934,7 @@ const Tasks = () => {
                         <TileLayer
                           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         />
-                        <Marker position={[viewingTask.evidence[0].latitude, viewingTask.evidence[0].longitude]} />
+                        <Marker position={[viewingTask.evidence[evidenceIndex].latitude, viewingTask.evidence[evidenceIndex].longitude]} />
                       </MapContainer>
                       <div className="absolute bottom-2 left-2 bg-white/90 px-2 py-1 rounded-md text-[10px] font-bold shadow-sm z-[1000] flex items-center gap-1">
                         <MapPin size={10} className="text-red-500" />
