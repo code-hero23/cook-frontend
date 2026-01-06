@@ -10,8 +10,12 @@ async function debug() {
             where: { name: { contains: 'Asvanth' } }
         });
  
+
+
+
+
         if (!user) {
-            console.log("❌ User 'Asvanth' not found in DB.");
+            console.log("❌ User 'Asvanth'  not found in DB.");
             return;
         }
 
