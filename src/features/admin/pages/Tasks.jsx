@@ -546,12 +546,12 @@ const Tasks = () => {
                   </div>
 
                   <div className="text-right space-x-2 flex justify-end">
-                    {/* View Evidence Button */}
-                    {t.evidence && t.evidence.length > 0 && (
+                    {/* View Evidence or Completion File Button */}
+                    {((t.evidence && t.evidence.length > 0) || t.completionFileUrl) && (
                       <button
                         onClick={() => openEvidence(t)}
                         className="inline-flex items-center gap-1 text-slate-600 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 p-1.5 rounded-lg transition-colors border border-slate-200"
-                        title="View Evidence"
+                        title="View Proof"
                       >
                         <Eye size={14} />
                       </button>
@@ -769,15 +769,46 @@ const Tasks = () => {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
           <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col md:flex-row">
             {/* Left: Image Proof */}
-            <div className="flex-1 bg-black relative min-h-[300px] md:h-auto group">
-              <img
-                src={`${(import.meta.env.VITE_API_URL || "http://localhost:5000/api").replace(/\/api$/, '')}${viewingTask.evidence[0].url}`}
-                alt="Evidence"
-                className="absolute inset-0 w-full h-full object-contain"
-              />
-              <div className="absolute top-4 left-4 right-4 flex justify-between items-start">
+            <div className="flex-1 bg-black relative min-h-[300px] md:h-auto group flex items-center justify-center">
+              {(() => {
+                const hasEvidence = viewingTask.evidence && viewingTask.evidence.length > 0;
+                const imageUrl = hasEvidence
+                  ? viewingTask.evidence[0].url
+                  : viewingTask.completionFileUrl;
+
+                const fullUrl = `${(import.meta.env.VITE_API_URL || "http://localhost:5000/api").replace(/\/api$/, '')}${imageUrl}`;
+
+                // Determine file type (simple check)
+                const isImage = imageUrl?.match(/\.(jpeg|jpg|png|gif|webp)$/i);
+
+                if (!isImage) {
+                  return (
+                    <div className="text-white text-center p-6">
+                      <Folder size={48} className="mx-auto mb-4 text-slate-400" />
+                      <p className="text-lg font-bold mb-2">File Attachment</p>
+                      <p className="text-sm text-slate-400 mb-6 break-all">{imageUrl}</p>
+                      <a href={fullUrl} target="_blank" rel="noreferrer" className="px-6 py-2 bg-indigo-600 rounded-full font-bold hover:bg-indigo-500 transition">
+                        Download / View File
+                      </a>
+                    </div>
+                  );
+                }
+
+                return (
+                  <img
+                    src={fullUrl}
+                    alt="Evidence"
+                    className="absolute inset-0 w-full h-full object-contain"
+                  />
+                );
+              })()}
+
+              <div className="absolute top-4 left-4 right-4 flex justify-between items-start pointer-events-none">
                 <span className="bg-black/50 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-mono border border-white/20">
-                  {new Date(viewingTask.evidence[0].capturedAt).toLocaleString()}
+                  {viewingTask.evidence && viewingTask.evidence.length > 0
+                    ? new Date(viewingTask.evidence[0].capturedAt).toLocaleString()
+                    : "Task Completion Upload"
+                  }
                 </span>
               </div>
             </div>
@@ -802,36 +833,50 @@ const Tasks = () => {
                   <p className="text-sm text-slate-500">{viewingTask.project?.name || 'Unknown Project'}</p>
                 </div>
 
-                {/* Location Map */}
-                <div className="h-48 rounded-2xl overflow-hidden border-2 border-white shadow-md relative">
-                  <MapContainer
-                    center={[viewingTask.evidence[0].latitude, viewingTask.evidence[0].longitude]}
-                    zoom={15}
-                    style={{ height: '100%', width: '100%' }}
-                    dragging={false}
-                    zoomControl={false}
-                  >
-                    <TileLayer
-                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    />
-                    <Marker position={[viewingTask.evidence[0].latitude, viewingTask.evidence[0].longitude]} />
-                  </MapContainer>
-                  <div className="absolute bottom-2 left-2 bg-white/90 px-2 py-1 rounded-md text-[10px] font-bold shadow-sm z-[1000] flex items-center gap-1">
-                    <MapPin size={10} className="text-red-500" />
-                    GPS Location
-                  </div>
-                </div>
+                {/* Location Map (Only if GPS Evidence exists) */}
+                {viewingTask.evidence && viewingTask.evidence.length > 0 ? (
+                  <>
+                    <div className="h-48 rounded-2xl overflow-hidden border-2 border-white shadow-md relative">
+                      <MapContainer
+                        center={[viewingTask.evidence[0].latitude, viewingTask.evidence[0].longitude]}
+                        zoom={15}
+                        style={{ height: '100%', width: '100%' }}
+                        dragging={false}
+                        zoomControl={false}
+                      >
+                        <TileLayer
+                          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        />
+                        <Marker position={[viewingTask.evidence[0].latitude, viewingTask.evidence[0].longitude]} />
+                      </MapContainer>
+                      <div className="absolute bottom-2 left-2 bg-white/90 px-2 py-1 rounded-md text-[10px] font-bold shadow-sm z-[1000] flex items-center gap-1">
+                        <MapPin size={10} className="text-red-500" />
+                        GPS Location
+                      </div>
+                    </div>
 
-                {/* Status */}
-                <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100">
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                    <span className="text-xs font-bold text-emerald-700 uppercase">Live Proof</span>
+                    {/* Status */}
+                    <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100">
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                        <span className="text-xs font-bold text-emerald-700 uppercase">Live Proof</span>
+                      </div>
+                      <p className="text-xs text-emerald-600">
+                        Supervisor captured this image at the specified location coordinates.
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <div className="bg-slate-100 rounded-xl p-6 text-center border border-slate-200">
+                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm">
+                      <CheckCircle2 className="w-6 h-6 text-emerald-500" />
+                    </div>
+                    <p className="text-sm font-bold text-slate-700 mb-1">Task Completed</p>
+                    <p className="text-xs text-slate-500">
+                      This file was uploaded by the employee upon task completion. No GPS data associated.
+                    </p>
                   </div>
-                  <p className="text-xs text-emerald-600">
-                    Supervisor captured this image at the specified location coordinates.
-                  </p>
-                </div>
+                )}
               </div>
 
               <div className="mt-6 pt-6 border-t border-slate-200">
