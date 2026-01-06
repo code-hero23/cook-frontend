@@ -27,7 +27,7 @@ const STAGES = {
     "3D Rendered Images", "Production Payment", "Approval of Finalized Designs"
   ],
   "Production": [
-    "Quality Check Process", "Factory Production"
+    "Factory Production", "Quality Check Process"
   ],
   "Installation": [
     "Installation Work", "Completion Certificate"
