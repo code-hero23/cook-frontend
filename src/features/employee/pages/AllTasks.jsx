@@ -26,8 +26,16 @@ const AllTasks = () => {
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-  // ✅ Filter tasks for THIS employee (Context already processes this, but we keep it referenced)
-  let filteredTasks = tasks;
+  // ✅ Filter tasks: Hide completed tasks older than 10 days
+  const tenDaysAgo = new Date();
+  tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
+
+  let filteredTasks = tasks.filter(t => {
+    if (t.status === "Completed" && t.updatedAt) {
+      return new Date(t.updatedAt) >= tenDaysAgo;
+    }
+    return true;
+  });
 
   // ✅ Filtering
   if (filter === "Completed") {
