@@ -1,8 +1,19 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import axios from "../../../shared/utils/axios";
 
 const Timeline = ({ tasks, compact }) => {
   const isMobile = window.innerWidth < 768;
   const useCompact = compact || isMobile;
+  const [projectData, setProjectData] = useState(null);
+
+  useEffect(() => {
+    const project = JSON.parse(localStorage.getItem("clientProject") || "{}");
+    if (project.projectCode) {
+      axios.get(`/client/${project.projectCode}`)
+        .then(res => setProjectData(res.data))
+        .catch(err => console.error("Error fetching project details", err));
+    }
+  }, []);
 
   const formatDateTime = (d) =>
     new Date(d).toLocaleString("en-IN", {
@@ -75,9 +86,18 @@ const Timeline = ({ tasks, compact }) => {
   ];
 
   const renderTask = (task, i) => {
-    const start = new Date();
-    start.setDate(start.getDate() + i);
-    start.setHours(10, 0);
+    // Logic: Use projectStartDate if available
+    // If not available, we show "Pending Start"
+
+    let dateDisplay = "Pending Start";
+
+    if (projectData?.startDate) {
+      const start = new Date(projectData.startDate);
+      start.setDate(start.getDate() + i); // Assuming sequential items? 
+      // NOTE: The previous logic assumed tasks are 1 day apart. 
+      // We keep this "Estimated Schedule" logic for now.
+      dateDisplay = formatDateTime(start);
+    }
 
     return (
       <div
@@ -90,7 +110,9 @@ const Timeline = ({ tasks, compact }) => {
         </div>
         <div>
           <p className="text-sm font-medium text-gray-800">{task.name}</p>
-          <p className="text-[10px] text-gray-500">{formatDateTime(start)}</p>
+          <p className="text-[10px] text-gray-500">
+            {dateDisplay}
+          </p>
         </div>
       </div>
     );
