@@ -104,6 +104,18 @@ exports.updateTask = async (req, res) => {
             }
         });
 
+        // ------------------------------------------------------------------
+        // NEW: Auto-Start Project Timeline Logic
+        // ------------------------------------------------------------------
+        // When "Approval of Finalized Designs" is COMPLETED, set Project Start Date
+        if (task.title === "Approval of Finalized Designs" && task.status === "COMPLETED") {
+            await prisma.project.update({
+                where: { id: task.projectId },
+                data: { startDate: new Date() }
+            });
+            console.log(`[Auto-Start] Project ${task.projectId} timeline started via Task ${task.id}`);
+        }
+
         // 2. If a file was uploaded as proof, auto-add to Project Documents so Client sees it
         if (completionFileUrl && completionFileName) {
             await prisma.projectDocument.create({
