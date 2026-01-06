@@ -7,6 +7,7 @@ import ClientApp from '@client/App';
 import Login from './pages/Login';
 import ReloadPrompt from './components/pwa/ReloadPrompt';
 import InstallPrompt from './components/pwa/InstallPrompt';
+import IOSInstallPrompt from './components/pwa/IOSInstallPrompt';
 import { Toaster } from 'react-hot-toast';
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
             <Toaster position="top-center" />
             <ReloadPrompt />
             <InstallPrompt />
+            <IOSInstallPrompt />
             <Routes>
                 <Route path="/" element={<Navigate to="/login" replace />} />
                 <Route path="/login" element={<Login />} />
