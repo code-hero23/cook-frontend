@@ -15,7 +15,7 @@ const Navbar = ({ setSidebarOpen, searchTerm, setSearchTerm }) => {
                 </button>
 
                 <div className="hidden md:flex flex-col">
-                    <h2 className="text-lg font-bold text-slate-800 leading-none">Welcome back, {user.name?.split(' ')[0] || 'Supervisor'}</h2>
+                    <h2 className="text-lg font-bold text-slate-800 leading-none">Welcome back, {user.name?.split(' ')[0] || 'AE'}</h2>
                     <p className="text-xs text-slate-500 font-medium mt-1">Here's your site activity overview</p>
                 </div>
             </div>

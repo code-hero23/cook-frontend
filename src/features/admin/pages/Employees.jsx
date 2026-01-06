@@ -124,7 +124,9 @@ const Employees = () => {
                     </p>
                   </td>
                   <td className="py-2 pr-4">{e.department}</td>
-                  <td className="py-2 pr-4">{e.role}</td>
+                  <td className="py-2 pr-4">
+                    {e.role === 'SITE_SUPERVISOR' ? 'AE' : e.role}
+                  </td>
                   <td className="py-2 pr-4">{e.phone}</td>
                   <td className="py-2 pr-4">
                     <StatusBadge status={e.status} />
@@ -212,7 +214,7 @@ const Employees = () => {
                     <option value="EMPLOYEE">Employee</option>
                     <option value="MANAGER">Manager</option>
                     <option value="SUPER_ADMIN">Super Admin</option>
-                    <option value="SITE_SUPERVISOR">Site Supervisor</option>
+                    <option value="SITE_SUPERVISOR">AE (Application Engineer)</option>
                   </select>
                 </div>
 
