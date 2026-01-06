@@ -111,7 +111,7 @@ const AllTasks = () => {
 
     try {
       const formData = new FormData();
-      formData.append("file", uploadedFile);
+      formData.append("files", uploadedFile);
 
       // Upload the file first
       const uploadRes = await axios.post("/upload", formData, {
@@ -119,7 +119,7 @@ const AllTasks = () => {
       });
 
       const fileData = {
-        url: uploadRes.data.url,
+        url: uploadRes.data[0].url,
         name: uploadedFile.name
       };
 
