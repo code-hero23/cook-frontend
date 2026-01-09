@@ -25,31 +25,34 @@ function App() {
     }, []);
 
     return (
-        <AnimatePresence mode="wait">
-            {isLoading ? (
-                <SplashScreen key="splash" />
-            ) : (
-                <BrowserRouter>
-                    <Toaster position="top-center" />
-                    <ReloadPrompt />
-                    <InstallPrompt />
-                    <IOSInstallPrompt />
-                    <Routes>
-                        <Route path="/" element={<Navigate to="/login" replace />} />
-                        <Route path="/login" element={<Login />} />
+        <>
+            <Toaster position="top-center" />
+            <ReloadPrompt />
+            <InstallPrompt />
+            <IOSInstallPrompt />
 
-                        {/* Feature Routes */}
-                        <Route path="/admin/*" element={<AdminApp />} />
-                        <Route path="/employee/*" element={<EmployeeApp />} />
-                        <Route path="/supervisor/*" element={<SupervisorApp />} />
-                        <Route path="/client/*" element={<ClientApp />} />
+            <AnimatePresence mode="wait">
+                {isLoading ? (
+                    <SplashScreen key="splash" />
+                ) : (
+                    <BrowserRouter>
+                        <Routes>
+                            <Route path="/" element={<Navigate to="/login" replace />} />
+                            <Route path="/login" element={<Login />} />
 
-                        {/* Fallback */}
-                        <Route path="*" element={<Navigate to="/login" replace />} />
-                    </Routes>
-                </BrowserRouter>
-            )}
-        </AnimatePresence>
+                            {/* Feature Routes */}
+                            <Route path="/admin/*" element={<AdminApp />} />
+                            <Route path="/employee/*" element={<EmployeeApp />} />
+                            <Route path="/supervisor/*" element={<SupervisorApp />} />
+                            <Route path="/client/*" element={<ClientApp />} />
+
+                            {/* Fallback */}
+                            <Route path="*" element={<Navigate to="/login" replace />} />
+                        </Routes>
+                    </BrowserRouter>
+                )}
+            </AnimatePresence>
+        </>
     );
 }
 
