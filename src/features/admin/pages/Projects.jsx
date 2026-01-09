@@ -23,6 +23,7 @@ const emptyProject = {
   handingOverYear: "",
   budget: "",
   billingName: "",
+  billingAddress: "",
   billingPhone: "",
   gstin: "",
   startDate: "",
@@ -119,6 +120,7 @@ const Projects = () => {
 
     // Cleanup other optional strings to be safe
     if (!secureForm.billingName) delete secureForm.billingName;
+    if (!secureForm.billingAddress) delete secureForm.billingAddress;
     if (!secureForm.billingPhone) delete secureForm.billingPhone;
     if (!secureForm.location) delete secureForm.location; // Though strictly required in validation
     if (!secureForm.projectCode) delete secureForm.projectCode; // Backend generates it
