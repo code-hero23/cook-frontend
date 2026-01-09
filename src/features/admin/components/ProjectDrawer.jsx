@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { X, Check, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import axios from "../../../shared/utils/axios";
 
 const ProjectDrawer = ({ isOpen, onClose, onSubmit, initialData, isEditing }) => {
     const [form, setForm] = useState(initialData);
@@ -122,30 +123,44 @@ const ProjectDrawer = ({ isOpen, onClose, onSubmit, initialData, isEditing }) =>
                                         <span className="w-8 h-[1px] bg-purple-200"></span> Project Location (GPS)
                                     </h3>
                                     <div className="bg-purple-50/50 p-4 rounded-xl border border-purple-100 space-y-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Google Maps Link</label>
-                                            <div className="flex gap-2">
-                                                <input
-                                                    placeholder="Paste link here (e.g. https://maps.app.goo.gl/...)"
-                                                    className="flex-1 px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-purple-500 outline-none"
-                                                    onChange={(e) => {
-                                                        const url = e.target.value;
-                                                        // Simple regex for coordinates in URL
-                                                        // Matches @12.123,77.123 or ?q=12.123,77.123
-                                                        const coords = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/) || url.match(/q=(-?\d+\.\d+),(-?\d+\.\d+)/);
+                                        <div className="flex gap-2">
+                                            <input
+                                                placeholder="Paste link here (e.g. https://maps.app.goo.gl/...)"
+                                                className="flex-1 px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-purple-500 outline-none"
+                                                onChange={async (e) => {
+                                                    const url = e.target.value;
 
-                                                        if (coords) {
-                                                            setForm(prev => ({
-                                                                ...prev,
-                                                                latitude: coords[1],
-                                                                longitude: coords[2]
-                                                            }));
+                                                    // 1. Try Client-side Regex first (fastest)
+                                                    const coords = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/) || url.match(/q=(-?\d+\.\d+),(-?\d+\.\d+)/);
+
+                                                    if (coords) {
+                                                        setForm(prev => ({
+                                                            ...prev,
+                                                            latitude: coords[1],
+                                                            longitude: coords[2]
+                                                        }));
+                                                        return;
+                                                    }
+
+                                                    // 2. Try Backend Expansion (for short links)
+                                                    if (url.includes('goo.gl') || url.includes('maps.app')) {
+                                                        try {
+                                                            const res = await axios.post('/projects/parse-location', { url });
+                                                            if (res.data.latitude && res.data.longitude) {
+                                                                setForm(prev => ({
+                                                                    ...prev,
+                                                                    latitude: res.data.latitude,
+                                                                    longitude: res.data.longitude
+                                                                }));
+                                                            }
+                                                        } catch (err) {
+                                                            console.warn("Could not resolve map link via backend:", err);
                                                         }
-                                                    }}
-                                                />
-                                            </div>
-                                            <p className="text-[10px] text-slate-400 mt-1">Paste a Google Maps link to auto-fill coordinates.</p>
+                                                    }
+                                                }}
+                                            />
                                         </div>
+                                        <p className="text-[10px] text-slate-400 mt-1">Paste a Google Maps link to auto-fill coordinates.</p>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
                                                 <label className="block text-xs font-bold text-slate-500 uppercase">Latitude</label>
