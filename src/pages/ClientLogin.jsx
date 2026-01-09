@@ -19,14 +19,29 @@ const ClientLogin = () => {
         // Auto-fill from URL token if present
         const params = new URLSearchParams(window.location.search);
         const token = params.get("token");
+
         if (token) {
             try {
-                const decoded = JSON.parse(atob(token));
-                if (decoded.projectId) {
-                    setFormData(prev => ({ ...prev, projectId: decoded.projectId }));
+                let decoded;
+                // Check if it's a JWT (contains dots)
+                if (token.includes('.')) {
+                    const base64Url = token.split('.')[1];
+                    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                    const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+                        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                    }).join(''));
+                    decoded = JSON.parse(jsonPayload);
+                } else {
+                    // Fallback for simple base64
+                    decoded = JSON.parse(atob(token));
+                }
+
+                // Pre-fill Project ID (Token uses 'projectCode', form uses 'projectId')
+                if (decoded.projectCode || decoded.projectId) {
+                    setFormData(prev => ({ ...prev, projectId: decoded.projectCode || decoded.projectId }));
                 }
             } catch (e) {
-                console.error("Invalid token");
+                console.error("Invalid token parsing:", e);
             }
         }
     }, []);
