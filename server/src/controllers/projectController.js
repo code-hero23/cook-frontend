@@ -337,3 +337,54 @@ async function seedProjectTasks(projectId) {
         await prisma.task.createMany({ data: tasksToCreate });
     }
 };
+
+// Parse Google Maps Link
+const axios = require('axios');
+
+exports.parseLocation = async (req, res) => {
+    try {
+        const { url } = req.body;
+        if (!url) return res.status(400).json({ error: "URL is required" });
+
+        console.log(`[GeoParser] resolving: ${url}`);
+
+        // 1. Resolve Short URL (e.g. maps.app.goo.gl)
+        let resolvedUrl = url;
+        if (url.includes('goo.gl') || url.includes('maps.app.goo.gl')) {
+            try {
+                const response = await axios.head(url, { maxRedirects: 5, validateStatus: null });
+                resolvedUrl = response.request.res.responseUrl || url;
+                console.log(`[GeoParser] resolved to: ${resolvedUrl}`);
+            } catch (err) {
+                console.warn("[GeoParser] Failed to resolve short URL:", err.message);
+            }
+        }
+
+        // 2. Extract Coordinates via Regex
+        const patterns = [
+            /@(-?\d+\.\d+),(-?\d+\.\d+)/,       // https://.../@12.34,56.78...
+            /[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/,  // https://...?q=12.34,56.78
+            /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/    // Data parameters in embed URLs
+        ];
+
+        let lat, lng;
+        for (let pattern of patterns) {
+            const match = resolvedUrl.match(pattern);
+            if (match) {
+                lat = parseFloat(match[1]);
+                lng = parseFloat(match[2]);
+                break;
+            }
+        }
+
+        if (lat && lng) {
+            res.json({ latitude: lat, longitude: lng, resolvedUrl });
+        } else {
+            res.status(422).json({ error: "Could not extract coordinates from this link." });
+        }
+
+    } catch (error) {
+        console.error("[GeoParser] Error:", error);
+        res.status(500).json({ error: error.message });
+    }
+};
