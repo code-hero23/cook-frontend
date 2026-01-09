@@ -10,7 +10,11 @@ app.use(cors());
 app.use(express.json());
 
 // Static files
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+app.use('/uploads', express.static(path.join(__dirname, '../uploads'), {
+    setHeaders: (res, path) => {
+        res.set('Content-Disposition', 'attachment');
+    }
+}));
 
 // Routes
 const authRoutes = require('./routes/authRoutes');

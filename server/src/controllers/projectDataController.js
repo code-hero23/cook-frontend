@@ -71,12 +71,13 @@ exports.getDocuments = async (req, res) => {
 exports.addDocument = async (req, res) => {
     try {
         const { projectId } = req.params;
-        const { url, name } = req.body;
+        const { url, name, taskId } = req.body;
         const doc = await prisma.projectDocument.create({
             data: {
                 projectId,
                 url,
-                name
+                name,
+                taskId: taskId || null
             }
         });
         res.status(201).json(doc);
