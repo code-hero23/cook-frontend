@@ -429,7 +429,7 @@ const ProjectProgress = ({ tasks = [] }) => {
                 <span className="text-[10px] font-bold text-indigo-500/60 uppercase tracking-widest mt-2">{completedTasks} / {totalTasks} Tasks</span>
               </div>
 
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                 <PieChart margin={{ top: 0, right: 10, bottom: 20, left: 10 }}>
                   <Pie
                     data={[{ value: 1 }]}

@@ -9,7 +9,7 @@ const TaskList = ({ tasks }) => {
     "Installation": false,
   });
 
-  console.log("TaskList tasks:", tasks); // Debugging: Check if documents are attached
+  // console.log("TaskList tasks:", tasks); // Removed debug log
 
   const toggleStage = (stage) => {
     setExpandedStages((prev) => ({
