@@ -235,9 +235,9 @@ const UnifiedLogin = () => {
                         </div>
 
                         <div className="mt-4 border-t border-slate-100 pt-3">
-                            <a href="/client/login" className="inline-flex items-center gap-1 text-xs font-semibold text-slate-400 hover:text-orange-500 transition-colors">
+                            <button onClick={() => navigate("/client/login", { replace: true })} className="inline-flex items-center gap-1 text-xs font-semibold text-slate-400 hover:text-orange-500 transition-colors bg-transparent border-none cursor-pointer">
                                 Customer Login <ArrowRight size={10} />
-                            </a>
+                            </button>
                         </div>
                     </div>
                 </div>

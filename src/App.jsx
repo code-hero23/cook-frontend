@@ -15,6 +15,25 @@ import SplashScreen from './components/pwa/SplashScreen';
 import LoadingBar from './components/ui/LoadingBar';
 import { Toaster } from 'react-hot-toast';
 
+// Smart Redirect Component
+const RootRedirect = () => {
+    const clientToken = localStorage.getItem("clientToken");
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+    if (clientToken) {
+        return <Navigate to="/client" replace />;
+    }
+
+    if (token) {
+        if (['SUPER_ADMIN', 'MANAGER'].includes(user.role)) return <Navigate to="/admin/dashboard" replace />;
+        if (user.role === 'EMPLOYEE') return <Navigate to="/employee" replace />;
+        if (user.role === 'SITE_SUPERVISOR') return <Navigate to="/supervisor" replace />;
+    }
+
+    return <Navigate to="/login" replace />;
+};
+
 function App() {
     const [isLoading, setIsLoading] = useState(true);
 
@@ -40,7 +59,7 @@ function App() {
                 ) : (
                     <BrowserRouter>
                         <Routes>
-                            <Route path="/" element={<Navigate to="/login" replace />} />
+                            <Route path="/" element={<RootRedirect />} />
                             <Route path="/login" element={<Login />} />
                             <Route path="/client/login" element={<ClientLogin />} />
 

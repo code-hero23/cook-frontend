@@ -78,7 +78,7 @@ const ClientLogin = () => {
             });
             localStorage.setItem("clientToken", res.data.token);
             localStorage.setItem("clientProject", JSON.stringify(res.data.project));
-            navigate("/client");
+            navigate("/client", { replace: true });
         } catch (err) {
             console.error("Login Error:", err);
             setError(err.response?.data?.message || "Invalid credentials. Please try again.");
