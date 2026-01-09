@@ -51,6 +51,8 @@ exports.createProject = async (req, res) => {
 
         if (data.budget) data.budget = parseFloat(data.budget);
         if (data.timelineDuration) data.timelineDuration = parseInt(data.timelineDuration, 10);
+        if (data.latitude) data.latitude = parseFloat(data.latitude);
+        if (data.longitude) data.longitude = parseFloat(data.longitude);
 
         // Handle Dates
         if (data.startDate) data.startDate = new Date(data.startDate);
@@ -154,6 +156,8 @@ exports.updateProject = async (req, res) => {
         // Sanitize types
         if (data.budget) data.budget = parseFloat(data.budget);
         if (data.timelineDuration) data.timelineDuration = parseInt(data.timelineDuration, 10);
+        if (data.latitude) data.latitude = parseFloat(data.latitude);
+        if (data.longitude) data.longitude = parseFloat(data.longitude);
         if (data.startDate) data.startDate = new Date(data.startDate);
         if (data.deadline) data.deadline = new Date(data.deadline);
 

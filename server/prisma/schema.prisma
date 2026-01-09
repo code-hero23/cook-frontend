@@ -56,6 +56,10 @@ model Project {
   billingPhone     String?
   gstin            String?
 
+  // GPS Location
+  latitude         Float?
+  longitude        Float?
+
   // Dates
   startDate        DateTime?
   deadline         DateTime?

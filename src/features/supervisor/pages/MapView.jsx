@@ -65,7 +65,18 @@ const MapView = () => {
                     };
                 }
 
-                // 2. Project Address Match (Static Map)
+                // 2. Project Exact GPS (from Admin)
+                if (task.project?.latitude && task.project?.longitude) {
+                    return {
+                        ...task,
+                        lat: task.project.latitude + jitterLat,
+                        lng: task.project.longitude + jitterLng,
+                        hasRealLocation: true, // It is real, just project-level, not task-evidence-level
+                        isProjectLevel: true
+                    };
+                }
+
+                // 3. Project Address Match (Static Map / Fallback)
                 const projectCoords = getLocationCoords(task.project?.location);
                 if (projectCoords) {
                     return {
