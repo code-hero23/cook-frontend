@@ -114,225 +114,223 @@ const ProjectDrawer = ({ isOpen, onClose, onSubmit, initialData, isEditing }) =>
                                             />
                                         </div>
                                     </div>
-                                </div>
-                            </section>
+                                </section>
 
-                            {/* Section: Billing Details */}
-                            <section>
-                                <h3 className="text-xs font-bold uppercase tracking-wider text-blue-500 mb-4 flex items-center gap-2">
-                                    <span className="w-8 h-[1px] bg-blue-200"></span> Billing Details
-                                </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="col-span-1">
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Billing Name</label>
-                                        <input
-                                            name="billingName"
-                                            value={form.billingName}
-                                            onChange={handleChange}
-                                            className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none"
-                                            placeholder="Legal Entity / Name"
-                                        />
+                                {/* Section: Billing Details */}
+                                <section>
+                                    <h3 className="text-xs font-bold uppercase tracking-wider text-blue-500 mb-4 flex items-center gap-2">
+                                        <span className="w-8 h-[1px] bg-blue-200"></span> Billing Details
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="col-span-1">
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Billing Name</label>
+                                            <input
+                                                name="billingName"
+                                                value={form.billingName}
+                                                onChange={handleChange}
+                                                className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none"
+                                                placeholder="Legal Entity / Name"
+                                            />
+                                        </div>
+                                        <div className="col-span-1">
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Billing Phone</label>
+                                            <input
+                                                name="billingPhone"
+                                                value={form.billingPhone}
+                                                onChange={handleChange}
+                                                className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none"
+                                            />
+                                        </div>
+                                        <div className="col-span-2">
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Billing Address</label>
+                                            <textarea
+                                                name="billingAddress"
+                                                value={form.billingAddress}
+                                                onChange={handleChange}
+                                                rows="2"
+                                                className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none resize-none"
+                                            />
+                                        </div>
+                                        <div className="col-span-1">
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">GSTIN</label>
+                                            <input
+                                                name="gstin"
+                                                value={form.gstin}
+                                                onChange={handleChange}
+                                                className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none"
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="col-span-1">
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Billing Phone</label>
-                                        <input
-                                            name="billingPhone"
-                                            value={form.billingPhone}
-                                            onChange={handleChange}
-                                            className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none"
-                                        />
-                                    </div>
-                                    <div className="col-span-2">
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Billing Address</label>
-                                        <textarea
-                                            name="billingAddress"
-                                            value={form.billingAddress}
-                                            onChange={handleChange}
-                                            rows="2"
-                                            className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none resize-none"
-                                        />
-                                    </div>
-                                    <div className="col-span-1">
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">GSTIN</label>
-                                        <input
-                                            name="gstin"
-                                            value={form.gstin}
-                                            onChange={handleChange}
-                                            className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none"
-                                        />
-                                    </div>
-                                </div>
-                            </section>
+                                </section>
 
-                            {/* Section: Client Details */}
-                            <section>
-                                <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-500 mb-4 flex items-center gap-2">
-                                    <span className="w-8 h-[1px] bg-emerald-200"></span> Client Details
-                                </h3>
-                                <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="col-span-1">
-                                        <label className="block text-xs text-slate-500 mb-1">First Name</label>
-                                        <input
-                                            required
-                                            name="clientFirstName"
-                                            value={form.clientFirstName}
-                                            onChange={handleChange}
-                                            className="w-full px-3 py-2 rounded-lg bg-slate-50 border-none outline-none focus:ring-1 focus:ring-emerald-400"
-                                        />
+                                {/* Section: Client Details */}
+                                <section>
+                                    <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-500 mb-4 flex items-center gap-2">
+                                        <span className="w-8 h-[1px] bg-emerald-200"></span> Client Details
+                                    </h3>
+                                    <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="col-span-1">
+                                            <label className="block text-xs text-slate-500 mb-1">First Name</label>
+                                            <input
+                                                required
+                                                name="clientFirstName"
+                                                value={form.clientFirstName}
+                                                onChange={handleChange}
+                                                className="w-full px-3 py-2 rounded-lg bg-slate-50 border-none outline-none focus:ring-1 focus:ring-emerald-400"
+                                            />
+                                        </div>
+                                        <div className="col-span-1">
+                                            <label className="block text-xs text-slate-500 mb-1">Last Name</label>
+                                            <input
+                                                required
+                                                name="clientLastName"
+                                                value={form.clientLastName}
+                                                onChange={handleChange}
+                                                className="w-full px-3 py-2 rounded-lg bg-slate-50 border-none outline-none focus:ring-1 focus:ring-emerald-400"
+                                            />
+                                        </div>
+                                        <div className="col-span-1">
+                                            <label className="block text-xs text-slate-500 mb-1">Email <span className="text-red-500">*</span></label>
+                                            <input
+                                                required
+                                                type="email"
+                                                name="clientEmail"
+                                                value={form.clientEmail}
+                                                onChange={handleChange}
+                                                className="w-full px-3 py-2 rounded-lg bg-slate-50 border-none outline-none focus:ring-1 focus:ring-emerald-400"
+                                            />
+                                        </div>
+                                        <div className="col-span-1">
+                                            <label className="block text-xs text-slate-500 mb-1">Phone <span className="text-red-500">*</span></label>
+                                            <input
+                                                required
+                                                name="clientPhone"
+                                                value={form.clientPhone}
+                                                onChange={handleChange}
+                                                className="w-full px-3 py-2 rounded-lg bg-slate-50 border-none outline-none focus:ring-1 focus:ring-emerald-400"
+                                            />
+                                        </div>
+                                        <div className="col-span-1">
+                                            <label className="block text-xs text-slate-500 mb-1">Client Password {!isEditing && '*'}</label>
+                                            <input
+                                                type="password"
+                                                name="clientPassword"
+                                                value={form.clientPassword}
+                                                onChange={handleChange}
+                                                className="w-full px-3 py-2 rounded-lg bg-slate-50 border-none outline-none focus:ring-1 focus:ring-emerald-400"
+                                                placeholder={isEditing ? "Leave blank to keep current" : "Set login password"}
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="col-span-1">
-                                        <label className="block text-xs text-slate-500 mb-1">Last Name</label>
-                                        <input
-                                            required
-                                            name="clientLastName"
-                                            value={form.clientLastName}
-                                            onChange={handleChange}
-                                            className="w-full px-3 py-2 rounded-lg bg-slate-50 border-none outline-none focus:ring-1 focus:ring-emerald-400"
-                                        />
+                                </section>
+
+                                {/* Section: Spouse Details */}
+                                <section>
+                                    <h3 className="text-xs font-bold uppercase tracking-wider text-pink-500 mb-4 flex items-center gap-2">
+                                        <span className="w-8 h-[1px] bg-pink-200"></span> Spouse Details
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="col-span-1">
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Spouse Name</label>
+                                            <input
+                                                name="spouseName"
+                                                value={form.spouseName}
+                                                onChange={handleChange}
+                                                className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none"
+                                            />
+                                        </div>
+                                        <div className="col-span-1">
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Contact Number</label>
+                                            <input
+                                                name="spousePhone"
+                                                value={form.spousePhone}
+                                                onChange={handleChange}
+                                                className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none"
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="col-span-1">
-                                        <label className="block text-xs text-slate-500 mb-1">Email <span className="text-red-500">*</span></label>
-                                        <input
-                                            required
-                                            type="email"
-                                            name="clientEmail"
-                                            value={form.clientEmail}
-                                            onChange={handleChange}
-                                            className="w-full px-3 py-2 rounded-lg bg-slate-50 border-none outline-none focus:ring-1 focus:ring-emerald-400"
-                                        />
+                                </section>
+
+                                {/* Section: Timeline & Finances */}
+                                <section>
+                                    <h3 className="text-xs font-bold uppercase tracking-wider text-orange-500 mb-4 flex items-center gap-2">
+                                        <span className="w-8 h-[1px] bg-orange-200"></span> Timeline & Budget
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="col-span-1">
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Start Date <span className="text-red-500">*</span></label>
+                                            <input
+                                                required
+                                                type="date"
+                                                name="startDate"
+                                                value={form.startDate}
+                                                onChange={handleChange}
+                                                className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none"
+                                            />
+                                        </div>
+                                        <div className="col-span-1">
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Deadline</label>
+                                            <input
+                                                type="date"
+                                                name="deadline"
+                                                value={form.deadline}
+                                                onChange={handleChange}
+                                                className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none"
+                                            />
+                                        </div>
+                                        <div className="col-span-1">
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Total Budget (₹)</label>
+                                            <input
+                                                type="number"
+                                                name="budget"
+                                                value={form.budget}
+                                                onChange={handleChange}
+                                                className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none"
+                                            />
+                                        </div>
+                                        <div className="col-span-1">
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Timeline</label>
+                                            <select
+                                                name="timelineDuration"
+                                                value={form.timelineDuration}
+                                                onChange={handleChange}
+                                                className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none bg-white"
+                                            >
+                                                <option value={30}>30 Days</option>
+                                                <option value={45}>45 Days</option>
+                                                <option value={60}>60 Days</option>
+                                                <option value={90}>90 Days</option>
+                                            </select>
+                                        </div>
                                     </div>
-                                    <div className="col-span-1">
-                                        <label className="block text-xs text-slate-500 mb-1">Phone <span className="text-red-500">*</span></label>
-                                        <input
-                                            required
-                                            name="clientPhone"
-                                            value={form.clientPhone}
-                                            onChange={handleChange}
-                                            className="w-full px-3 py-2 rounded-lg bg-slate-50 border-none outline-none focus:ring-1 focus:ring-emerald-400"
-                                        />
-                                    </div>
-                                    <div className="col-span-1">
-                                        <label className="block text-xs text-slate-500 mb-1">Client Password {!isEditing && '*'}</label>
-                                        <input
-                                            type="password"
-                                            name="clientPassword"
-                                            value={form.clientPassword}
-                                            onChange={handleChange}
-                                            className="w-full px-3 py-2 rounded-lg bg-slate-50 border-none outline-none focus:ring-1 focus:ring-emerald-400"
-                                            placeholder={isEditing ? "Leave blank to keep current" : "Set login password"}
-                                        />
-                                    </div>
-                                </div>
+                                </section>
+
+                            </form>
                         </div>
-                    </section>
 
-                    {/* Section: Spouse Details */}
-                    <section>
-                        <h3 className="text-xs font-bold uppercase tracking-wider text-pink-500 mb-4 flex items-center gap-2">
-                            <span className="w-8 h-[1px] bg-pink-200"></span> Spouse Details
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="col-span-1">
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Spouse Name</label>
-                                <input
-                                    name="spouseName"
-                                    value={form.spouseName}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none"
-                                />
-                            </div>
-                            <div className="col-span-1">
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Contact Number</label>
-                                <input
-                                    name="spousePhone"
-                                    value={form.spousePhone}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none"
-                                />
-                            </div>
+                        {/* Footer Actions */}
+                        <div className="p-6 border-t border-slate-100 bg-white shadow-[0_-4px_10px_rgba(0,0,0,0.02)] flex items-center justify-end gap-3 z-10">
+                            <button
+                                type="button"
+                                onClick={onClose}
+                                className="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-50 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                form="project-form"
+                                type="submit"
+                                className="px-6 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-bold shadow-lg shadow-indigo-200 hover:shadow-indigo-300 hover:-translate-y-0.5 transition-all flex items-center gap-2"
+                            >
+                                <Check size={18} />
+                                {isEditing ? "Save Changes" : "Create Project"}
+                            </button>
                         </div>
-                    </section>
 
-                    {/* Section: Timeline & Finances */}
-                    <section>
-                        <h3 className="text-xs font-bold uppercase tracking-wider text-orange-500 mb-4 flex items-center gap-2">
-                            <span className="w-8 h-[1px] bg-orange-200"></span> Timeline & Budget
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="col-span-1">
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Start Date <span className="text-red-500">*</span></label>
-                                <input
-                                    required
-                                    type="date"
-                                    name="startDate"
-                                    value={form.startDate}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none"
-                                />
-                            </div>
-                            <div className="col-span-1">
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Deadline</label>
-                                <input
-                                    type="date"
-                                    name="deadline"
-                                    value={form.deadline}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none"
-                                />
-                            </div>
-                            <div className="col-span-1">
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Total Budget (₹)</label>
-                                <input
-                                    type="number"
-                                    name="budget"
-                                    value={form.budget}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none"
-                                />
-                            </div>
-                            <div className="col-span-1">
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Timeline</label>
-                                <select
-                                    name="timelineDuration"
-                                    value={form.timelineDuration}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none bg-white"
-                                >
-                                    <option value={30}>30 Days</option>
-                                    <option value={45}>45 Days</option>
-                                    <option value={60}>60 Days</option>
-                                    <option value={90}>90 Days</option>
-                                </select>
-                            </div>
-                        </div>
-                    </section>
-
-                </form>
-        </div>
-
-                    {/* Footer Actions */ }
-    <div className="p-6 border-t border-slate-100 bg-white shadow-[0_-4px_10px_rgba(0,0,0,0.02)] flex items-center justify-end gap-3 z-10">
-        <button
-            type="button"
-            onClick={onClose}
-            className="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-50 transition-colors"
-        >
-            Cancel
-        </button>
-        <button
-            form="project-form"
-            type="submit"
-            className="px-6 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-bold shadow-lg shadow-indigo-200 hover:shadow-indigo-300 hover:-translate-y-0.5 transition-all flex items-center gap-2"
-        >
-            <Check size={18} />
-            {isEditing ? "Save Changes" : "Create Project"}
-        </button>
-    </div>
-
-                </motion.div >
-        </>
-    )
-}
+                    </motion.div >
+                </>
+            )
+            }
         </AnimatePresence >
     );
 };
