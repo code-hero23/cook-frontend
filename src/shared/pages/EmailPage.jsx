@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from '../utils/axios';
-import { Mail, Send, Plus, Inbox, FileText, Search, User, Paperclip, X, Menu, ChevronLeft, ArrowLeft } from 'lucide-react';
+import { Mail, Send, Plus, Inbox, FileText, Search, User, Paperclip, X, Menu, ChevronLeft, ArrowLeft, Trash2, ArchiveRestore } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const EmailPage = () => {
@@ -138,6 +138,45 @@ const EmailPage = () => {
         setAttachments(prev => prev.filter((_, i) => i !== index));
     };
 
+    const handleDelete = async (e, email) => {
+        e.stopPropagation();
+        if (!confirm(activeTab === 'trash'
+            ? "Are you sure you want to permanently delete this email? This cannot be undone."
+            : "Move this email to trash?")) {
+            return;
+        }
+
+        try {
+            const type = activeTab === 'trash' ? 'hard' : 'soft';
+            await axios.delete(`/emails/${email.id}?type=${type}`);
+
+            toast.success(activeTab === 'trash' ? "Permanently deleted" : "Moved to trash");
+
+            // Remove from local state
+            setEmails(prev => prev.filter(e => e.id !== email.id));
+            if (selectedEmail?.id === email.id) setSelectedEmail(null);
+
+        } catch (error) {
+            console.error("Delete failed", error);
+            toast.error("Failed to delete email");
+        }
+    };
+
+    const handleRestore = async (e, email) => {
+        e.stopPropagation();
+        try {
+            await axios.put(`/emails/${email.id}/restore`);
+            toast.success("Restored to Inbox");
+
+            // Remove from local state (since we are likely in Trash)
+            setEmails(prev => prev.filter(e => e.id !== email.id));
+            if (selectedEmail?.id === email.id) setSelectedEmail(null);
+        } catch (error) {
+            console.error("Restore failed", error);
+            toast.error("Failed to restore email");
+        }
+    };
+
     return (
         <div className="flex flex-col h-full bg-gray-50 p-0 sm:p-6 relative">
             {/* Header */}
@@ -188,6 +227,7 @@ const EmailPage = () => {
                             { id: 'inbox', label: 'Inbox', icon: Inbox },
                             { id: 'sent', label: 'Sent', icon: Send },
                             { id: 'draft', label: 'Drafts', icon: FileText },
+                            { id: 'trash', label: 'Trash', icon: Trash2 },
                         ].map(tab => (
                             <button
                                 key={tab.id}
@@ -232,6 +272,26 @@ const EmailPage = () => {
                             <span className="text-xs text-gray-500 font-medium bg-gray-50 px-3 py-1 rounded-full whitespace-nowrap">
                                 {new Date(selectedEmail.createdAt).toLocaleDateString()} • {new Date(selectedEmail.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
+
+                            {/* Detail View Actions */}
+                            <div className="flex items-center gap-2 ml-4">
+                                {activeTab === 'trash' && (
+                                    <button
+                                        onClick={(e) => handleRestore(e, selectedEmail)}
+                                        className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-full transition-colors"
+                                        title="Restore"
+                                    >
+                                        <ArchiveRestore size={18} />
+                                    </button>
+                                )}
+                                <button
+                                    onClick={(e) => handleDelete(e, selectedEmail)}
+                                    className="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                                    title={activeTab === 'trash' ? "Delete Forever" : "Move to Trash"}
+                                >
+                                    <Trash2 size={18} />
+                                </button>
+                            </div>
                         </div>
                     ) : (
                         <div className="p-4 border-b border-gray-100 bg-gray-50/30 flex justify-between items-center sticky top-0 backdrop-blur-sm z-10">
@@ -347,6 +407,27 @@ const EmailPage = () => {
                                                 </div>
                                             )}
                                         </div>
+
+                                        {/* Hover Actions (Delete/Restore) */}
+                                        <div className="flex items-center gap-1 sm:opacity-0 group-hover:opacity-100 transition-opacity pl-2">
+                                            {activeTab === 'trash' && (
+                                                <button
+                                                    onClick={(e) => handleRestore(e, email)}
+                                                    className="p-2 text-emerald-500 hover:bg-emerald-50 rounded-full transition-colors"
+                                                    title="Restore"
+                                                >
+                                                    <ArchiveRestore size={16} />
+                                                </button>
+                                            )}
+
+                                            <button
+                                                onClick={(e) => handleDelete(e, email)}
+                                                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                                                title={activeTab === 'trash' ? "Delete Forever" : "Move to Trash"}
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
                                         <div className="sm:pl-[52px]">
                                             <p className="text-sm font-bold text-gray-800 mb-1 leading-tight">{email.subject}</p>
                                             <p className="text-xs sm:text-sm text-gray-500 line-clamp-2 leading-relaxed">{email.content}</p>
@@ -357,130 +438,132 @@ const EmailPage = () => {
                         )}
                     </div>
                 </div>
-            </div>
+            </div >
 
             {/* Compose Modal */}
-            {showCompose && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center sm:p-4">
-                    <div className="bg-white w-full h-[95vh] sm:h-auto sm:max-h-[85vh] sm:max-w-xl rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col animate-slide-up sm:animate-zoom-in">
-                        {/* Modal Header */}
-                        <div className="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-2xl">
-                            <h3 className="font-bold text-lg text-gray-800">New Message</h3>
-                            <button
-                                onClick={() => setShowCompose(false)}
-                                className="text-gray-400 hover:text-gray-600 hover:bg-gray-200 p-2 rounded-full transition-colors"
-                            >
-                                <X size={20} />
-                            </button>
-                        </div>
+            {
+                showCompose && (
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center sm:p-4">
+                        <div className="bg-white w-full h-[95vh] sm:h-auto sm:max-h-[85vh] sm:max-w-xl rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col animate-slide-up sm:animate-zoom-in">
+                            {/* Modal Header */}
+                            <div className="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-2xl">
+                                <h3 className="font-bold text-lg text-gray-800">New Message</h3>
+                                <button
+                                    onClick={() => setShowCompose(false)}
+                                    className="text-gray-400 hover:text-gray-600 hover:bg-gray-200 p-2 rounded-full transition-colors"
+                                >
+                                    <X size={20} />
+                                </button>
+                            </div>
 
-                        <div className="p-5 space-y-4 overflow-y-auto flex-1 custom-scrollbar">
-                            {/* To Field with Search */}
-                            <div className="relative z-20">
-                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">To</label>
-                                {toUser ? (
-                                    <div className="flex items-center gap-2 bg-orange-50 text-orange-700 px-3 py-2.5 rounded-xl border border-orange-100 animate-fade-in group">
-                                        <div className="w-6 h-6 rounded-full bg-orange-200 flex items-center justify-center text-[10px] font-bold">
-                                            {toUser.name.charAt(0)}
-                                        </div>
-                                        <span className="text-sm font-semibold">{toUser.name} <span className="opacity-70 font-normal hidden sm:inline">({toUser.email})</span></span>
-                                        <button onClick={() => setToUser(null)} className="ml-auto p-1 hover:bg-orange-200 rounded-full transition-colors">
-                                            <X size={14} />
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <>
-                                        <div className="relative">
-                                            <Search size={18} className="absolute left-3.5 top-3 text-gray-400" />
-                                            <input
-                                                type="text"
-                                                placeholder="Search user by name..."
-                                                value={userSearchQuery}
-                                                onChange={e => setUserSearchQuery(e.target.value)}
-                                                className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all outline-none"
-                                            />
-                                        </div>
-                                        {searchResults.length > 0 && (
-                                            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-100 max-h-56 overflow-y-auto custom-scrollbar ring-1 ring-black/5">
-                                                {searchResults.map(u => (
-                                                    <button
-                                                        key={u.id}
-                                                        onClick={() => { setToUser(u); setUserSearchQuery(''); setSearchResults([]); }}
-                                                        className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-3 border-b border-gray-50 last:border-0 transition-colors"
-                                                    >
-                                                        <div className="w-9 h-9 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm font-bold border border-indigo-100">
-                                                            {u.name.charAt(0)}
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-sm font-bold text-gray-800">{u.name}</p>
-                                                            <p className="text-xs text-gray-500 font-medium">{u.role}</p>
-                                                        </div>
-                                                    </button>
-                                                ))}
+                            <div className="p-5 space-y-4 overflow-y-auto flex-1 custom-scrollbar">
+                                {/* To Field with Search */}
+                                <div className="relative z-20">
+                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">To</label>
+                                    {toUser ? (
+                                        <div className="flex items-center gap-2 bg-orange-50 text-orange-700 px-3 py-2.5 rounded-xl border border-orange-100 animate-fade-in group">
+                                            <div className="w-6 h-6 rounded-full bg-orange-200 flex items-center justify-center text-[10px] font-bold">
+                                                {toUser.name.charAt(0)}
                                             </div>
-                                        )}
-                                    </>
-                                )}
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Subject</label>
-                                <input
-                                    type="text"
-                                    value={subject}
-                                    onChange={e => setSubject(e.target.value)}
-                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all outline-none font-medium text-gray-800 placeholder:font-normal"
-                                    placeholder="Brief subject..."
-                                />
-                            </div>
-
-                            <div className="flex-1 flex flex-col">
-                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Message</label>
-                                <textarea
-                                    value={message}
-                                    onChange={e => setMessage(e.target.value)}
-                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all outline-none resize-none flex-1 min-h-[150px]"
-                                    placeholder="Type your message here..."
-                                />
-                            </div>
-
-                            {/* Attachments */}
-                            <div className="pt-2">
-                                <label className="flex items-center gap-2 cursor-pointer w-fit px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 text-sm font-medium text-gray-600 hover:text-orange-600 transition-colors border border-gray-200 border-dashed">
-                                    <Paperclip size={18} /> <span>Attach Files</span>
-                                    <input type="file" multiple className="hidden" onChange={handleFileChange} />
-                                </label>
-                                {attachments.length > 0 && (
-                                    <div className="flex flex-wrap gap-2 mt-3">
-                                        {attachments.map((file, idx) => (
-                                            <div key={idx} className="bg-gray-100 text-gray-700 text-xs px-3 py-1.5 rounded-full flex items-center gap-2 font-medium border border-gray-200">
-                                                {file.name}
-                                                <button onClick={() => removeAttachment(idx)} className="hover:text-red-500 p-0.5 rounded-full hover:bg-gray-200"><X size={12} /></button>
+                                            <span className="text-sm font-semibold">{toUser.name} <span className="opacity-70 font-normal hidden sm:inline">({toUser.email})</span></span>
+                                            <button onClick={() => setToUser(null)} className="ml-auto p-1 hover:bg-orange-200 rounded-full transition-colors">
+                                                <X size={14} />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div className="relative">
+                                                <Search size={18} className="absolute left-3.5 top-3 text-gray-400" />
+                                                <input
+                                                    type="text"
+                                                    placeholder="Search user by name..."
+                                                    value={userSearchQuery}
+                                                    onChange={e => setUserSearchQuery(e.target.value)}
+                                                    className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all outline-none"
+                                                />
                                             </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
+                                            {searchResults.length > 0 && (
+                                                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-100 max-h-56 overflow-y-auto custom-scrollbar ring-1 ring-black/5">
+                                                    {searchResults.map(u => (
+                                                        <button
+                                                            key={u.id}
+                                                            onClick={() => { setToUser(u); setUserSearchQuery(''); setSearchResults([]); }}
+                                                            className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-3 border-b border-gray-50 last:border-0 transition-colors"
+                                                        >
+                                                            <div className="w-9 h-9 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm font-bold border border-indigo-100">
+                                                                {u.name.charAt(0)}
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-sm font-bold text-gray-800">{u.name}</p>
+                                                                <p className="text-xs text-gray-500 font-medium">{u.role}</p>
+                                                            </div>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
 
-                        {/* Modal Footer */}
-                        <div className="p-4 sm:p-5 border-t border-gray-100 bg-gray-50 rounded-b-2xl flex justify-between items-center gap-4">
-                            <button
-                                onClick={() => handleSend(true)}
-                                className="flex-1 sm:flex-none text-gray-500 hover:text-gray-800 hover:bg-gray-200 px-4 py-2.5 rounded-xl text-sm font-bold transition-all"
-                            >
-                                Save Draft
-                            </button>
-                            <button
-                                onClick={() => handleSend(false)}
-                                className="flex-1 sm:flex-none bg-orange-600 text-white px-8 py-2.5 rounded-xl shadow-lg shadow-orange-200 hover:shadow-orange-300 hover:bg-orange-700 active:scale-95 transition-all flex items-center justify-center gap-2 font-bold"
-                            >
-                                <Send size={18} /> Send
-                            </button>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Subject</label>
+                                    <input
+                                        type="text"
+                                        value={subject}
+                                        onChange={e => setSubject(e.target.value)}
+                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all outline-none font-medium text-gray-800 placeholder:font-normal"
+                                        placeholder="Brief subject..."
+                                    />
+                                </div>
+
+                                <div className="flex-1 flex flex-col">
+                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Message</label>
+                                    <textarea
+                                        value={message}
+                                        onChange={e => setMessage(e.target.value)}
+                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all outline-none resize-none flex-1 min-h-[150px]"
+                                        placeholder="Type your message here..."
+                                    />
+                                </div>
+
+                                {/* Attachments */}
+                                <div className="pt-2">
+                                    <label className="flex items-center gap-2 cursor-pointer w-fit px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 text-sm font-medium text-gray-600 hover:text-orange-600 transition-colors border border-gray-200 border-dashed">
+                                        <Paperclip size={18} /> <span>Attach Files</span>
+                                        <input type="file" multiple className="hidden" onChange={handleFileChange} />
+                                    </label>
+                                    {attachments.length > 0 && (
+                                        <div className="flex flex-wrap gap-2 mt-3">
+                                            {attachments.map((file, idx) => (
+                                                <div key={idx} className="bg-gray-100 text-gray-700 text-xs px-3 py-1.5 rounded-full flex items-center gap-2 font-medium border border-gray-200">
+                                                    {file.name}
+                                                    <button onClick={() => removeAttachment(idx)} className="hover:text-red-500 p-0.5 rounded-full hover:bg-gray-200"><X size={12} /></button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Modal Footer */}
+                            <div className="p-4 sm:p-5 border-t border-gray-100 bg-gray-50 rounded-b-2xl flex justify-between items-center gap-4">
+                                <button
+                                    onClick={() => handleSend(true)}
+                                    className="flex-1 sm:flex-none text-gray-500 hover:text-gray-800 hover:bg-gray-200 px-4 py-2.5 rounded-xl text-sm font-bold transition-all"
+                                >
+                                    Save Draft
+                                </button>
+                                <button
+                                    onClick={() => handleSend(false)}
+                                    className="flex-1 sm:flex-none bg-orange-600 text-white px-8 py-2.5 rounded-xl shadow-lg shadow-orange-200 hover:shadow-orange-300 hover:bg-orange-700 active:scale-95 transition-all flex items-center justify-center gap-2 font-bold"
+                                >
+                                    <Send size={18} /> Send
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
         </div>
     );
 };
