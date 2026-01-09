@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import Layout from "./components/layout/Layout.jsx";
 
 
@@ -18,27 +18,36 @@ import Email from "./pages/Email.jsx"; // New Email Import
 import Helpdesk from "./pages/Helpdesk.jsx";
 import DevPanel from "./pages/DevPanel.jsx";
 import Settings from "./pages/Settings.jsx";
+import { AppProvider } from "./context/AppContext.jsx";
 
-// 🔐 Protected Route Wrapper
-const ProtectedRoute = ({ children, requiredRole }) => {
+// 🔐 Protected Layout Component (Keeps Layout mounted)
+const ProtectedLayout = () => {
   const token = localStorage.getItem("token");
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   if (!token) return <Navigate to="/login" replace />;
 
+  return (
+    <Layout>
+      <Outlet />
+    </Layout>
+  );
+};
+
+// 🛡️ Role Guard Component
+const RoleGuard = ({ children, requiredRole }) => {
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+
   // Allow SUPER_ADMIN to access everything
   if (user.role === "SUPER_ADMIN") {
-    return <Layout>{children}</Layout>;
+    return children;
   }
 
   if (requiredRole && user.role !== requiredRole && user.role !== "admin") {
     return <Navigate to="/admin/dashboard" replace />;
   }
 
-  return <Layout>{children}</Layout>;
+  return children;
 };
-
-import { AppProvider } from "./context/AppContext.jsx";
 
 const App = () => {
   return (
@@ -51,132 +60,37 @@ const App = () => {
         {/* Home redirect */}
         <Route path="" element={<Navigate to="dashboard" replace />} />
 
-        {/* Protected Routes */}
-        <Route
-          path="dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
+        {/* 🔐 Protected Routes (Wrapped in Persistent Layout) */}
+        <Route element={<ProtectedLayout />}>
 
-        <Route
-          path="employees"
-          element={
-            <ProtectedRoute requiredRole="admin">
-              <Employees />
-            </ProtectedRoute>
-          }
-        />
+          <Route path="dashboard" element={<Dashboard />} />
 
-        <Route
-          path="projects/:id/manage"
-          element={
-            <ProtectedRoute>
-              <ProjectManager />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="employees"
+            element={
+              <RoleGuard requiredRole="admin">
+                <Employees />
+              </RoleGuard>
+            }
+          />
 
-        <Route
-          path="projects"
-          element={
-            <ProtectedRoute>
-              <Projects />
-            </ProtectedRoute>
-          }
-        />
+          <Route path="projects/:id/manage" element={<ProjectManager />} />
+          <Route path="projects" element={<Projects />} />
+          <Route path="tasks" element={<Tasks />} />
+          <Route path="issues" element={<Issues />} />
 
-        <Route
-          path="tasks"
-          element={
-            <ProtectedRoute>
-              <Tasks />
-            </ProtectedRoute>
-          }
-        />
+          {/* Chat - Note: Layout handles full screen if path starts with /chat */}
+          <Route path="chat" element={<Chat />} />
+          <Route path="project/:id/chat" element={<Chat />} />
 
-        <Route
-          path="issues"
-          element={
-            <ProtectedRoute>
-              <Issues />
-            </ProtectedRoute>
-          }
-        />
+          <Route path="email" element={<Email />} />
+          <Route path="helpdesk" element={<Helpdesk />} />
+          <Route path="reports" element={<Reports />} />
+          <Route path="settings" element={<Settings />} />
+          <Route path="client-access" element={<ClientAccess />} />
+          <Route path="dev-panel" element={<DevPanel />} />
 
-        <Route
-          path="chat"
-          element={
-            <ProtectedRoute>
-              <Chat />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="project/:id/chat"
-          element={
-            <ProtectedRoute>
-              <Chat />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="email"
-          element={
-            <ProtectedRoute>
-              <Email />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="helpdesk"
-          element={
-            <ProtectedRoute>
-              <Helpdesk />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="reports"
-          element={
-            <ProtectedRoute>
-              <Reports />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="settings"
-          element={
-            <ProtectedRoute>
-              <Settings />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="client-access"
-          element={
-            <ProtectedRoute>
-              <ClientAccess />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="dev-panel"
-          element={
-            <ProtectedRoute>
-              <DevPanel />
-            </ProtectedRoute>
-          }
-        />
+        </Route>
 
         {/* Client Facing Routes */}
         <Route path="client/login" element={<Navigate to="/login" replace />} />

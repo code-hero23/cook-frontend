@@ -805,7 +805,7 @@ const Tasks = () => {
                 const hasEvidence = viewingTask.evidence && viewingTask.evidence.length > 0;
                 // If has evidence array, use index, otherwise fallback to completionFileUrl
                 const currentEvidence = hasEvidence ? viewingTask.evidence[evidenceIndex] : null;
-                const imageUrl = requestUrl = currentEvidence ? currentEvidence.url : viewingTask.completionFileUrl;
+                const imageUrl = currentEvidence ? currentEvidence.url : viewingTask.completionFileUrl;
 
                 // Helper to get full URL
                 const getFullUrl = (path) => `${(import.meta.env.VITE_API_URL || "http://localhost:5000/api").replace(/\/api$/, '')}${path}`;
