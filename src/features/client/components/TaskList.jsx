@@ -9,6 +9,8 @@ const TaskList = ({ tasks }) => {
     "Installation": false,
   });
 
+  console.log("TaskList tasks:", tasks); // Debugging: Check if documents are attached
+
   const toggleStage = (stage) => {
     setExpandedStages((prev) => ({
       ...prev,
@@ -93,8 +95,8 @@ const TaskList = ({ tasks }) => {
                           <p className="text-sm font-medium text-gray-800">{task.title || task.name}</p>
                           <span
                             className={`text-[10px] font-bold mt-0.5 px-1.5 py-0.5 rounded w-fit ${task.status === "Completed"
-                                ? "bg-green-100 text-green-700"
-                                : "bg-yellow-100 text-yellow-700"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-yellow-100 text-yellow-700"
                               }`}
                           >
                             {task.status === "Completed" ? "Completed" : "Pending"}
@@ -147,8 +149,8 @@ const TaskList = ({ tasks }) => {
                       <p className="text-sm font-medium text-gray-800">{task.title || task.name}</p>
                       <span
                         className={`text-[10px] font-bold mt-0.5 px-1.5 py-0.5 rounded w-fit ${task.status === "Completed"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-yellow-100 text-yellow-700"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-yellow-100 text-yellow-700"
                           }`}
                       >
                         {task.status === "Completed" ? "Completed" : "Pending"}
