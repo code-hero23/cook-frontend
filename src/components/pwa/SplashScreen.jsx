@@ -33,7 +33,7 @@ const SplashScreen = () => {
                     className="text-center"
                 >
                     <h1 className="text-3xl font-bold text-gray-800 mb-2 tracking-tight">
-                        Unified<span className="text-orange-600">Cookscape</span>
+                        <span className="text-orange-600">Cookscape</span>
                     </h1>
                     <p className="text-gray-400 font-medium text-sm tracking-wide uppercase">
                         Enterprise Solutions
