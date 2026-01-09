@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useApp } from "../context/AppContext.jsx";
 import StatusBadge from "../components/common/StatusBadge.jsx";
-import { Plus, Pencil, Mail, Eye, X, MapPin, Folder, ChevronRight, ArrowLeft, CheckCircle2, Clock, AlertCircle, Download } from "lucide-react";
+import { Plus, Pencil, Mail, Eye, X, MapPin, Folder, ChevronRight, ChevronLeft, ArrowLeft, CheckCircle2, Clock, AlertCircle, Download } from "lucide-react";
 import { isTaskOverdue } from "../utils/dateUtils.js";
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -920,7 +920,7 @@ const Tasks = () => {
                 </div>
 
                 {/* Location Map (Only if GPS Evidence exists) */}
-                {viewingTask.evidence && viewingTask.evidence.length > 0 ? (
+                {viewingTask.evidence && viewingTask.evidence.length > 0 && viewingTask.evidence[evidenceIndex]?.latitude != null ? (
                   <>
                     <div className="h-48 rounded-2xl overflow-hidden border-2 border-white shadow-md relative">
                       <MapContainer
