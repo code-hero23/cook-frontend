@@ -58,6 +58,14 @@ exports.getEmails = async (req, res) => {
         } else if (folder === 'draft') {
             whereConfig.senderId = userId;
             whereConfig.isDraft = true;
+        } else if (folder === 'trash') {
+            whereConfig = {
+                OR: [
+                    { receiverId: userId },
+                    { senderId: userId }
+                ],
+                isDeleted: true
+            };
         } else {
             return res.status(400).json({ error: "Invalid folder type" });
         }
@@ -141,6 +149,43 @@ exports.markAllRead = async (req, res) => {
         });
 
         res.json({ message: "All marked as read" });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+// Delete Email (Soft or Hard)
+exports.deleteEmail = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { type } = req.query; // 'soft' or 'hard'
+
+        if (type === 'hard') {
+            await prisma.email.delete({
+                where: { id }
+            });
+            return res.json({ message: "Email permanently deleted" });
+        }
+
+        // Soft delete
+        await prisma.email.update({
+            where: { id },
+            data: { isDeleted: true }
+        });
+        res.json({ message: "Moved to trash" });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Restore Email from Trash
+exports.restoreEmail = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await prisma.email.update({
+            where: { id },
+            data: { isDeleted: false }
+        });
+        res.json({ message: "Email restored" });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

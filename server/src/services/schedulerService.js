@@ -66,17 +66,75 @@ const checkOverdueTasks = async () => {
     }
 };
 
+
+
+// Function to reset specific "Daily" tasks
+const resetDailyTasks = async () => {
+    console.log('[Scheduler] Resetting daily tasks...');
+    try {
+        // Target Titles
+        const TARGET_TITLES = ["Quality Check Process", "Installation Work"];
+
+        // 1. Find relevant tasks that are COMPLETED in ONGOING projects
+        const tasksToReset = await prisma.task.findMany({
+            where: {
+                title: { in: TARGET_TITLES },
+                status: 'Completed', // Note: Case sensitive check needed? Schema says 'COMPLETED' or 'Completed'?
+                // Ideally check 'project.status' but nested filtering in updateMany is limited in some Prisma versions.
+                // Doing findMany + updateMany by IDs is safer.
+                project: {
+                    status: 'ONGOING'
+                }
+            },
+            select: { id: true }
+        });
+
+        if (tasksToReset.length === 0) {
+            console.log('[Scheduler] No daily tasks to reset.');
+            return { count: 0 };
+        }
+
+        const ids = tasksToReset.map(t => t.id);
+
+        // 2. Bulk Reset
+        const result = await prisma.task.updateMany({
+            where: {
+                id: { in: ids }
+            },
+            data: {
+                status: 'PENDING',
+                completedAt: null // Clear completion time so it shows as pending
+            }
+        });
+
+        console.log(`[Scheduler] Reset ${result.count} tasks for daily update.`);
+        return { count: result.count };
+
+    } catch (error) {
+        console.error('[Scheduler] Error resetting daily tasks:', error);
+        return { error: error.message };
+    }
+};
+
 // Initialize Scheduler
 const initScheduler = () => {
-    // 0 5 * * * = At 05:00 AM everyday
+    // 0 5 * * * = At 05:00 AM everyday (Overdue Check)
     cron.schedule('0 5 * * *', () => {
         console.log('[Scheduler] Running daily overdue task check...');
         checkOverdueTasks();
     });
-    console.log('[Scheduler] Overdue Task Job Initialized (Daily at 5:00 AM)');
+
+    // 0 0 * * * = At 00:00 AM (Midnight) everyday (Daily Task Reset)
+    cron.schedule('0 0 * * *', () => {
+        console.log('[Scheduler] Running daily task reset...');
+        resetDailyTasks();
+    });
+
+    console.log('[Scheduler] Jobs Initialized: Overdue Check (5 AM), Daily Reset (Midnight)');
 };
 
 module.exports = {
     initScheduler,
-    checkOverdueTasks
+    checkOverdueTasks,
+    resetDailyTasks
 };

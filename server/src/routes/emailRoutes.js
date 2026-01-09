@@ -17,4 +17,10 @@ router.get('/unread', emailController.getUnreadCount);
 // POST /api/emails/mark-all-read
 router.post('/mark-all-read', emailController.markAllRead);
 
+// DELETE /api/emails/:id?type=soft|hard
+router.delete('/:id', emailController.deleteEmail);
+
+// PUT /api/emails/:id/restore
+router.put('/:id/restore', emailController.restoreEmail);
+
 module.exports = router;

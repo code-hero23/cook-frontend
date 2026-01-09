@@ -138,7 +138,18 @@ exports.getProjectById = async (req, res) => {
 exports.updateProject = async (req, res) => {
     try {
         const rawData = req.body;
-        const data = { ...rawData };
+
+        // Remove known relation/system fields that cause Prisma update errors
+        const {
+            tasks,
+            assignedEmployees,
+            id,
+            createdAt,
+            updatedAt,
+            ...cleanData
+        } = rawData;
+
+        const data = { ...cleanData };
 
         // Sanitize types
         if (data.budget) data.budget = parseFloat(data.budget);
@@ -150,6 +161,21 @@ exports.updateProject = async (req, res) => {
         ['cpNumber', 'gstin', 'spouseName', 'spousePhone', 'location'].forEach(field => {
             if (data[field] === "") delete data[field];
         });
+
+        // Prevent updating projectCode to the same value (Prisma bug/quirk avoidance)
+        // or attempting to hijack another project code
+        if (data.projectCode) {
+            const existing = await prisma.project.findUnique({ where: { id: req.params.id } });
+            if (existing && existing.projectCode === data.projectCode) {
+                delete data.projectCode; // Don't update if same
+            } else {
+                // If changing, ensure new code is unique
+                const duplicate = await prisma.project.findUnique({ where: { projectCode: data.projectCode } });
+                if (duplicate) {
+                    return res.status(400).json({ error: `Project Code ${data.projectCode} is already taken.` });
+                }
+            }
+        }
 
         if (data.clientPassword) {
             data.clientPassword = await bcrypt.hash(data.clientPassword, 10);
@@ -200,7 +226,7 @@ exports.deleteProject = async (req, res) => {
     }
 };
 
-// Generate Secure Access Link
+// Generate Secure Access Link (Magic Code)
 exports.generateAccessLink = async (req, res) => {
     try {
         const project = await prisma.project.findUnique({
@@ -209,14 +235,59 @@ exports.generateAccessLink = async (req, res) => {
 
         if (!project) return res.status(404).json({ message: 'Project not found' });
 
-        // Generate Token (Valid for 7 Days for "Access Links")
+        // Generate Random 8-char Code
+        const code = Math.random().toString(36).substring(2, 10).toUpperCase();
+
+        // Expire in 7 days
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 7);
+
+        await prisma.magicLink.create({
+            data: {
+                code,
+                projectId: project.id,
+                expiresAt
+            }
+        });
+
+        // Return ONLY the code (Frontend constructs the URL)
+        // URL format: domain.com/client/login?code=CODE
+        res.json({ code });
+
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Verify Magic Link
+exports.verifyMagicLink = async (req, res) => {
+    try {
+        const { code } = req.params;
+
+        const magicLink = await prisma.magicLink.findUnique({
+            where: { code },
+            include: { project: true }
+        });
+
+        if (!magicLink) {
+            return res.status(404).json({ message: 'Invalid or expired link' });
+        }
+
+        if (new Date() > magicLink.expiresAt) {
+            return res.status(410).json({ message: 'Link has expired' });
+        }
+
+        // Return Project Data (Same as login response)
         const token = jwt.sign(
-            { id: project.id, role: 'CLIENT', projectCode: project.projectCode, name: project.name },
+            { id: magicLink.projectId, role: 'CLIENT', projectCode: magicLink.project.projectCode, name: magicLink.project.name },
             JWT_SECRET,
             { expiresIn: '7d' }
         );
 
-        res.json({ token, url: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/client/login?token=${token}` });
+        res.json({
+            token,
+            project: magicLink.project
+        });
 
     } catch (error) {
         res.status(500).json({ error: error.message });

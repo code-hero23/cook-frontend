@@ -17,7 +17,8 @@ exports.getTasks = async (req, res) => {
             include: {
                 project: true, // Fetch full project details including location
                 employee: { select: { name: true } },
-                evidence: true // Fetch evidence for real completion location
+                evidence: true, // Fetch evidence for real completion location
+                documents: true // Fetch linked documents
             }
         });
         res.json(tasks);

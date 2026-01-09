@@ -74,6 +74,7 @@ model Project {
   documents        ProjectDocument[]
   assignedEmployees User[]
   tickets           Ticket[]
+  magicLinks        MagicLink[]
 }
 
 model ProjectImage {
@@ -91,6 +92,10 @@ model ProjectDocument {
   name      String
   projectId String
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  taskId    String?
+  task      Task?    @relation(fields: [taskId], references: [id]) // Optional link to a specific task
+  
   createdAt DateTime @default(now())
 }
 
@@ -122,6 +127,7 @@ model Task {
   completionFileName String?
 
   evidence           TaskEvidence[]
+  documents          ProjectDocument[]
   ticket             Ticket?
 }
 
@@ -210,5 +216,14 @@ model TicketComment {
   senderId  String?  // Optional, mostly for Admins
   ticketId  String
   ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model MagicLink {
+  id        String   @id @default(uuid())
+  code      String   @unique
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
   createdAt DateTime @default(now())
 }

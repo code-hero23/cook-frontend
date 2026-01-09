@@ -9,5 +9,6 @@ router.put('/:id', projectController.updateProject);
 router.delete('/:id', projectController.deleteProject);
 // Magic Link
 router.get('/:id/access-link', projectController.generateAccessLink);
+router.get('/magic-link/:code', projectController.verifyMagicLink);
 
 module.exports = router;
