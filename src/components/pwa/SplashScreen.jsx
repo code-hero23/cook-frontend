@@ -20,9 +20,9 @@ const SplashScreen = () => {
                         ease: "backOut",
                         delay: 0.2
                     }}
-                    className="w-32 h-32 bg-orange-600 rounded-3xl flex items-center justify-center shadow-2xl shadow-orange-300 mb-8"
+                    className="w-64 h-auto flex items-center justify-center mb-8"
                 >
-                    <ChefHat size={64} className="text-white" />
+                    <img src="/splash-logo.png" alt="Cookscape Logo" className="w-full h-auto object-contain" />
                 </motion.div>
 
                 {/* Brand Text Animation */}
