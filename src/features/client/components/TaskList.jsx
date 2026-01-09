@@ -107,19 +107,25 @@ const TaskList = ({ tasks }) => {
                       {/* DOWNLOAD BUTTONS */}
                       {task.documents && task.documents.length > 0 && (
                         <div className="flex gap-2 flex-wrap mt-2 sm:mt-0">
-                          {task.documents.map(doc => (
-                            <a
-                              key={doc.id}
-                              href={`${import.meta.env.VITE_API_URL?.replace('/api', '')}${doc.url}`}
-                              download
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded transition bg-indigo-600 text-white hover:bg-indigo-700"
-                            >
-                              <Download size={12} />
-                              Download {doc.name.length > 15 ? doc.name.substring(0, 12) + "..." : doc.name}
-                            </a>
-                          ))}
+                          {task.documents.map(doc => {
+                            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+                            const baseUrl = apiUrl.replace('/api', '');
+                            const downloadUrl = `${baseUrl}${doc.url}`;
+
+                            return (
+                              <a
+                                key={doc.id}
+                                href={downloadUrl}
+                                download
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded transition bg-indigo-600 text-white hover:bg-indigo-700"
+                              >
+                                <Download size={12} />
+                                Download {doc.name.length > 15 ? doc.name.substring(0, 12) + "..." : doc.name}
+                              </a>
+                            );
+                          })}
                         </div>
                       )}
                     </div>
