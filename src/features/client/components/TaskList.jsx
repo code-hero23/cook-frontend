@@ -40,8 +40,8 @@ const TaskList = ({ tasks }) => {
     );
   };
 
-  // Identify tasks that don't belong to any predefined stage
-  const unclassifiedTasks = tasks.filter(t => !stages.includes(t.stage));
+  // Identify tasks that don't belong to any predefined stage, and exclude completed ones to redundant clutter (fixed issues)
+  const unclassifiedTasks = tasks.filter(t => !stages.includes(t.stage) && t.status !== "Completed");
 
   return (
     <div className="bg-white p-6 rounded-xl shadow border">
