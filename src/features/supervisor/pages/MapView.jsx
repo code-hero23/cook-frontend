@@ -145,25 +145,40 @@ const MapView = () => {
                         position={[task.lat, task.lng]}
                     >
                         <Popup>
-                            <div className="min-w-[200px]">
-                                <h3 className="font-bold text-slate-800">{task.title}</h3>
-                                <p className="text-xs text-slate-500 mb-2">{task.project?.name || 'Unknown Project'}</p>
-                                <div className="flex gap-2 mb-3">
-                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded text-white ${task.status === 'COMPLETED' ? 'bg-emerald-500' : 'bg-indigo-500'}`}>
+                            <div className="min-w-[200px] p-1">
+                                <h3 className="font-bold text-slate-800 text-sm mb-1">{task.title}</h3>
+                                <p className="text-xs text-slate-500 mb-2 truncate max-w-[180px]">
+                                    {task.project?.name || 'Unknown Project'}
+                                </p>
+
+                                <div className="flex gap-2 mb-3 flex-wrap">
+                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full text-white ${task.status === 'COMPLETED' ? 'bg-emerald-500' : 'bg-indigo-500'}`}>
                                         {task.status}
                                     </span>
                                     {!task.hasRealLocation && (
-                                        <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded font-bold">
-                                            Simulated Loc
+                                        <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold border border-amber-200">
+                                            Simulated
                                         </span>
                                     )}
                                 </div>
-                                <button
-                                    onClick={() => navigate(`../tasks/${task.id}`)}
-                                    className="w-full py-1.5 bg-slate-900 text-white text-xs font-bold rounded-lg hover:bg-slate-700"
-                                >
-                                    View Details
-                                </button>
+
+                                <div className="grid grid-cols-2 gap-2">
+                                    <button
+                                        onClick={() => navigate(`../tasks/${task.id}`)}
+                                        className="py-1.5 px-3 bg-slate-100 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-200 transition-colors border border-slate-200"
+                                    >
+                                        Details
+                                    </button>
+                                    <a
+                                        href={`https://www.google.com/maps/dir/?api=1&destination=${task.lat},${task.lng}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="py-1.5 px-3 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition-colors text-center shadow-sm flex items-center justify-center gap-1"
+                                    >
+                                        <span>Directions</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 9l-6 6 6 6" /><path d="M20 4v7a4 4 0 0 1-4 4H4" /></svg>
+                                    </a>
+                                </div>
                             </div>
                         </Popup>
                     </Marker>
