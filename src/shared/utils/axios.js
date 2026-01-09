@@ -18,8 +18,16 @@ api.interceptors.request.use(
         }
         activeRequests++;
 
-        // Get token from localStorage (token for Admin/Employee, clientToken for Client)
-        const token = localStorage.getItem("token") || localStorage.getItem("clientToken");
+        // Context-aware Token Selection
+        const isClientRoute = window.location.pathname.startsWith('/client');
+
+        let token;
+        if (isClientRoute) {
+            token = localStorage.getItem("clientToken");
+        } else {
+            token = localStorage.getItem("token");
+        }
+
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
