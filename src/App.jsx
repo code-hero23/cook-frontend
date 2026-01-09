@@ -7,6 +7,7 @@ import EmployeeApp from '@employee/App';
 import SupervisorApp from '@supervisor/App';
 import ClientApp from '@client/App';
 import Login from './pages/Login';
+import ClientLogin from './pages/ClientLogin';
 import ReloadPrompt from './components/pwa/ReloadPrompt';
 import InstallPrompt from './components/pwa/InstallPrompt';
 import IOSInstallPrompt from './components/pwa/IOSInstallPrompt';
@@ -41,6 +42,7 @@ function App() {
                         <Routes>
                             <Route path="/" element={<Navigate to="/login" replace />} />
                             <Route path="/login" element={<Login />} />
+                            <Route path="/client/login" element={<ClientLogin />} />
 
                             {/* Feature Routes */}
                             <Route path="/admin/*" element={<AdminApp />} />

@@ -45,53 +45,39 @@ const UnifiedLogin = () => {
         setError("");
 
         try {
-            if (activePortal === "admin" || activePortal === "employee") {
-                const res = await axios.post("/auth/login", {
-                    email: formData.email,
-                    password: formData.password
-                });
+            const res = await axios.post("/auth/login", {
+                email: formData.email,
+                password: formData.password
+            });
 
-                const userRole = res.data.user.role;
+            const userRole = res.data.user.role;
 
-                // Strict Role Validation based on selected tab
-                if (activePortal === 'admin' && !['SUPER_ADMIN', 'MANAGER'].includes(userRole)) {
-                    setError("Access denied. You are not an authorized administrator.");
-                    setLoading(false);
-                    return;
-                }
-
-                if (activePortal === 'employee' && !['EMPLOYEE', 'SITE_SUPERVISOR'].includes(userRole)) {
-                    setError("Access denied. Please use the Admin portal.");
-                    setLoading(false);
-                    return;
-                }
-
-                // Store Auth Data
-                localStorage.setItem("token", res.data.token);
-                localStorage.setItem("user", JSON.stringify(res.data.user));
-
-                // Routing
-                if (userRole === 'SUPER_ADMIN' || userRole === 'MANAGER') {
-                    navigate("/admin/dashboard");
-                } else if (userRole === 'EMPLOYEE') {
-                    navigate("/employee");
-                } else if (userRole === 'SITE_SUPERVISOR') {
-                    navigate("/supervisor");
-                } else {
-                    setError("Unknown role.");
-                }
-
+            // Strict Role Validation based on selected tab
+            if (activePortal === 'admin' && !['SUPER_ADMIN', 'MANAGER'].includes(userRole)) {
+                setError("Access denied. You are not an authorized administrator.");
+                setLoading(false);
+                return;
             }
-            else if (activePortal === "client") {
-                // Client login pending backend implementation
-                // For now, keeping original logic if needed or placeholder
-                const res = await axios.post("/client/login", {
-                    projectId: formData.projectId,
-                    password: formData.password
-                });
-                localStorage.setItem("clientToken", res.data.token);
-                localStorage.setItem("clientProject", JSON.stringify(res.data.project));
-                navigate("/client");
+
+            if (activePortal === 'employee' && !['EMPLOYEE', 'SITE_SUPERVISOR'].includes(userRole)) {
+                setError("Access denied. Please use the Admin portal.");
+                setLoading(false);
+                return;
+            }
+
+            // Store Auth Data
+            localStorage.setItem("token", res.data.token);
+            localStorage.setItem("user", JSON.stringify(res.data.user));
+
+            // Routing
+            if (userRole === 'SUPER_ADMIN' || userRole === 'MANAGER') {
+                navigate("/admin/dashboard");
+            } else if (userRole === 'EMPLOYEE') {
+                navigate("/employee");
+            } else if (userRole === 'SITE_SUPERVISOR') {
+                navigate("/supervisor");
+            } else {
+                setError("Unknown role.");
             }
         } catch (err) {
             console.error("Login Error:", err);
@@ -104,40 +90,7 @@ const UnifiedLogin = () => {
     const portals = [
         { id: "admin", label: "Admin", icon: Shield, color: "blue" },
         { id: "employee", label: "Employee", icon: User, color: "green" },
-        { id: "client", label: "Client", icon: FolderKey, color: "orange" },
     ];
-
-    // Auto-Login for Clients via Link
-    useEffect(() => {
-        const params = new URLSearchParams(window.location.search);
-        const token = params.get("token");
-        if (token) {
-            try {
-                const decoded = JSON.parse(atob(token));
-                if (decoded.projectId) {
-                    setActivePortal("client");
-                    setFormData(prev => ({ ...prev, projectId: decoded.projectId }));
-                    // Optional: You could auto-submit here if you trust the token strictly
-                    // But for security, usually you want them to input password OR the token implies a temporary authed session.
-                    // The 'ClientAccess.jsx' prompt implies "one-click login", so let's try to auto-authenticate if the token IS the auth.
-                    // However, ClientAccess.jsx generates a simple base64 of ID+Email. That is NOT a secure auth token.
-                    // It's just a pre-fill mechanism unless we change the backend to accept this specific token type.
-                    // Given the current backend 'clientController.login' requires 'password', this token IS NOT enough for full login.
-                    // It only pre-fills the Project ID.
-
-                    // User Request: "Generate secure, one-click login links".
-                    // To support TRUE one-click, we need a backend change to accept a 'magic link' token or similar.
-                    // OR we change the frontend to just pre-fill.
-                    // Looking at ClientAccess.jsx: "This encrypted URL bypasses standard login... instant access".
-                    // PROPOSAL: We should implement a real 'magic-login' endpoint or update client login to accept this token if signed.
-                    // BUT for now, strict adherence to current backend:
-                    // I will purely Pre-fill the Project ID.
-                }
-            } catch (e) {
-                console.error("Invalid token");
-            }
-        }
-    }, []);
 
     return (
         <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4">
@@ -211,43 +164,23 @@ const UnifiedLogin = () => {
                             )}
 
                             {/* Dynamic Inputs */}
-                            {activePortal === "client" ? (
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-slate-600 ml-1 uppercase tracking-wider">Project ID</label>
-                                    <div className="relative group">
-                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-orange-500 transition-colors">
-                                            <Hash size={18} />
-                                        </span>
-                                        <input
-                                            type="text"
-                                            name="projectId"
-                                            value={formData.projectId}
-                                            onChange={handleChange}
-                                            required
-                                            className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all text-sm outline-none placeholder:text-slate-400"
-                                            placeholder="e.g. PRJ-001"
-                                        />
-                                    </div>
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-slate-600 ml-1 uppercase tracking-wider">Email Address</label>
+                                <div className="relative group">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                                        <Mail size={18} />
+                                    </span>
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        required
+                                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all text-sm outline-none placeholder:text-slate-400"
+                                        placeholder={activePortal === "admin" ? "admin@orbix.com" : "employee@orbix.com"}
+                                    />
                                 </div>
-                            ) : (
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-slate-600 ml-1 uppercase tracking-wider">Email Address</label>
-                                    <div className="relative group">
-                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
-                                            <Mail size={18} />
-                                        </span>
-                                        <input
-                                            type="email"
-                                            name="email"
-                                            value={formData.email}
-                                            onChange={handleChange}
-                                            required
-                                            className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all text-sm outline-none placeholder:text-slate-400"
-                                            placeholder={activePortal === "admin" ? "admin@orbix.com" : "employee@orbix.com"}
-                                        />
-                                    </div>
-                                </div>
-                            )}
+                            </div>
 
                             <div className="space-y-1.5">
                                 <label className="text-xs font-bold text-slate-600 ml-1 uppercase tracking-wider">Password</label>
@@ -278,8 +211,7 @@ const UnifiedLogin = () => {
                                 type="submit"
                                 disabled={loading}
                                 className={`w-full py-4 rounded-xl font-bold text-white shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2 group ${activePortal === "admin" ? "bg-blue-600 shadow-blue-200 hover:bg-blue-700" :
-                                    activePortal === "employee" ? "bg-green-600 shadow-green-200 hover:bg-green-700" :
-                                        "bg-orange-600 shadow-orange-200 hover:bg-orange-700"
+                                    "bg-green-600 shadow-green-200 hover:bg-green-700"
                                     } disabled:opacity-70 disabled:shadow-none`}
                             >
                                 {loading ? (
@@ -300,7 +232,12 @@ const UnifiedLogin = () => {
                         <div className="bg-slate-50 rounded-xl p-3 text-[11px] text-slate-600 font-medium">
                             {activePortal === "admin" && "admin@orbix.com | admin123"}
                             {activePortal === "employee" && "Any credentials will work (Mock mode)"}
-                            {activePortal === "client" && "PRJ001 | password123 (Try PRJ001 / password123)"}
+                        </div>
+
+                        <div className="mt-4 border-t border-slate-100 pt-3">
+                            <a href="/client/login" className="inline-flex items-center gap-1 text-xs font-semibold text-slate-400 hover:text-orange-500 transition-colors">
+                                Customer Login <ArrowRight size={10} />
+                            </a>
                         </div>
                     </div>
                 </div>
