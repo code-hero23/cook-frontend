@@ -16,14 +16,32 @@ const ClientLogin = () => {
     });
 
     useEffect(() => {
-        // Auto-fill from URL token if present
         const params = new URLSearchParams(window.location.search);
+        const code = params.get("code");
         const token = params.get("token");
 
-        if (token) {
+        // 1. Handle New Short Magic Code
+        if (code) {
+            setLoading(true);
+            axios.get(`/projects/magic-link/${code}`)
+                .then(res => {
+                    // Success! res.data contains { token, project }
+                    // We can pre-fill OR auto-login.
+                    // Let's just pre-fill Project ID for safety, consistent with previous secure flow.
+                    if (res.data.project && res.data.project.projectCode) {
+                        setFormData(prev => ({ ...prev, projectId: res.data.project.projectCode }));
+                    }
+                })
+                .catch(err => {
+                    console.error("Magic Link Error", err);
+                    setError("This access link is invalid or expired.");
+                })
+                .finally(() => setLoading(false));
+
+        } else if (token) {
+            // 2. Handle Legacy Long Token (Backwards Compatibility)
             try {
                 let decoded;
-                // Check if it's a JWT (contains dots)
                 if (token.includes('.')) {
                     const base64Url = token.split('.')[1];
                     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -32,11 +50,9 @@ const ClientLogin = () => {
                     }).join(''));
                     decoded = JSON.parse(jsonPayload);
                 } else {
-                    // Fallback for simple base64
                     decoded = JSON.parse(atob(token));
                 }
 
-                // Pre-fill Project ID (Token uses 'projectCode', form uses 'projectId')
                 if (decoded.projectCode || decoded.projectId) {
                     setFormData(prev => ({ ...prev, projectId: decoded.projectCode || decoded.projectId }));
                 }

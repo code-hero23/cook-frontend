@@ -47,8 +47,9 @@ const ClientAccess = () => {
       // We can use the URL directly provided by backend, OR construct it if we want custom domain control.
       // Backend returns: url: `${process.env.FRONTEND_URL}/client/login?token=${token}`
       // This is safer.
-      // Always construct using the current browser origin to ensure it matches the deployed domain
-      setGeneratedLink(`${window.location.origin}/client/login?token=${res.data.token}`);
+      // Use the short code returned by backend
+      const code = res.data.code;
+      setGeneratedLink(`${window.location.origin}/client/login?code=${code}`);
     } catch (err) {
       console.error("Error generating link:", err);
       alert("Failed to generate secure link");
