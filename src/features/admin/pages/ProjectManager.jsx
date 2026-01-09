@@ -104,6 +104,8 @@ const GalleryManager = ({ projectId }) => {
         (img.caption || "").toLowerCase().includes(search.toLowerCase())
     );
 
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -117,11 +119,13 @@ const GalleryManager = ({ projectId }) => {
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
-                    <label className={`flex items-center gap-2 px-4 py-2 bg-brand-500 text-white rounded-xl cursor-pointer hover:bg-brand-600 ${uploading ? 'opacity-50' : ''}`}>
-                        <Upload size={18} />
-                        <span className="hidden sm:inline">{uploading ? 'Uploading...' : 'Upload'}</span>
-                        <input type="file" accept="image/*" hidden onChange={handleUpload} disabled={uploading} />
-                    </label>
+                    {user.role !== 'VIEW_ONLY_ADMIN' && (
+                        <label className={`flex items-center gap-2 px-4 py-2 bg-brand-500 text-white rounded-xl cursor-pointer hover:bg-brand-600 ${uploading ? 'opacity-50' : ''}`}>
+                            <Upload size={18} />
+                            <span className="hidden sm:inline">{uploading ? 'Uploading...' : 'Upload'}</span>
+                            <input type="file" accept="image/*" hidden onChange={handleUpload} disabled={uploading} />
+                        </label>
+                    )}
                 </div>
             </div>
 
@@ -129,12 +133,14 @@ const GalleryManager = ({ projectId }) => {
                 {filteredImages.map(img => (
                     <div key={img.id} className="group relative bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
                         <img src={`${import.meta.env.VITE_API_URL?.replace('/api', '')}${img.url}`} alt="Project" className="w-full h-32 object-cover rounded-lg" />
-                        <button
-                            onClick={() => handleDelete(img.id)}
-                            className="absolute top-3 right-3 p-1.5 bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                            <Trash2 size={16} />
-                        </button>
+                        {user.role !== 'VIEW_ONLY_ADMIN' && (
+                            <button
+                                onClick={() => handleDelete(img.id)}
+                                className="absolute top-3 right-3 p-1.5 bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                                <Trash2 size={16} />
+                            </button>
+                        )}
                         <p className="mt-2 text-xs text-slate-500 truncate px-1">{img.caption}</p>
                     </div>
                 ))}
@@ -205,6 +211,8 @@ const DocumentManager = ({ projectId }) => {
         (doc.name || "").toLowerCase().includes(search.toLowerCase())
     );
 
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -212,16 +220,18 @@ const DocumentManager = ({ projectId }) => {
 
                 <div className="flex gap-2 w-full sm:w-auto items-center">
                     {/* Task Selector Dropdown (Optional) */}
-                    <select
-                        className="border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-100 max-w-[200px]"
-                        value={selectedTaskId || ""}
-                        onChange={(e) => setSelectedTaskId(e.target.value)}
-                    >
-                        <option value="">-- No Task Link --</option>
-                        {tasks.map(t => (
-                            <option key={t.id} value={t.id}>{t.title}</option>
-                        ))}
-                    </select>
+                    {user.role !== 'VIEW_ONLY_ADMIN' && (
+                        <select
+                            className="border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-100 max-w-[200px]"
+                            value={selectedTaskId || ""}
+                            onChange={(e) => setSelectedTaskId(e.target.value)}
+                        >
+                            <option value="">-- No Task Link --</option>
+                            {tasks.map(t => (
+                                <option key={t.id} value={t.id}>{t.title}</option>
+                            ))}
+                        </select>
+                    )}
 
                     <input
                         type="text"
@@ -230,11 +240,13 @@ const DocumentManager = ({ projectId }) => {
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
-                    <label className={`flex items-center gap-2 px-4 py-2 bg-brand-500 text-white rounded-xl cursor-pointer hover:bg-brand-600 ${uploading ? 'opacity-50' : ''}`}>
-                        <Upload size={18} />
-                        <span className="hidden sm:inline">{uploading ? 'Uploading...' : 'Upload'}</span>
-                        <input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx" hidden onChange={handleUpload} disabled={uploading} />
-                    </label>
+                    {user.role !== 'VIEW_ONLY_ADMIN' && (
+                        <label className={`flex items-center gap-2 px-4 py-2 bg-brand-500 text-white rounded-xl cursor-pointer hover:bg-brand-600 ${uploading ? 'opacity-50' : ''}`}>
+                            <Upload size={18} />
+                            <span className="hidden sm:inline">{uploading ? 'Uploading...' : 'Upload'}</span>
+                            <input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx" hidden onChange={handleUpload} disabled={uploading} />
+                        </label>
+                    )}
                 </div>
             </div>
 
@@ -259,9 +271,11 @@ const DocumentManager = ({ projectId }) => {
                             >
                                 View
                             </a>
-                            <button onClick={() => handleDelete(doc.id)} className="text-red-400 hover:text-red-600">
-                                <Trash2 size={18} />
-                            </button>
+                            {user.role !== 'VIEW_ONLY_ADMIN' && (
+                                <button onClick={() => handleDelete(doc.id)} className="text-red-400 hover:text-red-600">
+                                    <Trash2 size={18} />
+                                </button>
+                            )}
                         </div>
                     </div>
                 ))}
@@ -296,6 +310,8 @@ const TimelineManager = ({ projectId }) => {
     // Group tasks by stage for easier viewing
     const unassignedTasks = tasks.filter(t => !stages.includes(t.stage));
 
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+
     return (
         <div className="space-y-8">
             <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-100 text-yellow-800 text-sm">
@@ -314,14 +330,16 @@ const TimelineManager = ({ projectId }) => {
                             {tasks.filter(t => t.stage === stage).map(t => (
                                 <div key={t.id} className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-sm flex justify-between items-center group">
                                     <span className={t.status === 'COMPLETED' ? 'line-through text-slate-400' : 'text-slate-700'}>{t.title}</span>
-                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button
-                                            onClick={() => handleStageUpdate(t.id, null)}
-                                            className="text-[10px] text-red-500 hover:underline"
-                                        >
-                                            Unassign
-                                        </button>
-                                    </div>
+                                    {user.role !== 'VIEW_ONLY_ADMIN' && (
+                                        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button
+                                                onClick={() => handleStageUpdate(t.id, null)}
+                                                className="text-[10px] text-red-500 hover:underline"
+                                            >
+                                                Unassign
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                             {tasks.filter(t => t.stage === stage).length === 0 && <p className="text-xs text-slate-400 italic">No tasks in this stage</p>}
@@ -340,14 +358,18 @@ const TimelineManager = ({ projectId }) => {
                                 <p className="text-xs text-slate-400 mt-1">{t.status}</p>
                             </div>
 
-                            <select
-                                className="w-full text-xs border border-slate-200 rounded-lg p-1.5 mt-2 bg-white"
-                                value={t.stage || ""}
-                                onChange={(e) => handleStageUpdate(t.id, e.target.value)}
-                            >
-                                <option value="">Select Stage to Assign...</option>
-                                {stages.map(s => <option key={s} value={s}>{s}</option>)}
-                            </select>
+                            {user.role !== 'VIEW_ONLY_ADMIN' ? (
+                                <select
+                                    className="w-full text-xs border border-slate-200 rounded-lg p-1.5 mt-2 bg-white"
+                                    value={t.stage || ""}
+                                    onChange={(e) => handleStageUpdate(t.id, e.target.value)}
+                                >
+                                    <option value="">Select Stage to Assign...</option>
+                                    {stages.map(s => <option key={s} value={s}>{s}</option>)}
+                                </select>
+                            ) : (
+                                <p className="text-xs text-slate-400 italic mt-2">View Only</p>
+                            )}
                         </div>
                     ))}
                     {unassignedTasks.length === 0 && <p className="text-sm text-slate-400">All tasks are assigned!</p>}
@@ -387,6 +409,8 @@ const SettingsManager = ({ projectId }) => {
         }
     };
 
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+
     return (
         <div className="bg-white p-6 rounded-2xl border border-slate-200 max-w-2xl">
             <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
@@ -410,7 +434,8 @@ const SettingsManager = ({ projectId }) => {
                     max="100"
                     value={percentage}
                     onChange={(e) => setPercentage(e.target.value)}
-                    className="w-full h-4 bg-indigo-200 rounded-full appearance-none cursor-pointer accent-indigo-600 hover:accent-indigo-500 transition-all"
+                    disabled={user.role === 'VIEW_ONLY_ADMIN'}
+                    className={`w-full h-4 bg-indigo-200 rounded-full appearance-none ${user.role !== 'VIEW_ONLY_ADMIN' ? 'cursor-pointer accent-indigo-600 hover:accent-indigo-500' : 'cursor-not-allowed accent-slate-400'} transition-all`}
                 />
 
                 <div className="flex justify-between text-[10px] font-bold text-indigo-400 mt-2 uppercase tracking-widest">
@@ -440,15 +465,17 @@ const SettingsManager = ({ projectId }) => {
                 <p className="text-xs text-slate-400 mt-1">To change this, go back to Projects list and click "Edit".</p>
             </div>
 
-            <div className="flex justify-end">
-                <button
-                    onClick={handleSave}
-                    disabled={loading}
-                    className={`px-8 py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                    {loading ? 'Saving...' : 'Update Phase Status'}
-                </button>
-            </div>
+            {user.role !== 'VIEW_ONLY_ADMIN' && (
+                <div className="flex justify-end">
+                    <button
+                        onClick={handleSave}
+                        disabled={loading}
+                        className={`px-8 py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                        {loading ? 'Saving...' : 'Update Phase Status'}
+                    </button>
+                </div>
+            )}
 
             <p className="mt-4 text-xs text-slate-400 text-center">
                 Moving this slider updates the "Physical Completion" and unlocks phases on the Client Dashboard.

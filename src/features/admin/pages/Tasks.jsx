@@ -222,7 +222,7 @@ const Tasks = () => {
             <h1 className="text-xl font-bold text-slate-800">Projects Overview</h1>
             <p className="text-sm text-slate-500">Select a project to view and manage its tasks.</p>
           </div>
-          {!isManager && (
+          {!isManager && user.role !== 'VIEW_ONLY_ADMIN' && (
             <button
               onClick={openCreate}
               className="inline-flex items-center gap-2 rounded-xl bg-slate-900 text-white px-4 py-2 text-sm font-bold shadow-lg hover:bg-slate-800 transition"
@@ -478,7 +478,7 @@ const Tasks = () => {
           </div>
         </div>
 
-        {!isManager && (
+        {!isManager && user.role !== 'VIEW_ONLY_ADMIN' && (
           <button
             onClick={openCreate}
             className="inline-flex items-center gap-2 rounded-xl bg-orange-600 text-white px-4 py-2 text-sm hover:bg-orange-500 transition"
@@ -588,7 +588,7 @@ const Tasks = () => {
                       </button>
                     )}
 
-                    {user.role === 'SUPER_ADMIN' && (
+                    {user.role === 'SUPER_ADMIN' && user.role !== 'VIEW_ONLY_ADMIN' && (
                       <button
                         onClick={() => openEdit(t)}
                         className="inline-flex items-center gap-1 text-slate-600 bg-slate-100 hover:bg-orange-50 hover:text-orange-600 p-1.5 rounded-lg transition-colors border border-slate-200"

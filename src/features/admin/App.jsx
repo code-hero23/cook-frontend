@@ -37,8 +37,8 @@ const ProtectedLayout = () => {
 const RoleGuard = ({ children, requiredRole }) => {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-  // Allow SUPER_ADMIN to access everything
-  if (user.role === "SUPER_ADMIN") {
+  // Allow SUPER_ADMIN and VIEW_ONLY_ADMIN to access everything common
+  if (user.role === "SUPER_ADMIN" || user.role === "VIEW_ONLY_ADMIN") {
     return children;
   }
 

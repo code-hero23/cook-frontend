@@ -22,6 +22,8 @@ const Employees = () => {
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyForm);
 
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+
   const filtered = employees.filter(
     (e) =>
       e.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -75,13 +77,15 @@ const Employees = () => {
             Manage Cookscape internal team members. Admin can create and maintain credentials.
           </p>
         </div>
-        <button
-          onClick={openCreate}
-          className="inline-flex items-center gap-2 rounded-xl bg-orange-600 text-white px-4 py-2 text-sm shadow-sm hover:bg-orange-500 transition"
-        >
-          <Plus size={16} />
-          Add Employee
-        </button>
+        {((user || {}).role !== "VIEW_ONLY_ADMIN") && (
+          <button
+            onClick={openCreate}
+            className="inline-flex items-center gap-2 rounded-xl bg-orange-600 text-white px-4 py-2 text-sm shadow-sm hover:bg-orange-500 transition"
+          >
+            <Plus size={16} />
+            Add Employee
+          </button>
+        )}
       </div>
 
       {/* SEARCH + TABLE */}
@@ -132,13 +136,15 @@ const Employees = () => {
                     <StatusBadge status={e.status} />
                   </td>
                   <td className="py-2 pr-4 text-right">
-                    <button
-                      onClick={() => openEdit(e)}
-                      className="inline-flex items-center gap-1 text-xs text-orange-600 hover:underline transition"
-                    >
-                      <Pencil size={14} />
-                      Edit
-                    </button>
+                    {((user || {}).role !== "VIEW_ONLY_ADMIN") && (
+                      <button
+                        onClick={() => openEdit(e)}
+                        className="inline-flex items-center gap-1 text-xs text-orange-600 hover:underline transition"
+                      >
+                        <Pencil size={14} />
+                        Edit
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -214,6 +220,7 @@ const Employees = () => {
                     <option value="EMPLOYEE">Employee</option>
                     <option value="MANAGER">Manager</option>
                     <option value="SUPER_ADMIN">Super Admin</option>
+                    <option value="VIEW_ONLY_ADMIN">View Only Admin</option>
                     <option value="SITE_SUPERVISOR">AE (Application Engineer)</option>
                   </select>
                 </div>

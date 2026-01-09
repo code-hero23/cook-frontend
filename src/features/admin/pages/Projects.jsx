@@ -169,7 +169,7 @@ const Projects = () => {
             </button>
           </div>
 
-          {!isManager && (
+          {!isManager && user.role !== 'VIEW_ONLY_ADMIN' && (
             <button
               onClick={openCreate}
               className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all flex items-center gap-2 hover:-translate-y-0.5 active:translate-y-0"
@@ -257,7 +257,7 @@ const Projects = () => {
                       >
                         View
                       </Link>
-                      {user.role === 'SUPER_ADMIN' && (
+                      {user.role === 'SUPER_ADMIN' && user.role !== 'VIEW_ONLY_ADMIN' && (
                         <button
                           onClick={() => openEdit(p)}
                           className="px-3 py-1.5 bg-white border border-slate-200 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-50 flex items-center gap-1"
