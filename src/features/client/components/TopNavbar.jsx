@@ -40,7 +40,7 @@ const TopNavbar = ({ setSelected, menuOpen, setMenuOpen }) => {
 
   const formattedTime = currentTime.toLocaleString();
 
-  navigate("/client/login");
+
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 h-20 bg-white border-b shadow-md flex items-center justify-between px-4 md:px-6">
