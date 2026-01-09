@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Download, ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, CheckCircle2, Clock, Calendar, AlertCircle, FileText, Download } from "lucide-react";
 
 const TaskList = ({ tasks }) => {
   const [expandedStages, setExpandedStages] = useState({
@@ -8,8 +8,6 @@ const TaskList = ({ tasks }) => {
     "Production": false,
     "Installation": false,
   });
-
-  const downloadKeywords = ["receipt", "pdi", "2d", "3d", "guarantee", "drawing", "certificate", "document", "quote"];
 
   const toggleStage = (stage) => {
     setExpandedStages((prev) => ({
@@ -28,15 +26,11 @@ const TaskList = ({ tasks }) => {
   const getStatusIcon = (status) => {
     if (status === "Completed") {
       return (
-        <span className="status-check">
-          ✓
-        </span>
+        <span className="status-check">✓</span>
       );
     }
     return (
-      <span className="status-warn">
-        !
-      </span>
+      <span className="status-warn">!</span>
     );
   };
 
@@ -88,60 +82,53 @@ const TaskList = ({ tasks }) => {
               {/* SUB-TASKS LIST */}
               {isExpanded && (
                 <div className="p-2 bg-white space-y-1 divide-y">
-                  {stageTasks.map((task) => {
-                    const taskNameLower = (task.title || task.name || "").toLowerCase();
-                    const isDownloadTask = downloadKeywords.some((word) =>
-                      taskNameLower.includes(word)
-                    );
-
-                    return (
-                      <div
-                        key={task.id}
-                        className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-3 hover:bg-gray-50 rounded-md transition-colors gap-2"
-                      >
-                        <div className="flex items-center gap-3">
-                          {getStatusIcon(task.status)}
-                          <div className="flex flex-col">
-                            <p className="text-sm font-medium text-gray-800">{task.title || task.name}</p>
-                            <span
-                              className={`text-[10px] font-bold mt-0.5 px-1.5 py-0.5 rounded w-fit ${task.status === "Completed"
+                  {stageTasks.map((task) => (
+                    <div
+                      key={task.id}
+                      className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-3 hover:bg-gray-50 rounded-md transition-colors gap-2"
+                    >
+                      <div className="flex items-center gap-3">
+                        {getStatusIcon(task.status)}
+                        <div className="flex flex-col">
+                          <p className="text-sm font-medium text-gray-800">{task.title || task.name}</p>
+                          <span
+                            className={`text-[10px] font-bold mt-0.5 px-1.5 py-0.5 rounded w-fit ${task.status === "Completed"
                                 ? "bg-green-100 text-green-700"
                                 : "bg-yellow-100 text-yellow-700"
-                                }`}
-                            >
-                              {task.status === "Completed" ? "Completed" : "Pending"}
-                            </span>
-                          </div>
+                              }`}
+                          >
+                            {task.status === "Completed" ? "Completed" : "Pending"}
+                          </span>
                         </div>
+                      </div>
 
-                        {/* DOWNLOAD BUTTONS */}
-                        {isDownloadTask && (
-                          <div className="flex gap-2">
+                      {/* DOWNLOAD BUTTONS */}
+                      {task.documents && task.documents.length > 0 && (
+                        <div className="flex gap-2 flex-wrap mt-2 sm:mt-0">
+                          {task.documents.map(doc => (
                             <a
-                              href={task.fileUrl || "https://drive.google.com/file/d/14XP2DMwnPwreayRRHa5R2dyZoJ0UT8eJ/view?usp=drive_link"}
+                              key={doc.id}
+                              href={`${import.meta.env.VITE_API_URL?.replace('/api', '')}${doc.url}`}
                               download
                               target="_blank"
                               rel="noopener noreferrer"
-                              className={`flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded transition ${task.fileUrl
-                                ? "bg-indigo-600 text-white hover:bg-indigo-700"
-                                : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-                                }`}
+                              className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded transition bg-indigo-600 text-white hover:bg-indigo-700"
                             >
                               <Download size={12} />
-                              {task.fileUrl ? "Download" : "Test File"}
+                              Download {doc.name.length > 15 ? doc.name.substring(0, 12) + "..." : doc.name}
                             </a>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
           );
         })}
 
-        {/* Uncategorized / Others Section */}
+        {/* Unclassified Tasks */}
         {unclassifiedTasks.length > 0 && (
           <div className="border rounded-lg overflow-hidden transition-all bg-gray-50 border-dashed border-gray-300">
             <div className="p-4 bg-gray-100 font-bold text-gray-600 flex justify-between">
@@ -160,8 +147,8 @@ const TaskList = ({ tasks }) => {
                       <p className="text-sm font-medium text-gray-800">{task.title || task.name}</p>
                       <span
                         className={`text-[10px] font-bold mt-0.5 px-1.5 py-0.5 rounded w-fit ${task.status === "Completed"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-yellow-100 text-yellow-700"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-yellow-100 text-yellow-700"
                           }`}
                       >
                         {task.status === "Completed" ? "Completed" : "Pending"}
@@ -173,8 +160,8 @@ const TaskList = ({ tasks }) => {
             </div>
           </div>
         )}
-      </div>
 
+      </div>
       <style>
         {`
         .status-check {
@@ -198,8 +185,8 @@ const TaskList = ({ tasks }) => {
         }
 
         @keyframes checkPop {
-          0%   { transform: scale(0.2); opacity: 0; }
-          60%  { transform: scale(1.4); opacity: 1; }
+          0% { transform: scale(0.2); opacity: 0; }
+          60% { transform: scale(1.4); opacity: 1; }
           100% { transform: scale(1); }
         }
 
@@ -212,5 +199,4 @@ const TaskList = ({ tasks }) => {
     </div>
   );
 };
-
 export default TaskList;

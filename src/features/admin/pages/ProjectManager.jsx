@@ -146,6 +146,8 @@ const GalleryManager = ({ projectId }) => {
 
 const DocumentManager = ({ projectId }) => {
     const [docs, setDocs] = useState([]);
+    const [tasks, setTasks] = useState([]);
+    const [selectedTaskId, setSelectedTaskId] = useState(null);
     const [uploading, setUploading] = useState(false);
 
     const fetchDocs = async () => {
@@ -155,7 +157,17 @@ const DocumentManager = ({ projectId }) => {
         } catch (err) { console.error(err); }
     };
 
-    useEffect(() => { fetchDocs(); }, [projectId]);
+    const fetchTasks = async () => {
+        try {
+            const res = await axios.get(`/tasks?projectId=${projectId}`);
+            setTasks(res.data);
+        } catch (err) { console.error(err); }
+    };
+
+    useEffect(() => {
+        fetchDocs();
+        fetchTasks();
+    }, [projectId]);
 
     const handleUpload = async (e) => {
         const file = e.target.files[0];
@@ -171,7 +183,8 @@ const DocumentManager = ({ projectId }) => {
             });
             await axios.post(`/project-data/${projectId}/documents`, {
                 url: uploadRes.data.url,
-                name: file.name
+                name: file.name,
+                taskId: selectedTaskId
             });
             fetchDocs();
         } catch (err) { alert('Upload Failed'); }
@@ -197,7 +210,19 @@ const DocumentManager = ({ projectId }) => {
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                 <h3 className="font-bold text-lg">Project Documents</h3>
 
-                <div className="flex gap-2 w-full sm:w-auto">
+                <div className="flex gap-2 w-full sm:w-auto items-center">
+                    {/* Task Selector Dropdown (Optional) */}
+                    <select
+                        className="border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-100 max-w-[200px]"
+                        value={selectedTaskId || ""}
+                        onChange={(e) => setSelectedTaskId(e.target.value)}
+                    >
+                        <option value="">-- No Task Link --</option>
+                        {tasks.map(t => (
+                            <option key={t.id} value={t.id}>{t.title}</option>
+                        ))}
+                    </select>
+
                     <input
                         type="text"
                         placeholder="Search docs..."
