@@ -7,9 +7,17 @@ const api = axios.create({
     },
 });
 
-// Request Interceptor: Attach Token
+// Request Counter
+let activeRequests = 0;
+
+// Request Interceptor: Attach Token & Start Loading
 api.interceptors.request.use(
     (config) => {
+        if (activeRequests === 0) {
+            window.dispatchEvent(new Event('loading-start'));
+        }
+        activeRequests++;
+
         // Get token from localStorage (token for Admin/Employee, clientToken for Client)
         const token = localStorage.getItem("token") || localStorage.getItem("clientToken");
         if (token) {
@@ -17,13 +25,30 @@ api.interceptors.request.use(
         }
         return config;
     },
-    (error) => Promise.reject(error)
+    (error) => {
+        activeRequests--;
+        if (activeRequests === 0) {
+            window.dispatchEvent(new Event('loading-end'));
+        }
+        return Promise.reject(error);
+    }
 );
 
-// Response Interceptor: Error Handling
+// Response Interceptor: Error Handling & Stop Loading
 api.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        activeRequests--;
+        if (activeRequests === 0) {
+            window.dispatchEvent(new Event('loading-end'));
+        }
+        return response;
+    },
     (error) => {
+        activeRequests--;
+        if (activeRequests === 0) {
+            window.dispatchEvent(new Event('loading-end'));
+        }
+
         // Handle 401 (Unauthorized) - maybe redirect to login or clear storage
         if (error.response && (error.response.status === 401 || error.response.status === 403)) {
             console.warn("Unauthorized access - redirecting to login");

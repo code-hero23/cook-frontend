@@ -11,6 +11,7 @@ import ReloadPrompt from './components/pwa/ReloadPrompt';
 import InstallPrompt from './components/pwa/InstallPrompt';
 import IOSInstallPrompt from './components/pwa/IOSInstallPrompt';
 import SplashScreen from './components/pwa/SplashScreen';
+import LoadingBar from './components/ui/LoadingBar';
 import { Toaster } from 'react-hot-toast';
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
     return (
         <>
             <Toaster position="top-center" />
+            <LoadingBar />
             <ReloadPrompt />
             <InstallPrompt />
             <IOSInstallPrompt />
