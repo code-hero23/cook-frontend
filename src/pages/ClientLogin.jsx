@@ -144,12 +144,7 @@ const ClientLogin = () => {
                         </button>
                     </form>
 
-                    <div className="mt-8 pt-6 border-t border-gray-100 text-center">
-                        <a href="/login" className="inline-flex items-center gap-2 text-xs font-semibold text-gray-400 hover:text-orange-600 transition-colors">
-                            <ArrowLeft size={12} />
-                            Staff Login
-                        </a>
-                    </div>
+
                 </div>
             </motion.div>
         </div>
