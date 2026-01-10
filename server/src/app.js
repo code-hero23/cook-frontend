@@ -68,7 +68,7 @@ const buildPath = path.join(__dirname, '../../dist');
 app.use(express.static(buildPath));
 
 // Catch-all handler for any request that doesn't match an API route
-// Server Restart Triggered: Ticket Conversion Feature
+// Server Restart Triggered: VAPID Key Alignment
 app.get('*', (req, res) => {
     // Ticket Comments Fix
     res.sendFile(path.join(buildPath, 'index.html'));
