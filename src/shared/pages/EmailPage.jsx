@@ -206,7 +206,7 @@ const EmailPage = () => {
                 {/* Sidebar Overlay for Mobile */}
                 {mobileSidebarOpen && (
                     <div
-                        className="fixed inset-0 bg-black/50 z-20 sm:hidden"
+                        className="fixed inset-0 bg-black/50 z-[100] sm:hidden"
                         onClick={() => setMobileSidebarOpen(false)}
                     />
                 )}
@@ -214,7 +214,7 @@ const EmailPage = () => {
                 {/* Sidebar */}
                 <div className={`
                     fixed sm:static inset-y-0 left-0 w-[280px] sm:w-64 bg-white rounded-r-2xl sm:rounded-xl shadow-2xl sm:shadow-sm border-r sm:border border-gray-100 p-4 h-full
-                    transform transition-transform duration-300 z-30
+                    transform transition-transform duration-300 z-[110]
                     ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full sm:translate-x-0'}
                 `}>
                     <div className="flex justify-between items-center mb-6 sm:hidden">
@@ -445,8 +445,8 @@ const EmailPage = () => {
             {/* Compose Modal */}
             {
                 showCompose && (
-                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center sm:p-4">
-                        <div className="bg-white w-full h-[95vh] sm:h-auto sm:max-h-[85vh] sm:max-w-xl rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col animate-slide-up sm:animate-zoom-in">
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-end sm:items-center justify-center sm:p-4">
+                        <div className="bg-white w-full h-[100dvh] sm:h-auto sm:max-h-[85vh] sm:max-w-xl rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col animate-slide-up sm:animate-zoom-in">
                             {/* Modal Header */}
                             <div className="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-2xl">
                                 <h3 className="font-bold text-lg text-gray-800">New Message</h3>
