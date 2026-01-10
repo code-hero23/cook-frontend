@@ -33,10 +33,12 @@ const IOSInstallPrompt = () => {
         <AnimatePresence>
             {isVisible && (
                 <motion.div
-                    initial={{ opacity: 0, y: 50 }}
+                    initial={{ opacity: 0, y: "100%" }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 50 }}
-                    className="fixed bottom-0 left-0 right-0 z-[1000] p-4 pb-8 bg-white/95 backdrop-blur-xl border-t border-slate-200 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] rounded-t-3xl"
+                    exit={{ opacity: 0, y: "100%" }}
+                    transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                    className="fixed bottom-0 left-0 right-0 z-[1000] p-6 bg-white/80 backdrop-blur-2xl border-t border-white/20 shadow-[0_-20px_50px_rgba(0,0,0,0.15)] rounded-t-[32px] ring-1 ring-black/5"
+                    style={{ paddingBottom: 'calc(2rem + env(safe-area-inset-bottom))' }}
                 >
                     <button
                         onClick={handleClose}
