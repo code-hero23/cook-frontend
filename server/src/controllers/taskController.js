@@ -89,7 +89,7 @@ exports.createTask = async (req, res) => {
                                         <a href="#" style="background-color: #ea580c; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">View Task in Dashboard</a>
                                      </div>`
                                 ),
-                                "admin@orbix.com"
+                                null
                             );
                         }
 

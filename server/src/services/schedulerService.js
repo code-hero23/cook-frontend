@@ -82,7 +82,7 @@ const checkOverdueTasks = async () => {
                             <a href="#" style="background-color: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">View Task Immediately</a>
                          </div>`
                     ),
-                    "admin@orbix.com"
+                    null
                 );
             }
             emailCount++;
