@@ -14,9 +14,9 @@ const emptyIssue = {
   employeeId: "",
   startDate: "",
   dueDate: "",
-  status: "Pending",
+  status: "PENDING",
   priority: "Medium",
-  type: "Issue",
+  type: "ISSUE",
   description: "",
 };
 
@@ -36,16 +36,16 @@ const Issues = () => {
   const isManager = (user.role || "").toUpperCase() === "MANAGER";
 
   // Filter only Issues
-  const issuesOnly = tasks.filter((t) => (t.type || "").toLowerCase() === "issue");
+  const issuesOnly = tasks.filter((t) => (t.type || "").toUpperCase() === "ISSUE");
 
   // Calculate Project Metrics (Issue Specific)
   const projectMetrics = useMemo(() => {
     return projects.map(project => {
       const projectIssues = issuesOnly.filter(t => t.projectId === project.id);
       const total = projectIssues.length;
-      const open = projectIssues.filter(t => t.status !== 'Completed' && t.status !== 'Resolved').length;
-      const highPriority = projectIssues.filter(t => (t.priority || "").toLowerCase() === 'high').length;
-      const resolved = projectIssues.filter(t => t.status === 'Resolved' || t.status === 'Completed').length;
+      const open = projectIssues.filter(t => (t.status || "").toUpperCase() !== 'COMPLETED' && (t.status || "").toUpperCase() !== 'RESOLVED').length;
+      const highPriority = projectIssues.filter(t => (t.priority || "").toUpperCase() === 'HIGH').length;
+      const resolved = projectIssues.filter(t => (t.status || "").toUpperCase() === 'RESOLVED' || (t.status || "").toUpperCase() === 'COMPLETED').length;
 
       // Calculate "health" or progress - for issues, lower open count is better, but let's show resolution rate
       const progress = total > 0 ? Math.round((resolved / total) * 100) : 100;
@@ -79,8 +79,8 @@ const Issues = () => {
 
       // 2. Status Filter
       let matchesFilter = true;
-      if (activeFilter === "Open") matchesFilter = t.status !== "Completed" && t.status !== "Resolved";
-      if (activeFilter === "Closed") matchesFilter = t.status === "Completed" || t.status === "Resolved";
+      if (activeFilter === "Open") matchesFilter = (t.status || "").toUpperCase() !== "COMPLETED" && (t.status || "").toUpperCase() !== "RESOLVED";
+      if (activeFilter === "Closed") matchesFilter = (t.status || "").toUpperCase() === "COMPLETED" || (t.status || "").toUpperCase() === "RESOLVED";
 
       return matchesSearch && matchesFilter;
     });
@@ -132,8 +132,8 @@ const Issues = () => {
   };
 
   const getStatus = (t) => {
-    if (t.status === "Completed") return "Completed";
-    if (t.status === "Resolved") return "Resolved";
+    if ((t.status || "").toUpperCase() === "COMPLETED") return "COMPLETED";
+    if ((t.status || "").toUpperCase() === "RESOLVED") return "RESOLVED";
     if (isTaskOverdue(t)) return "Overdue";
     return t.status;
   };

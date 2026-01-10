@@ -31,22 +31,22 @@ const AllTasks = () => {
   tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
 
   let filteredTasks = tasks.filter(t => {
-    if (t.status === "Completed" && t.updatedAt) {
+    if ((t.status || "").toUpperCase() === "COMPLETED" && t.updatedAt) {
       return new Date(t.updatedAt) >= tenDaysAgo;
     }
     return true;
   });
 
   // ✅ Filtering
-  if (filter === "Completed") {
-    filteredTasks = filteredTasks.filter(t => t.status === "Completed");
-  } else if (filter === "Pending") {
-    filteredTasks = filteredTasks.filter(t => t.status === "Pending");
+  if (filter === "COMPLETED") {
+    filteredTasks = filteredTasks.filter(t => (t.status || "").toUpperCase() === "COMPLETED");
+  } else if (filter === "PENDING") {
+    filteredTasks = filteredTasks.filter(t => (t.status || "").toUpperCase() === "PENDING");
   } else if (filter === "overdue") {
     filteredTasks = filteredTasks.filter(t => {
       const due = new Date(t.dueDate);
       due.setHours(0, 0, 0, 0);
-      return t.status !== "Completed" && due < today;
+      return (t.status || "").toUpperCase() !== "COMPLETED" && due < today;
     });
   }
 
@@ -86,7 +86,7 @@ const AllTasks = () => {
   // ✅ When employee selects status
   const handleStatusChange = (task, newStatus) => {
 
-    if (newStatus === "Completed" && task.status !== "Completed") {
+    if (newStatus === "COMPLETED" && (task.status || "").toUpperCase() !== "COMPLETED") {
       setSelectedTask(task);
       setShowUploadModal(true);  // open file upload modal
       return;
@@ -132,7 +132,7 @@ const AllTasks = () => {
       };
 
       // Update status with file data
-      await updateTaskStatus(selectedTask.id, "Completed", fileData);
+      await updateTaskStatus(selectedTask.id, "COMPLETED", fileData);
       toast.success("Task completed and proof uploaded!");
 
     } catch (err) {
@@ -169,7 +169,7 @@ const AllTasks = () => {
           if (projectTasks.length === 0 && (filter || search) && !projectIdParam) return null;
 
           const totalTasksCount = tasks.filter((t) => t.projectId === project.id && t.employeeId === user.id).length;
-          const completedTasksCount = tasks.filter((t) => t.projectId === project.id && t.employeeId === user.id && t.status === "Completed").length;
+          const completedTasksCount = tasks.filter((t) => t.projectId === project.id && t.employeeId === user.id && (t.status || "").toUpperCase() === "COMPLETED").length;
           const progress = totalTasksCount > 0 ? (completedTasksCount / totalTasksCount) * 100 : 0;
           const isExpanded = expandedProjects[project.id];
 
@@ -298,14 +298,14 @@ const AllTasks = () => {
                               <select
                                 value={task.status}
                                 onChange={(e) => handleStatusChange(task, e.target.value)}
-                                className={`px-4 py-2 rounded-lg text-xs font-bold outline-none transition-all cursor-pointer shadow-sm border ${task.status === 'Completed' ? 'bg-green-50 border-green-200 text-green-700' :
-                                  task.status === 'In Progress' ? 'bg-blue-50 border-blue-200 text-blue-700' :
+                                className={`px-4 py-2 rounded-lg text-xs font-bold outline-none transition-all cursor-pointer shadow-sm border ${(task.status || "").toUpperCase() === 'COMPLETED' ? 'bg-green-50 border-green-200 text-green-700' :
+                                  (task.status || "").toUpperCase() === 'IN PROGRESS' ? 'bg-blue-50 border-blue-200 text-blue-700' :
                                     'bg-white border-gray-200 text-gray-600 hover:border-primary/50'
                                   } focus:ring-2 focus:ring-primary/20`}
                               >
-                                <option value="Pending">Mark Pending</option>
-                                <option value="In Progress">In Progress</option>
-                                <option value="Completed">Completed</option>
+                                <option value="PENDING">Mark Pending</option>
+                                <option value="IN PROGRESS">In Progress</option>
+                                <option value="COMPLETED">Completed</option>
                               </select>
                             </div>
                           </motion.div>

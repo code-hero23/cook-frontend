@@ -5,8 +5,8 @@ import { CalendarDays, MapPin, CheckCircle, Clock } from "lucide-react";
 const ProjectRow = ({ project }) => {
   const navigate = useNavigate();
 
-  const completedCount = project.tasks.filter(t => t.status === "completed").length;
-  const pendingCount = project.tasks.filter(t => t.status === "pending").length;
+  const completedCount = project.tasks.filter(t => t.status === "COMPLETED").length;
+  const pendingCount = project.tasks.filter(t => t.status === "PENDING").length;
 
   return (
     <div

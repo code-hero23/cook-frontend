@@ -40,7 +40,7 @@ const emptyTask = {
   employeeId: "",
   startDate: "",
   dueDate: "",
-  status: "Pending",
+  status: "PENDING",
   priority: "Medium",
   type: "TASK",
   stage: "", // Added stage
@@ -103,8 +103,8 @@ const Tasks = () => {
       const projectTasks = tasksOnly.filter(t => t.projectId === project.id);
 
       // Case-insensitive check for reliability
-      const completed = projectTasks.filter(t => ['completed', 'done'].includes((t.status || "").toLowerCase())).length;
-      const pending = projectTasks.filter(t => !['completed', 'done'].includes((t.status || "").toLowerCase())).length;
+      const completed = projectTasks.filter(t => (t.status || "").toUpperCase() === "COMPLETED").length;
+      const pending = projectTasks.filter(t => (t.status || "").toUpperCase() === "PENDING").length;
       const overdue = projectTasks.filter(t => isTaskOverdue(t)).length;
 
       return {
@@ -208,7 +208,7 @@ const Tasks = () => {
   };
 
   const getStatus = (t) => {
-    if (t.status === "Completed") return "Completed";
+    if ((t.status || "").toUpperCase() === "COMPLETED") return "COMPLETED";
     if (isTaskOverdue(t)) return "Overdue";
     return t.status;
   };

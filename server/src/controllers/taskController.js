@@ -132,6 +132,11 @@ exports.updateTask = async (req, res) => {
             ...allowedUpdates
         } = req.body;
 
+        // Sanitization: Unify Status Casing
+        if (allowedUpdates.status) {
+            allowedUpdates.status = allowedUpdates.status.toUpperCase();
+        }
+
         // 1. Update the task
         const task = await prisma.task.update({
             where: { id: req.params.id },

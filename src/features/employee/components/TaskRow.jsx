@@ -4,9 +4,10 @@ const TaskRow = ({ task, onStatusChange }) => {
   const [status, setStatus] = useState(task.status);
 
   const getStatusColor = () => {
-    if (status === "Completed") return "bg-green-100 text-green-600";
-    if (status === "In Progress") return "bg-blue-100 text-blue-600";
-    if (status === "Pending") return "bg-yellow-100 text-yellow-600";
+    const s = (status || "").toUpperCase();
+    if (s === "COMPLETED") return "bg-green-100 text-green-600";
+    if (s === "IN PROGRESS") return "bg-blue-100 text-blue-600";
+    if (s === "PENDING") return "bg-yellow-100 text-yellow-600";
     return "bg-gray-100 text-gray-600";
   };
 
@@ -14,7 +15,7 @@ const TaskRow = ({ task, onStatusChange }) => {
     const newStatus = e.target.value;
 
     // ✅ Confirmation when marking as completed
-    if (newStatus === "Completed" && status !== "Completed") {
+    if (newStatus === "COMPLETED" && (status || "").toUpperCase() !== "COMPLETED") {
       const confirmComplete = window.confirm(
         "Are you sure you want to mark this task as COMPLETED?"
       );
@@ -45,13 +46,13 @@ const TaskRow = ({ task, onStatusChange }) => {
           {status}
         </span>
         <select
-          value={status}
+          value={status.toUpperCase()}
           onChange={handleChange}
           className="border rounded px-2 py-1 text-xs sm:text-sm cursor-pointer bg-white outline-none focus:ring-2 focus:ring-indigo-500 min-w-[100px]"
         >
-          <option value="Pending">Pending</option>
-          <option value="In Progress">In Progress</option>
-          <option value="Completed">Completed</option>
+          <option value="PENDING">Pending</option>
+          <option value="IN PROGRESS">In Progress</option>
+          <option value="COMPLETED">Completed</option>
         </select>
       </div>
     </div>

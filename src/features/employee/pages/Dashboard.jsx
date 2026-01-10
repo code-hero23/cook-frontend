@@ -20,23 +20,23 @@ const Dashboard = () => {
   today.setHours(0, 0, 0, 0);
 
   const totalTasks = tasks.length;
-  const completedTasks = tasks.filter(t => t.status === "Completed").length;
-  const inProgressTasks = tasks.filter(t => t.status === "In Progress" || t.status === "Ongoing" || t.status === "Active").length;
-  const pendingTasks = tasks.filter(t => t.status === "Pending").length;
+  const completedTasks = tasks.filter(t => (t.status || "").toUpperCase() === "COMPLETED").length;
+  const inProgressTasks = tasks.filter(t => ["IN PROGRESS", "ONGOING", "ACTIVE"].includes((t.status || "").toUpperCase())).length;
+  const pendingTasks = tasks.filter(t => (t.status || "").toUpperCase() === "PENDING").length;
 
   const overdueTasks = tasks.filter(task => {
     const due = new Date(task.dueDate);
     due.setHours(0, 0, 0, 0);
-    return task.status !== "Completed" && due < today;
+    return (task.status || "").toUpperCase() !== "COMPLETED" && due < today;
   }).length;
 
-  const openIssues = issues.filter(i => i.status === "Pending" || i.status === "In Progress" || i.status === "Active").length;
+  const openIssues = issues.filter(i => ["PENDING", "IN PROGRESS", "ACTIVE"].includes((i.status || "").toUpperCase())).length;
 
   const stats = [
     { label: "Active Tasks", count: totalTasks - completedTasks, total: totalTasks, icon: <ClipboardList size={22} />, color: "from-blue-600 to-indigo-700", route: "/employee/tasks" },
-    { label: "Completed", count: completedTasks, total: totalTasks, icon: <CheckCircle size={22} />, color: "from-emerald-500 to-teal-600", route: "/employee/tasks?filter=Completed" },
+    { label: "Completed", count: completedTasks, total: totalTasks, icon: <CheckCircle size={22} />, color: "from-emerald-500 to-teal-600", route: "/employee/tasks?filter=COMPLETED" },
     { label: "Overdue", count: overdueTasks, total: totalTasks, icon: <AlertTriangle size={22} />, color: "from-rose-500 to-red-700", route: "/employee/tasks?filter=overdue" },
-    { label: "Open Issues", count: openIssues, total: issues.length, icon: <Bug size={22} />, color: "from-orange-500 to-amber-600", route: "/employee/issues?filter=Pending" }
+    { label: "Open Issues", count: openIssues, total: issues.length, icon: <Bug size={22} />, color: "from-orange-500 to-amber-600", route: "/employee/issues?filter=PENDING" }
   ];
 
   const getProjectStats = pid => {
@@ -48,7 +48,7 @@ const Dashboard = () => {
       return task.status !== "Completed" && due < today;
     }).length;
 
-    const completed = projectTasks.filter(t => t.status === "Completed").length;
+    const completed = projectTasks.filter(t => (t.status || "").toUpperCase() === "COMPLETED").length;
     const progress = projectTasks.length > 0 ? (completed / projectTasks.length) * 100 : 0;
 
     return {
@@ -56,7 +56,7 @@ const Dashboard = () => {
       completed,
       pending: projectTasks.length - completed,
       overdue,
-      issues: projectIssues.filter(i => i.status !== "Completed").length,
+      issues: projectIssues.filter(i => (i.status || "").toUpperCase() !== "COMPLETED").length,
       progress
     };
   };

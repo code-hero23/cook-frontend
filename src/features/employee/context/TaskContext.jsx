@@ -55,7 +55,8 @@ export const TaskProvider = ({ children }) => {
         payload.completionFileName = fileData.name;
       }
       await axios.put(`/tasks/${taskId}`, payload);
-      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus, ...payload } : t));
+      const upperStatus = newStatus.toUpperCase();
+      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: upperStatus, ...payload, status: upperStatus } : t));
     } catch (err) {
       console.error("Error updating task status:", err);
     }
@@ -79,7 +80,8 @@ export const TaskProvider = ({ children }) => {
       }
 
       await axios.put(`/tasks/${issueId}`, updates);
-      setIssues(prev => prev.map(i => i.id === issueId ? { ...i, ...updates } : i));
+      const upperStatus = newStatus.toUpperCase();
+      setIssues(prev => prev.map(i => i.id === issueId ? { ...i, ...updates, status: upperStatus } : i));
     } catch (err) {
       console.error("Error updating issue status:", err);
       alert(err.response?.data?.error || "Failed to update issue status. Please try again.");

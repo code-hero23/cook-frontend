@@ -170,24 +170,24 @@ export const AppProvider = ({ children }) => {
 
     // Project Metrics
     const openProjects = projects.filter(p => !isProjectOverdue(p)).length;
-    const closedProjects = projects.filter(p => ['completed', 'hold'].includes((p.status || "").toLowerCase())).length;
+    const closedProjects = projects.filter(p => ['COMPLETED', 'HOLD'].includes((p.status || "").toUpperCase())).length;
     const overdueProjects = projects.filter((p) => isProjectOverdue(p)).length;
 
     // Issue Metrics (Type === 'Issue' or 'ISSUE')
     const openIssues = tasks.filter(
-      (t) => (t.type || "").toLowerCase() === "issue" && t.status !== "Completed"
+      (t) => (t.type || "").toUpperCase() === "ISSUE" && (t.status || "").toUpperCase() !== "COMPLETED"
     ).length;
     const closedIssues = tasks.filter(
-      (t) => (t.type || "").toLowerCase() === "issue" && t.status === "Completed"
+      (t) => (t.type || "").toUpperCase() === "ISSUE" && (t.status || "").toUpperCase() === "COMPLETED"
     ).length;
 
     // Task Metrics (Type !== 'Issue')
     // We filter out issues so "Tasks" and "Issues" are mutually exclusive on dashboard
-    const taskOnly = tasks.filter(t => (t.type || "").toLowerCase() !== "issue");
+    const taskOnly = tasks.filter(t => (t.type || "").toUpperCase() !== "ISSUE");
 
     const totalTasks = taskOnly.length;
-    const openTasks = taskOnly.filter(t => !['completed', 'done'].includes((t.status || "").toLowerCase())).length;
-    const closedTasks = taskOnly.filter(t => ['completed', 'done'].includes((t.status || "").toLowerCase())).length;
+    const openTasks = taskOnly.filter(t => !['COMPLETED', 'DONE'].includes((t.status || "").toUpperCase())).length;
+    const closedTasks = taskOnly.filter(t => ['COMPLETED', 'DONE'].includes((t.status || "").toUpperCase())).length;
     const overdueTasks = taskOnly.filter(t => isTaskOverdue(t)).length;
 
     // Redundant aliases kept for compatibility if used elsewhere

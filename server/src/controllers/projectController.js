@@ -161,6 +161,11 @@ exports.updateProject = async (req, res) => {
         if (data.startDate) data.startDate = new Date(data.startDate);
         if (data.deadline) data.deadline = new Date(data.deadline);
 
+        // Sanitization: Unify Status Casing
+        if (data.status) {
+            data.status = data.status.toUpperCase();
+        }
+
         // Clean empty optional fields
         ['cpNumber', 'gstin', 'spouseName', 'spousePhone', 'location'].forEach(field => {
             if (data[field] === "") delete data[field];
