@@ -64,6 +64,22 @@ app.get('/api/env-debug', (req, res) => {
     });
 });
 
+app.get('/api/health/smtp', async (req, res) => {
+    const { sendNotificationEmail } = require('./services/emailService');
+    try {
+        const { createTransporter } = require('./services/emailService');
+        const transporter = createTransporter();
+        if (!transporter) {
+            return res.status(500).json({ status: 'error', message: 'SMTP credentials missing' });
+        }
+        await transporter.verify();
+        res.json({ status: 'ok', message: 'SMTP connection verified successfully' });
+    } catch (error) {
+        console.error('[HealthCheck] SMTP verification failed:', error);
+        res.status(500).json({ status: 'error', message: error.message });
+    }
+});
+
 // Error handling
 app.use((err, req, res, next) => {
     console.error(err.stack);

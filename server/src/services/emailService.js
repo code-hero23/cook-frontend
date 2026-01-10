@@ -11,8 +11,10 @@ const createTransporter = () => {
     }
 
     return nodemailer.createTransport({
-        service: 'gmail',
-        pool: true, // Reuse connections
+        host: process.env.SMTP_HOST || 'smtp.gmail.com',
+        port: parseInt(process.env.SMTP_PORT) || 587,
+        secure: process.env.SMTP_PORT == '465', // true for 465, false for other ports
+        pool: true,
         maxConnections: 5,
         maxMessages: 100,
         auth: {
@@ -64,7 +66,7 @@ const sendNotificationEmail = async (to, subject, text, html = null, cc = null, 
     }
 
     try {
-        console.log(`[EmailService v3-PROD] Sending notification to ${to} (CC: ${cc || 'None'})...`);
+        console.log(`[EmailService v4-FINAL] Sending notification to ${to} (CC: ${cc || 'None'})...`);
 
         const mailOptions = {
             from: `"Orbix Projects" <${process.env.SMTP_USER}>`,
