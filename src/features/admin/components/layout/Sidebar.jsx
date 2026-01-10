@@ -12,7 +12,6 @@ import {
   Bug,
   ShieldCheck,
   Mail,
-  Mail,
   LifeBuoy,
   ChevronLeft,
   ChevronRight
