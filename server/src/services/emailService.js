@@ -115,4 +115,4 @@ const getEmailTemplate = (title, content) => {
     `;
 };
 
-module.exports = { sendBackupEmail, sendNotificationEmail, getEmailTemplate };
+module.exports = { createTransporter, sendBackupEmail, sendNotificationEmail, getEmailTemplate };
