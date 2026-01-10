@@ -37,10 +37,10 @@ function ReloadPrompt() {
         <AnimatePresence>
             {(offlineReady || needUpdate) && (
                 <motion.div
-                    initial={{ opacity: 0, x: 100 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 100 }}
-                    className="fixed bottom-6 right-6 z-[200] w-full max-w-sm"
+                    initial={{ opacity: 0, y: 100, x: "-50%" }}
+                    animate={{ opacity: 1, y: 0, x: "-50%" }}
+                    exit={{ opacity: 0, y: 100, x: "-50%" }}
+                    className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[200] w-[calc(100%-2rem)] max-w-sm"
                 >
                     <div className="bg-white/90 backdrop-blur-xl border border-slate-200 rounded-[2rem] p-6 shadow-2xl shadow-indigo-100 flex items-start gap-4">
                         <div className={`p-3 rounded-2xl ${needUpdate ? 'bg-indigo-50 text-indigo-600' : 'bg-green-50 text-green-600'}`}>
