@@ -12,7 +12,10 @@ import {
   Bug,
   ShieldCheck,
   Mail,
-  LifeBuoy
+  Mail,
+  LifeBuoy,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 
 const navItems = [
@@ -32,6 +35,7 @@ const navItems = [
 
 const Sidebar = ({ open, onClose }) => {
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isCollapsed, setIsCollapsed] = useState(localStorage.getItem('adminSidebarCollapsed') === 'true');
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const isManager = (user.role || "").toUpperCase() === "MANAGER";
 
@@ -51,6 +55,14 @@ const Sidebar = ({ open, onClose }) => {
     return () => clearInterval(interval);
   }, [user.id]);
 
+  const toggleCollapse = () => {
+    const newState = !isCollapsed;
+    setIsCollapsed(newState);
+    localStorage.setItem('adminSidebarCollapsed', newState);
+    // Dispatch custom event for layout transition
+    window.dispatchEvent(new Event('admin_sidebar_toggle'));
+  };
+
   const filteredNavItems = navItems.filter(item => {
     if (isManager && item.label === "Employees") return false;
     if (isManager && item.label === "System Control") return false;
@@ -68,44 +80,59 @@ const Sidebar = ({ open, onClose }) => {
       )}
 
       <aside
-        className={`fixed top-0 left-0 z-50 h-screen w-64 bg-[#0E1525] text-gray-200
-        transform transition-transform duration-300
+        className={`fixed top-0 left-0 z-50 h-screen glass-sidebar dark-scroll text-gray-200
+        transform transition-all duration-300 ease-in-out border-r border-white/5
         ${open ? "translate-x-0" : "-translate-x-full"}
+        ${isCollapsed ? "md:w-20" : "md:w-64"}
         md:translate-x-0 md:static flex flex-col overflow-hidden`}
       >
+        {/* Collapse Toggle - Desktop */}
+        <button
+          onClick={toggleCollapse}
+          className="hidden md:flex absolute -right-3 top-20 bg-brand-500 text-white rounded-full p-1 shadow-lg ring-4 ring-[#0E1525] hover:bg-brand-600 transition-all z-[60]"
+        >
+          {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+        </button>
         {/* Branding */}
-        <div className="flex items-center gap-3 px-5 py-5 border-b border-white/10">
-          <div className="h-10 w-10 rounded-lg bg-brand-500 flex items-center justify-center font-bold text-white">
+        <div className={`flex items-center gap-3 px-5 py-5 border-b border-white/10 transition-all ${isCollapsed ? 'justify-center' : ''}`}>
+          <div className="h-10 w-10 shrink-0 rounded-xl bg-brand-500 flex items-center justify-center font-bold text-white shadow-lg shadow-brand-500/20">
             C
           </div>
-          <div>
-            <p className="text-xs uppercase text-white font-bold text-2xl tracking-wide">Orbix Projects</p>
-            <p className="font-semibold text-sm text-white">
-              {isManager ? "Admin Manager" : "Super Admin"}
-            </p>
-          </div>
+          {!isCollapsed && (
+            <div className="overflow-hidden whitespace-nowrap animate-in fade-in slide-in-from-left-2 duration-300">
+              <p className="text-xs uppercase text-white font-black tracking-widest">Orbix Projects</p>
+              <p className="font-bold text-[10px] text-brand-400 mt-0.5">
+                {isManager ? "ADMIN MANAGER" : "SUPER ADMIN"}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Menu */}
-        <nav className="flex-1 py-3 overflow-y-auto">
+        <nav className="flex-1 py-4 overflow-y-auto space-y-1">
           {filteredNavItems.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
               onClick={onClose}
+              title={isCollapsed ? label : ""}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-5 py-3 mx-3 rounded-lg text-sm
-                 transition-all duration-200 relative
+                `flex items-center gap-3 px-4 py-3 mx-3 rounded-xl text-sm
+                 transition-all duration-200 group relative
                 ${isActive
-                  ? "bg-brand-500 text-white shadow-md"
-                  : "text-gray-300 hover:bg-white/10 hover:text-white"
-                }`
+                  ? "bg-brand-500 text-white shadow-lg shadow-brand-500/20"
+                  : "text-gray-400 hover:bg-white/5 hover:text-white"
+                } ${isCollapsed ? 'justify-center px-0' : ''}`
               }
             >
-              <Icon size={20} />
-              <span>{label}</span>
+              <Icon size={20} className={`shrink-0 transition-transform group-hover:scale-110 ${isCollapsed ? 'mx-auto' : ''}`} />
+              {!isCollapsed && (
+                <span className="whitespace-nowrap animate-in fade-in slide-in-from-left-2 duration-300 font-medium">
+                  {label}
+                </span>
+              )}
               {label === "Email" && unreadCount > 0 && (
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center">
+                <span className={`absolute ${isCollapsed ? 'top-2 right-2' : 'right-3 top-1/2 -translate-y-1/2'} bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center border-2 border-[#0E1525]`}>
                   {unreadCount > 99 ? '99+' : unreadCount}
                 </span>
               )}

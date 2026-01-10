@@ -21,12 +21,16 @@ const Layout = ({ children }) => {
 
         <Topbar onToggleSidebar={() => setMobileOpen(prev => !prev)} />
 
-        <main className="flex-1 overflow-y-auto p-0">
+        <main className="flex-1 overflow-y-auto p-0 scroll-smooth">
           {/* FULL SCREEN for CHAT */}
           {isChatPage ? (
             <div className="h-full w-full">{children}</div>
           ) : (
-            <div className="p-6 max-w-7xl mx-auto w-full">{children}</div>
+            <div className="p-4 sm:p-8 max-w-[1600px] mx-auto w-full animate-in fade-in zoom-in-95 duration-500">
+              <div className="bg-white/40 backdrop-blur-sm rounded-[32px] p-1 border border-white/20">
+                {children}
+              </div>
+            </div>
           )}
         </main>
 

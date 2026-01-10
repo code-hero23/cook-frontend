@@ -38,10 +38,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     (name || "User").split(" ").map(word => word[0]).join("").toUpperCase();
 
   const navItem = ({ isActive }) =>
-    `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 relative
+    `flex items-center gap-3 px-4 py-3 mx-2 rounded-xl text-sm font-bold transition-all duration-300 group relative
     ${isActive
-      ? "bg-[#FF7A00] text-white shadow"
-      : "text-gray-300 hover:bg-[#162040] hover:text-white"
+      ? "bg-[#FF7A00] text-white shadow-lg shadow-[#FF7A00]/20"
+      : "text-gray-400 hover:bg-white/5 hover:text-white"
     }`;
 
   return (
@@ -58,20 +58,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
       <aside
         className={`
           fixed top-0 left-0 h-full w-64 max-w-full
-          bg-[#0D152A] text-white shadow-lg
-          border-r border-[#1E263A]
+          glass-sidebar dark-scroll text-white shadow-2xl
+          border-r border-white/5
           flex flex-col transition-transform duration-300 ease-in-out
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
           md:translate-x-0
           z-[100] md:z-40
         `}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-[#1E263A] md:mt-[70px]">
+        <div className="flex items-center justify-between px-5 py-6 border-b border-white/5 md:mt-[70px]">
           <div>
-            <h1 className="text-lg font-bold text-white tracking-tight leading-none">Orbix Projects</h1>
-            <h2 className="text-[10px] font-bold tracking-widest uppercase text-gray-500 mt-0.5">
-              Employee Panel
+            <h1 className="text-xl font-black text-white tracking-widest leading-none">ORBIX PROJECTS</h1>
+            <h2 className="text-[10px] font-black tracking-widest uppercase text-[#FF7A00] mt-1.5 opacity-80">
+              EMPLOYEE PORTAL
             </h2>
           </div>
 
@@ -83,14 +82,13 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
           </button>
         </div>
 
-        {/* Profile */}
-        <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-5 py-4 sm:py-5 border-b border-[#1E263A] bg-[#111A2E]">
-          <div className="w-11 h-11 bg-[#FF7A00] text-white rounded-full flex items-center justify-center font-bold">
+        <div className="flex items-center gap-3 px-5 py-6 border-b border-white/5 bg-white/5 backdrop-blur-md">
+          <div className="w-12 h-12 bg-gradient-to-br from-[#FF7A00] to-[#FF9D42] text-white rounded-2xl flex items-center justify-center font-black shadow-lg shadow-[#FF7A00]/30 transform group-hover:scale-105 transition-transform">
             {getInitials(employee.name)}
           </div>
           <div>
-            <p className="font-semibold text-sm">{employee.name || 'Employee'}</p>
-            <p className="text-xs text-gray-400">{employee.role || 'Role'}</p>
+            <p className="font-bold text-sm text-white tracking-tight">{employee.name || 'Employee'}</p>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{employee.role || 'Role'}</p>
           </div>
         </div>
 
@@ -132,15 +130,14 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
           </NavLink>
         </nav>
 
-        {/* Logout */}
-        <div className="border-t border-[#1E263A] p-4">
+        <div className="border-t border-white/5 p-4 mt-auto">
           <NavLink
             to="/login" onClick={() => setSidebarOpen(false)}
-            className="flex items-center gap-2 sm:gap-3 text-sm px-4 py-3 rounded-lg 
-            text-red-400 hover:bg-red-400/20 hover:text-red-300 transition"
+            className="flex items-center gap-3 text-[13px] font-bold px-4 py-3 rounded-xl 
+            text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all active:scale-95"
           >
             <LogOut size={18} />
-            Logout
+            <span>Sign Out</span>
           </NavLink>
         </div>
       </aside>
