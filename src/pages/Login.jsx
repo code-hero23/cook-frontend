@@ -53,7 +53,7 @@ const UnifiedLogin = () => {
             const userRole = res.data.user.role;
 
             // Strict Role Validation based on selected tab
-            if (activePortal === 'admin' && !['SUPER_ADMIN', 'MANAGER'].includes(userRole)) {
+            if (activePortal === 'admin' && !['SUPER_ADMIN', 'MANAGER', 'VIEW_ONLY_ADMIN'].includes(userRole)) {
                 setError("Access denied. You are not an authorized administrator.");
                 setLoading(false);
                 return;
@@ -70,7 +70,7 @@ const UnifiedLogin = () => {
             localStorage.setItem("user", JSON.stringify(res.data.user));
 
             // Routing
-            if (userRole === 'SUPER_ADMIN' || userRole === 'MANAGER') {
+            if (userRole === 'SUPER_ADMIN' || userRole === 'MANAGER' || userRole === 'VIEW_ONLY_ADMIN') {
                 navigate("/admin/dashboard");
             } else if (userRole === 'EMPLOYEE') {
                 navigate("/employee");
