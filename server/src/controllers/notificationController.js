@@ -31,7 +31,14 @@ exports.subscribe = async (req, res) => {
 };
 
 exports.getVapidKey = (req, res) => {
-    res.json({ publicKey: process.env.VAPID_PUBLIC_KEY });
+    const key = process.env.VAPID_PUBLIC_KEY;
+    if (!key) {
+        console.warn('[NotificationController] VAPID_PUBLIC_KEY is missing from process.env');
+    }
+    res.json({
+        publicKey: key || null,
+        status: key ? 'found' : 'missing_in_env'
+    });
 };
 
 exports.testNotification = async (req, res) => {

@@ -55,6 +55,15 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'Cookscape Backend is running' });
 });
 
+app.get('/api/env-debug', (req, res) => {
+    res.json({
+        VAPID_PUBLIC_KEY: process.env.VAPID_PUBLIC_KEY ? 'PRESENT' : 'MISSING',
+        VAPID_PRIVATE_KEY: process.env.VAPID_PRIVATE_KEY ? 'PRESENT' : 'MISSING',
+        PORT: process.env.PORT,
+        NODE_ENV: process.env.NODE_ENV
+    });
+});
+
 // Error handling
 app.use((err, req, res, next) => {
     console.error(err.stack);
