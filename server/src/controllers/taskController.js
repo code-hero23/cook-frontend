@@ -49,9 +49,16 @@ exports.createTask = async (req, res) => {
         res.status(201).json(task);
 
         // Background Notifications (Non-blocking)
+        const targetEmployeeId = req.body.employeeId;
+        const taskTitle = task.title;
+        const taskType = task.type;
+        const taskPriority = task.priority;
+        const taskDueDate = task.dueDate;
+        const taskDescription = task.description;
+
         (async () => {
             try {
-                if (req.body.employeeId) {
+                if (targetEmployeeId) {
                     const sender = await prisma.user.findFirst({
                         where: { role: { in: ['SUPER_ADMIN', 'MANAGER', 'ADMIN'] } }
                     });
@@ -61,30 +68,31 @@ exports.createTask = async (req, res) => {
                         await prisma.email.create({
                             data: {
                                 senderId: sender.id,
-                                receiverId: req.body.employeeId,
-                                subject: `New Task Assigned: ${task.title}`,
-                                content: `You have been assigned a new task.\n\nType: ${task.type}\nPriority: ${task.priority}\nDue Date: ${task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'N/A'}\n\nDescription: ${task.description || 'No description provided.'}`,
+                                receiverId: targetEmployeeId,
+                                subject: `New Task Assigned: ${taskTitle}`,
+                                content: `You have been assigned a new task.\n\nType: ${taskType}\nPriority: ${taskPriority}\nDue Date: ${taskDueDate ? new Date(taskDueDate).toLocaleDateString() : 'N/A'}\n\nDescription: ${taskDescription || 'No description provided.'}`,
                                 isRead: false
                             }
                         });
 
                         // 2. Send Real Email (Gmail)
-                        const emp = await prisma.user.findUnique({ where: { id: req.body.employeeId } });
+                        const emp = await prisma.user.findUnique({ where: { id: targetEmployeeId } });
                         if (emp && emp.email) {
+                            console.log(`[Notification] Initiating background email to: ${emp.email}`);
                             await sendNotificationEmail(
                                 emp.email,
-                                `New Task Assigned: ${task.title}`,
-                                `You have been assigned a new task.\n\nPriority: ${task.priority}\nDue: ${task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'N/A'}`,
+                                `New Task Assigned: ${taskTitle}`,
+                                `You have been assigned a new task.\n\nPriority: ${taskPriority}\nDue: ${taskDueDate ? new Date(taskDueDate).toLocaleDateString() : 'N/A'}`,
                                 getEmailTemplate(
-                                    `New Task Assigned: ${task.title}`,
+                                    `New Task Assigned: ${taskTitle}`,
                                     `<p style="font-size: 16px;">You have been assigned a new task by <strong>${sender.name}</strong>.</p>
                                      <div style="background-color: #f8fafc; padding: 16px; border-radius: 8px; margin: 20px 0;">
-                                        <p style="margin: 0 0 10px;"><strong>Type:</strong> ${task.type}</p>
-                                        <p style="margin: 0 0 10px;"><strong>Priority:</strong> <span style="color: ${task.priority === 'HIGH' ? 'red' : 'orange'};">${task.priority}</span></p>
-                                        <p style="margin: 0;"><strong>Due Date:</strong> ${task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No Due Date'}</p>
+                                        <p style="margin: 0 0 10px;"><strong>Type:</strong> ${taskType}</p>
+                                        <p style="margin: 0 0 10px;"><strong>Priority:</strong> <span style="color: ${taskPriority === 'HIGH' ? 'red' : 'orange'};">${taskPriority}</span></p>
+                                        <p style="margin: 0;"><strong>Due Date:</strong> ${taskDueDate ? new Date(taskDueDate).toLocaleDateString() : 'No Due Date'}</p>
                                      </div>
                                      <p style="font-weight: bold; margin-bottom: 5px;">Description:</p>
-                                     <p style="background-color: #fff; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-style: italic;">${task.description || 'No description provided.'}</p>
+                                     <p style="background-color: #fff; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-style: italic;">${taskDescription || 'No description provided.'}</p>
                                      <div style="text-align: center; margin-top: 24px;">
                                         <a href="#" style="background-color: #ea580c; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">View Task in Dashboard</a>
                                      </div>`
@@ -96,15 +104,15 @@ exports.createTask = async (req, res) => {
                         // 3. Send Push Notification
                         try {
                             await sendUserPushNotification(
-                                req.body.employeeId,
+                                targetEmployeeId,
                                 `New Task Assigned!`,
-                                `Task: ${task.title} (${task.priority})`
+                                `Task: ${taskTitle} (${taskPriority})`
                             );
                         } catch (pushErr) {
                             console.error("[Notification] Push failed:", pushErr);
                         }
 
-                        console.log(`[Notification] Background tasks completed for Employee ${req.body.employeeId}`);
+                        console.log(`[Notification] Background tasks completed for Employee ${targetEmployeeId}`);
                     }
                 }
             } catch (bgError) {

@@ -37,13 +37,22 @@ exports.sendEmail = async (req, res) => {
         res.status(201).json(email);
 
         // Background Gmail Relay (Non-blocking)
-        if (!isDraft && email.receiver && email.receiver.email) {
+        const relaySubject = subject;
+        const relayContent = content;
+        const relaySenderName = email.sender.name;
+        const relayReceiverEmail = email.receiver?.email;
+        const relayEmailId = email.id;
+        const relayAttachments = attachments;
+
+        if (!isDraft && relayReceiverEmail) {
             (async () => {
                 try {
+                    console.log(`[EmailRelay] Starting background relay for message: ${relayEmailId} to ${relayReceiverEmail}`);
+
                     // Format attachments for Nodemailer
                     let mailAttachments = [];
-                    if (attachments && Array.isArray(attachments)) {
-                        mailAttachments = attachments.map(att => {
+                    if (relayAttachments && Array.isArray(relayAttachments)) {
+                        mailAttachments = relayAttachments.map(att => {
                             const filename = att.url.split('/').pop();
                             return {
                                 filename: att.name,
@@ -53,21 +62,21 @@ exports.sendEmail = async (req, res) => {
                     }
 
                     await sendNotificationEmail(
-                        email.receiver.email,
-                        `[Internal Message] ${subject}`,
-                        `You received a new message from ${email.sender.name}:\n\n${content}\n\n(Sent via Orbix Dashboard)`,
+                        relayReceiverEmail,
+                        `[Internal Message] ${relaySubject}`,
+                        `You received a new message from ${relaySenderName}:\n\n${relayContent}\n\n(Sent via Orbix Dashboard)`,
                         getEmailTemplate(
-                            `New Message from ${email.sender.name}`,
+                            `New Message from ${relaySenderName}`,
                             `<p style="font-size: 16px; margin-bottom: 20px;">You received a new message via the Orbix Dashboard:</p>
                              <div style="background-color: #f8fafc; border-left: 4px solid #ea580c; padding: 16px; margin-bottom: 24px;">
-                                <p style="margin: 0; font-style: italic; white-space: pre-wrap;">${content}</p>
+                                <p style="margin: 0; font-style: italic; white-space: pre-wrap;">${relayContent}</p>
                              </div>
                              <p style="font-size: 14px; color: #64748b;">Log in to the dashboard to reply.</p>`
                         ),
                         null,
                         mailAttachments
                     );
-                    console.log(`[EmailRelay] Successfully relayed message ${email.id} to Gmail`);
+                    console.log(`[EmailRelay] Successfully relayed message ${relayEmailId} to Gmail`);
                 } catch (emailErr) {
                     console.error("[EmailRelay] Failed background Gmail relay:", emailErr);
                 }

@@ -11,13 +11,16 @@ const createTransporter = () => {
     }
 
     return nodemailer.createTransport({
-        service: 'gmail', // Built-in support for Gmail
+        service: 'gmail',
+        pool: true, // Reuse connections
+        maxConnections: 5,
+        maxMessages: 100,
         auth: {
             user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS, // App Password
+            pass: process.env.SMTP_PASS,
         },
-        connectionTimeout: 10000, // 10 seconds
-        greetingTimeout: 5000,   // 5 seconds
+        connectionTimeout: 10000,
+        greetingTimeout: 5000,
     });
 };
 
@@ -61,7 +64,7 @@ const sendNotificationEmail = async (to, subject, text, html = null, cc = null, 
     }
 
     try {
-        console.log(`[EmailService] Sending notification to ${to} (CC: ${cc || 'None'})...`);
+        console.log(`[EmailService v3-PROD] Sending notification to ${to} (CC: ${cc || 'None'})...`);
 
         const mailOptions = {
             from: `"Orbix Projects" <${process.env.SMTP_USER}>`,
