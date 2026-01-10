@@ -81,7 +81,7 @@ const sendNotificationEmail = async (to, subject, text, html = null, cc = null, 
 
         const info = await transporter.sendMail(mailOptions);
 
-        console.log('[EmailService] Email sent:', info.messageId);
+        console.log(`[EmailService] SUCCESS: Notification delivered to ${to} (MessageID: ${info.messageId})`);
         return { success: true, messageId: info.messageId };
     } catch (error) {
         console.error('[EmailService] Failed to send email:', error);

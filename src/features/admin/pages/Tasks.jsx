@@ -129,7 +129,7 @@ const Tasks = () => {
     // Filter by Search
     if (search) {
       scopedTasks = scopedTasks.filter((t) => {
-        const project = projects.find((p) => p.projectId === t.projectId);
+        const project = projects.find((p) => p.id === t.projectId); // Corrected from p.projectId to p.id
         const emp = employees.find((e) => e.id === t.employeeId);
         const target =
           (t.title +
@@ -213,253 +213,75 @@ const Tasks = () => {
     return t.status;
   };
 
-  // --- RENDER PROJECT GRID ---
-  if (!selectedProject) {
-    return (
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <h1 className="text-xl font-bold text-slate-800">Projects Overview</h1>
-            <p className="text-sm text-slate-500">Select a project to view and manage its tasks.</p>
-          </div>
-          {!isManager && user.role !== 'VIEW_ONLY_ADMIN' && (
-            <button
-              onClick={openCreate}
-              className="inline-flex items-center gap-2 rounded-xl bg-slate-900 text-white px-4 py-2 text-sm font-bold shadow-lg hover:bg-slate-800 transition"
-            >
-              <Plus size={16} />
-              Global Task
-            </button>
-          )}
+  // --- RENDER HELPERS ---
+  const renderProjectGrid = () => (
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-bold text-slate-800">Projects Overview</h1>
+          <p className="text-sm text-slate-500">Select a project to view and manage its tasks.</p>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projectMetrics.map(p => (
-            <div
-              key={p.id}
-              onClick={() => setSelectedProject(p)}
-              className="group bg-white rounded-2xl p-6 border border-slate-100 hover:border-indigo-500 hover:shadow-xl hover:shadow-indigo-100 transition-all cursor-pointer relative overflow-hidden"
-            >
-              <div className="flex justify-between items-start mb-4">
-                <div className="p-3 bg-indigo-50 rounded-xl group-hover:bg-indigo-600 transition-colors">
-                  <Folder className="w-6 h-6 text-indigo-600 group-hover:text-white" />
-                </div>
-                <div className={`px-2 py-1 rounded-lg text-xs font-bold ${p.overdueCount > 0 ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'}`}>
-                  {p.overdueCount > 0 ? `${p.overdueCount} Overdue` : 'On Track'}
-                </div>
-              </div>
-
-              <h3 className="text-lg font-bold text-slate-800 mb-1 line-clamp-1">{p.name}</h3>
-              <p className="text-xs text-slate-500 font-medium mb-6 flex items-center gap-1">
-                <MapPin size={12} /> {p.location || 'No Location'}
-              </p>
-
-              <div className="grid grid-cols-3 gap-2 mb-4">
-                <div className="bg-slate-50 rounded-lg p-2 text-center">
-                  <div className="text-lg font-black text-slate-800">{p.taskCount}</div>
-                  <div className="text-[10px] uppercase font-bold text-slate-400">Total</div>
-                </div>
-                <div className="bg-orange-50 rounded-lg p-2 text-center">
-                  <div className="text-lg font-black text-orange-600">{p.pendingCount}</div>
-                  <div className="text-[10px] uppercase font-bold text-orange-400">Pending</div>
-                </div>
-                <div className="bg-emerald-50 rounded-lg p-2 text-center">
-                  <div className="text-lg font-black text-emerald-600">{p.completedCount}</div>
-                  <div className="text-[10px] uppercase font-bold text-emerald-400">Done</div>
-                </div>
-              </div>
-
-              {/* Progress Bar */}
-              <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                <div
-                  className="bg-indigo-500 h-full rounded-full transition-all duration-500"
-                  style={{ width: `${p.progress}%` }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Reuse Modal for Global Task Creation */}
-        {modalOpen && (
-          <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30">
-            <div className="bg-white rounded-2xl shadow-xl w-[95%] max-w-md md:max-w-lg p-3 overflow-auto max-h-[85vh]">
-              <h2 className="text-lg font-semibold mb-3">
-                {editingId ? "Edit Task" : "Create Task"}
-              </h2>
-              {/* Form (Simplified placeholder for brevity in grid view, real form below) */}
-              {/* Note: In a real app, I'd extract the Form to a component to avoid duplication. 
-                          For now, I'll allow the modal logic to be shared by moving the form rendering 
-                          outside the conditional return if I could, but React requires one return.
-                          
-                          SOLUTION: I will keep the modal logic at the very end and wrap the logic 
-                          in a Fragment or render conditionally.
-                          
-                          Actually, since I'm returning early, I must render the Modal HERE for the "Global Task" button to work.
-                      */}
-              <form onSubmit={handleSubmit} className="space-y-3 text-sm">
-                {/* ... Duplicated Form Logic for Grid View ... 
-                              Ideally, I'd refactor. But to be safe and quick, I will just paste the form code again or 
-                              structure the component so the returns are children of a layout that holds the modal.
-                              
-                              Let's restructure:
-                              renderContent() -> returns Grid or List
-                              return ( <div> {renderContent()} {modal} </div> )
-                          */}
-                {/* Wait, I cannot change the structure too much right now in this prompt block. 
-                              I will Render the Modal here too.
-                          */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs text-slate-500 mb-1">Select Project*</label>
-                    <select
-                      className="w-full border border-slate-200 rounded-lg px-2 py-1.5"
-                      value={form.projectId}
-                      onChange={(e) => setForm({ ...form, projectId: e.target.value })}
-                    >
-                      <option value="">-- Select Project --</option>
-                      {projects.map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.name} ({p.projectCode})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs text-slate-500 mb-1">Assign Employee*</label>
-                    <select
-                      className="w-full border border-slate-200 rounded-lg px-2 py-1.5"
-                      value={form.employeeId}
-                      onChange={(e) => setForm({ ...form, employeeId: e.target.value })}
-                    >
-                      <option value="">-- Select Employee --</option>
-                      {employees.map((emp) => (
-                        <option key={emp.id} value={emp.id}>
-                          {emp.name} ({emp.role})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs text-slate-500 mb-1">Type</label>
-                    <select
-                      className="w-full border border-slate-200 rounded-lg px-2 py-1.5"
-                      value={form.type}
-                      onChange={(e) => setForm({ ...form, type: e.target.value })}
-                    >
-                      <option value="TASK">Task</option>
-                      <option value="ISSUE">Issue</option>
-                    </select>
-                  </div>
-                  {form.type === "TASK" && (
-                    <div>
-                      <label className="block text-xs text-slate-500 mb-1">Stage</label>
-                      <select
-                        className="w-full border border-slate-200 rounded-lg px-2 py-1.5"
-                        value={form.stage || ""}
-                        onChange={(e) => {
-                          setForm({ ...form, stage: e.target.value, title: "" });
-                        }}
-                      >
-                        <option value="">-- Select Stage --</option>
-                        {Object.keys(STAGES).map((stage) => (
-                          <option key={stage} value={stage}>{stage}</option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-                  <div className="md:col-span-2">
-                    <label className="block text-xs text-slate-500 mb-1">Task Title*</label>
-                    {form.type === "TASK" && form.stage && STAGES[form.stage] ? (
-                      <select
-                        className="w-full border border-slate-200 rounded-lg px-2 py-1.5"
-                        value={form.title}
-                        onChange={(e) => setForm({ ...form, title: e.target.value })}
-                      >
-                        <option value="">-- Select Standard Task --</option>
-                        {STAGES[form.stage].map((t) => (
-                          <option key={t} value={t}>{t}</option>
-                        ))}
-                      </select>
-                    ) : (
-                      <input
-                        className="w-full border border-slate-200 rounded-lg px-2 py-1.5"
-                        value={form.title}
-                        onChange={(e) => setForm({ ...form, title: e.target.value })}
-                        placeholder={form.type === "TASK" ? "Select a stage first..." : "e.g. Fix login bug"}
-                        disabled={form.type === "TASK" && !form.stage}
-                      />
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-xs text-slate-500 mb-1">Start Date</label>
-                    <input
-                      type="date"
-                      className="w-full border border-slate-200 rounded-lg px-2 py-1.5"
-                      value={form.startDate}
-                      onChange={(e) => setForm({ ...form, startDate: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-slate-500 mb-1">Due Date</label>
-                    <input
-                      type="date"
-                      className="w-full border border-slate-200 rounded-lg px-2 py-1.5"
-                      value={form.dueDate}
-                      onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-slate-500 mb-1">Priority</label>
-                    <select
-                      className="w-full border border-slate-200 rounded-lg px-2 py-1.5"
-                      value={form.priority}
-                      onChange={(e) => setForm({ ...form, priority: e.target.value })}
-                    >
-                      <option>Low</option>
-                      <option>Medium</option>
-                      <option>High</option>
-                    </select>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs text-slate-500 mb-1">Description</label>
-                  <textarea
-                    className="w-full border border-slate-200 rounded-lg px-2 py-1.5 h-20"
-                    value={form.description}
-                    onChange={(e) => setForm({ ...form, description: e.target.value })}
-                    placeholder="Additional details..."
-                  />
-                </div>
-                <div className="flex flex-col sm:flex-row justify-end gap-2 mt-4">
-                  <button
-                    type="button"
-                    onClick={() => setModalOpen(false)}
-                    className="px-3 py-1.5 text-sm rounded-lg border border-slate-200 w-full sm:w-auto"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-1.5 text-sm rounded-lg bg-[#075E54] text-white hover:bg-[#05483f] inline-flex items-center gap-1 transition w-full sm:w-auto justify-center"
-                  >
-                    <Mail size={14} />
-                    {editingId ? "Save & Notify" : "Create & Notify"}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
+        {!isManager && user.role !== 'VIEW_ONLY_ADMIN' && (
+          <button
+            onClick={openCreate}
+            className="inline-flex items-center gap-2 rounded-xl bg-slate-900 text-white px-4 py-2 text-sm font-bold shadow-lg hover:bg-slate-800 transition"
+          >
+            <Plus size={16} />
+            Global Task
+          </button>
         )}
       </div>
-    );
-  }
 
-  // --- RENDER TASK LIST (Drill-down) ---
-  return (
-    <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {projectMetrics.map(p => (
+          <div
+            key={p.id}
+            onClick={() => setSelectedProject(p)}
+            className="group bg-white rounded-2xl p-6 border border-slate-100 hover:border-indigo-500 hover:shadow-xl hover:shadow-indigo-100 transition-all cursor-pointer relative overflow-hidden"
+          >
+            <div className="flex justify-between items-start mb-4">
+              <div className="p-3 bg-indigo-50 rounded-xl group-hover:bg-indigo-600 transition-colors">
+                <Folder className="w-6 h-6 text-indigo-600 group-hover:text-white" />
+              </div>
+              <div className={`px-3 py-1 rounded-lg text-xs font-bold ${p.overdueCount > 0 ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'}`}>
+                {p.overdueCount > 0 ? `${p.overdueCount} Overdue` : 'On Track'}
+              </div>
+            </div>
 
-      {/* HEADER */}
+            <h3 className="text-lg font-bold text-slate-800 mb-1 line-clamp-1">{p.name}</h3>
+            <p className="text-xs text-slate-500 font-medium mb-6 flex items-center gap-1">
+              <MapPin size={12} /> {p.location || 'No Location'}
+            </p>
+
+            <div className="grid grid-cols-3 gap-2 mb-4">
+              <div className="bg-slate-50 rounded-lg p-2 text-center">
+                <div className="text-lg font-black text-slate-800">{p.taskCount}</div>
+                <div className="text-[10px] uppercase font-bold text-slate-400">Total</div>
+              </div>
+              <div className="bg-orange-50 rounded-lg p-2 text-center">
+                <div className="text-lg font-black text-orange-600">{p.pendingCount}</div>
+                <div className="text-[10px] uppercase font-bold text-orange-400">Pending</div>
+              </div>
+              <div className="bg-emerald-50 rounded-lg p-2 text-center">
+                <div className="text-lg font-black text-emerald-600">{p.completedCount}</div>
+                <div className="text-[10px] uppercase font-bold text-emerald-400">Done</div>
+              </div>
+            </div>
+
+            <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+              <div
+                className="bg-indigo-500 h-full rounded-full transition-all duration-500"
+                style={{ width: `${p.progress}%` }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderTaskList = () => (
+    <div className="space-y-4 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center gap-3">
           <button
@@ -469,7 +291,7 @@ const Tasks = () => {
             <ArrowLeft size={20} />
           </button>
           <div>
-            <h1 className="text-xl font-semibold flex items-center gap-2">
+            <h1 className="text-xl font-bold flex items-center gap-2 text-slate-800">
               {selectedProject.name} <span className="text-slate-300">/</span> Tasks
             </h1>
             <p className="text-sm text-slate-500">
@@ -481,47 +303,44 @@ const Tasks = () => {
         {!isManager && user.role !== 'VIEW_ONLY_ADMIN' && (
           <button
             onClick={openCreate}
-            className="inline-flex items-center gap-2 rounded-xl bg-orange-600 text-white px-4 py-2 text-sm hover:bg-orange-500 transition"
+            className="inline-flex items-center gap-2 rounded-xl bg-orange-600 text-white px-5 py-2.5 text-sm font-bold hover:bg-orange-700 shadow-lg shadow-orange-100 transition-all active:scale-95"
           >
-            <Plus size={16} />
+            <Plus size={18} />
             New Project Task
           </button>
         )}
       </div>
 
-      {/* SEARCH & GRID */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 space-y-4">
-
         <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
-          <input
-            type="text"
-            placeholder="Search tasks..."
-            className="w-full sm:w-80 border border-slate-200 rounded-xl px-3 py-2 text-sm"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-
-          <p className="text-xs text-slate-500">
-            Showing <span className="font-semibold">{filteredTasks.length}</span> tasks
+          <div className="relative w-full sm:w-80">
+            <input
+              type="text"
+              placeholder="Search tasks..."
+              className="w-full border border-slate-200 rounded-xl pl-4 pr-10 py-2 text-sm focus:border-indigo-500 outline-none transition-all"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <p className="text-xs text-slate-500 font-medium">
+            Showing <span className="font-bold text-slate-800">{filteredTasks.length}</span> tasks
           </p>
         </div>
 
-        {/* HEADER ROW + ROWS (scrollable on small screens) */}
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto rounded-xl border border-slate-100">
           <div className="min-w-[760px]">
-            <div className="grid grid-cols-[80px_2fr_1.5fr_1.5fr_1.5fr_1fr_1fr_1fr_120px] text-[11px] font-semibold text-slate-500 border-b px-2 py-2 bg-gray-50">
+            <div className="grid grid-cols-[80px_2fr_1.5fr_1.5fr_1.5fr_1fr_1fr_1fr_120px] text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b px-4 py-3 bg-slate-50/50">
               <div>ID</div>
-              <div>Task</div>
+              <div>Task Details</div>
               <div>Assigned To</div>
               <div>Timeline</div>
-              <div>Stage</div>
+              <div>Project Stage</div>
               <div>Priority</div>
               <div>Status</div>
               <div>Last Update</div>
               <div className="text-right">Actions</div>
             </div>
 
-            {/* ROWS */}
             {filteredTasks.map((t) => {
               const emp = employees.find((e) => e.id === t.employeeId);
               const status = getStatus(t);
@@ -529,38 +348,38 @@ const Tasks = () => {
               return (
                 <div
                   key={t.id}
-                  className="grid grid-cols-[80px_2fr_1.5fr_1.5fr_1.5fr_1fr_1fr_1fr_120px] items-center border-b py-3 text-xs hover:bg-slate-50 transition-colors"
+                  className="grid grid-cols-[80px_2fr_1.5fr_1.5fr_1.5fr_1fr_1fr_1fr_120px] items-center border-b last:border-0 px-4 py-4 text-xs hover:bg-slate-50/80 transition-colors"
                 >
-                  <div className="font-mono text-[10px] text-slate-400 font-medium">#{t.id.slice(0, 6)}</div>
+                  <div className="font-mono text-[10px] text-slate-300 font-medium">#{t.id.slice(0, 6)}</div>
                   <div>
                     <p className="font-bold text-slate-700 text-sm mb-0.5">{t.title}</p>
-                    {t.type === 'ISSUE' && <span className="bg-rose-100 text-rose-600 text-[10px] px-1.5 rounded font-bold">ISSUE</span>}
+                    {t.type === 'ISSUE' && <span className="bg-rose-100 text-rose-600 text-[10px] px-2 py-0.5 rounded-full font-bold">ISSUE</span>}
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center text-[10px] font-bold">
+                    <div className="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs font-bold border border-indigo-100">
                       {emp?.name?.charAt(0) || '?'}
                     </div>
                     <div>
-                      <p className="font-medium text-slate-700">{emp?.name || "Unassigned"}</p>
-                      <div className="text-[10px] text-slate-400">{emp?.role}</div>
+                      <p className="font-bold text-slate-700">{emp?.name || "Unassigned"}</p>
+                      <div className="text-[10px] text-slate-400 font-medium">{emp?.role}</div>
                     </div>
                   </div>
 
-                  <div>
-                    <div className="flex items-center gap-1.5 mb-1">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1.5">
                       <div className="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>
-                      <span className="text-slate-600">{t.startDate ? new Date(t.startDate).toLocaleDateString() : 'TBD'}</span>
+                      <span className="text-slate-500 font-medium">{t.startDate ? new Date(t.startDate).toLocaleDateString() : '—'}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <div className="w-1.5 h-1.5 rounded-full bg-rose-400"></div>
-                      <span className="text-slate-600">{t.dueDate ? new Date(t.dueDate).toLocaleDateString() : 'TBD'}</span>
+                      <span className="text-slate-500 font-medium font-bold">{t.dueDate ? new Date(t.dueDate).toLocaleDateString() : '—'}</span>
                     </div>
                   </div>
 
                   <div>
                     {t.stage ? (
-                      <span className="px-2 py-1 rounded-md bg-white border border-slate-200 text-slate-500 text-[10px] font-bold uppercase tracking-wide shadow-sm">
+                      <span className="px-2 py-1 rounded-lg bg-slate-100 text-slate-500 text-[10px] font-bold uppercase tracking-tight">
                         {t.stage}
                       </span>
                     ) : (
@@ -569,47 +388,42 @@ const Tasks = () => {
                   </div>
 
                   <div><StatusBadge status={t.priority} /></div>
-
                   <div><StatusBadge status={status} /></div>
 
-                  <div className="text-slate-400 italic">
+                  <div className="text-slate-400 font-medium italic">
                     {new Date(t.updatedAt).toLocaleDateString()}
                   </div>
 
-                  <div className="text-right space-x-2 flex justify-end">
-                    {/* View Evidence or Completion File Button */}
+                  <div className="text-right flex justify-end gap-1.5">
                     {((t.evidence && t.evidence.length > 0) || t.completionFileUrl) && (
                       <button
                         onClick={() => openEvidence(t)}
-                        className="inline-flex items-center gap-1 text-slate-600 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 p-1.5 rounded-lg transition-colors border border-slate-200"
+                        className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
                         title="View Proof"
                       >
-                        <Eye size={14} />
+                        <Eye size={16} />
                       </button>
                     )}
-
                     {user.role === 'SUPER_ADMIN' && user.role !== 'VIEW_ONLY_ADMIN' && (
                       <button
                         onClick={() => openEdit(t)}
-                        className="inline-flex items-center gap-1 text-slate-600 bg-slate-100 hover:bg-orange-50 hover:text-orange-600 p-1.5 rounded-lg transition-colors border border-slate-200"
+                        className="p-2 text-slate-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all"
                         title="Edit"
                       >
-                        <Pencil size={14} />
+                        <Pencil size={16} />
                       </button>
                     )}
-
                     <button
                       onClick={() => {
                         if (!emp) return alert("No employee assigned.");
-                        alert(`Email sent to ${emp.email} for ${t.title} (simulated).`);
+                        alert(`Notification would be sent to ${emp.email}`);
                       }}
-                      className="inline-flex items-center gap-1 text-slate-600 bg-slate-100 hover:bg-emerald-50 hover:text-emerald-600 p-1.5 rounded-lg transition-colors border border-slate-200"
+                      className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
                       title="Send Mail"
                     >
-                      <Mail size={14} />
+                      <Mail size={16} />
                     </button>
                   </div>
-
                 </div>
               );
             })}
@@ -617,200 +431,200 @@ const Tasks = () => {
         </div>
 
         {filteredTasks.length === 0 && (
-          <div className="py-12 text-center">
-            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3">
-              <Folder className="w-8 h-8 text-slate-300" />
+          <div className="py-20 text-center">
+            <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100">
+              <Folder className="w-10 h-10 text-slate-200" />
             </div>
-            <p className="text-slate-500 font-medium">No tasks found in this project.</p>
-            <button onClick={openCreate} className="text-indigo-600 text-sm font-bold mt-2 hover:underline">
-              Create the first task
+            <h3 className="text-slate-800 font-bold">No tasks found</h3>
+            <p className="text-slate-400 text-sm max-w-xs mx-auto mt-1">We couldn't find any tasks matching your current filters or in this project.</p>
+            <button onClick={openCreate} className="mt-6 text-indigo-600 text-sm font-bold hover:text-indigo-700 transition-colors flex items-center gap-2 mx-auto">
+              <Plus size={16} /> Create New Task
             </button>
           </div>
         )}
       </div>
+    </div>
+  );
 
-      {/* CREATE/EDIT MODAL */}
-      {
-        modalOpen && (
-          <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30">
-            <div className="bg-white rounded-2xl shadow-xl w-[95%] max-w-md md:max-w-lg p-3 overflow-auto max-h-[85vh]">
-              <h2 className="text-lg font-semibold mb-3">
-                {editingId ? "Edit Task" : "Create Task"}
-              </h2>
+  return (
+    <div className="min-h-full pb-10">
+      {/* Dynamic Content */}
+      {selectedProject ? renderTaskList() : renderProjectGrid()}
 
-              <form onSubmit={handleSubmit} className="space-y-3 text-sm">
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      {/* SHARED CREATE/EDIT MODAL */}
+      {modalOpen && (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={() => setModalOpen(false)} />
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-zoom-in relative z-10 flex flex-col border border-slate-100">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+              <h2 className="text-xl font-bold text-slate-800">{editingId ? "Edit Task" : "Create New Task"}</h2>
+              <button onClick={() => setModalOpen(false)} className="p-2 hover:bg-slate-200 rounded-full transition-colors">
+                <X size={20} className="text-slate-400" />
+              </button>
+            </div>
+            <div className="p-6 overflow-y-auto max-h-[75vh]">
+              <form id="task-form" onSubmit={handleSubmit} className="space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs text-slate-500 mb-1">Select Project*</label>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Project*</label>
                     <select
-                      className="w-full border border-slate-200 rounded-lg px-2 py-1.5"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none"
                       value={form.projectId}
                       onChange={(e) => setForm({ ...form, projectId: e.target.value })}
                     >
                       <option value="">-- Select Project --</option>
-                      {projects.map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.name} ({p.projectCode})
-                        </option>
-                      ))}
+                      {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
                     </select>
                   </div>
-
                   <div>
-                    <label className="block text-xs text-slate-500 mb-1">Assign Employee*</label>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Assign To*</label>
                     <select
-                      className="w-full border border-slate-200 rounded-lg px-2 py-1.5"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none"
                       value={form.employeeId}
                       onChange={(e) => setForm({ ...form, employeeId: e.target.value })}
                     >
                       <option value="">-- Select Employee --</option>
-                      {employees.map((emp) => (
-                        <option key={emp.id} value={emp.id}>
-                          {emp.name} ({emp.role})
-                        </option>
-                      ))}
+                      {employees.map((emp) => <option key={emp.id} value={emp.id}>{emp.name}</option>)}
                     </select>
                   </div>
-
                   <div>
-                    <label className="block text-xs text-slate-500 mb-1">Type</label>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Entry Type</label>
                     <select
-                      className="w-full border border-slate-200 rounded-lg px-2 py-1.5"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none"
                       value={form.type}
                       onChange={(e) => setForm({ ...form, type: e.target.value })}
                     >
-                      <option value="TASK">Task</option>
-                      <option value="ISSUE">Issue</option>
+                      <option value="TASK">Standard Task</option>
+                      <option value="ISSUE">Internal Issue</option>
                     </select>
                   </div>
-
-                  {/* Stage Selection (Only for TASKS) */}
                   {form.type === "TASK" && (
                     <div>
-                      <label className="block text-xs text-slate-500 mb-1">Stage</label>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Project Stage</label>
                       <select
-                        className="w-full border border-slate-200 rounded-lg px-2 py-1.5"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none"
                         value={form.stage || ""}
-                        onChange={(e) => {
-                          setForm({ ...form, stage: e.target.value, title: "" }); // Reset title on stage change
-                        }}
+                        onChange={(e) => setForm({ ...form, stage: e.target.value, title: "" })}
                       >
                         <option value="">-- Select Stage --</option>
-                        {Object.keys(STAGES).map((stage) => (
-                          <option key={stage} value={stage}>{stage}</option>
-                        ))}
+                        {Object.keys(STAGES).map((stage) => <option key={stage} value={stage}>{stage}</option>)}
                       </select>
                     </div>
                   )}
-
-                  {/* Task Title (Dropdown for Tasks if Stage Selected, else Input) */}
                   <div className="md:col-span-2">
-                    <label className="block text-xs text-slate-500 mb-1">Task Title*</label>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Task Title*</label>
                     {form.type === "TASK" && form.stage && STAGES[form.stage] ? (
                       <select
-                        className="w-full border border-slate-200 rounded-lg px-2 py-1.5"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none font-bold text-slate-700"
                         value={form.title}
                         onChange={(e) => setForm({ ...form, title: e.target.value })}
                       >
-                        <option value="">-- Select Standard Task --</option>
-                        {STAGES[form.stage].map((t) => (
-                          <option key={t} value={t}>{t}</option>
-                        ))}
+                        <option value="">-- Select Predefined Title --</option>
+                        {STAGES[form.stage].map((t) => <option key={t} value={t}>{t}</option>)}
                       </select>
                     ) : (
                       <input
-                        className="w-full border border-slate-200 rounded-lg px-2 py-1.5"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none"
                         value={form.title}
                         onChange={(e) => setForm({ ...form, title: e.target.value })}
-                        placeholder={form.type === "TASK" ? "Select a stage first..." : "e.g. Fix login bug"}
-                        disabled={form.type === "TASK" && !form.stage}
+                        placeholder={form.type === "TASK" ? "Enter title or select stage..." : "e.g. Special Fix Required"}
                       />
                     )}
                   </div>
-
                   <div>
-                    <label className="block text-xs text-slate-500 mb-1">Start Date</label>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Start Date</label>
                     <input
                       type="date"
-                      className="w-full border border-slate-200 rounded-lg px-2 py-1.5"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-indigo-500 transition-all outline-none"
                       value={form.startDate}
                       onChange={(e) => setForm({ ...form, startDate: e.target.value })}
                     />
                   </div>
-
                   <div>
-                    <label className="block text-xs text-slate-500 mb-1">Due Date</label>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Due Date</label>
                     <input
                       type="date"
-                      className="w-full border border-slate-200 rounded-lg px-2 py-1.5"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-indigo-500 transition-all outline-none font-bold text-rose-600"
                       value={form.dueDate}
                       onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
                     />
                   </div>
-
                   <div>
-                    <label className="block text-xs text-slate-500 mb-1">Priority</label>
-                    <select
-                      className="w-full border border-slate-200 rounded-lg px-2 py-1.5"
-                      value={form.priority}
-                      onChange={(e) => setForm({ ...form, priority: e.target.value })}
-                    >
-                      <option>Low</option>
-                      <option>Medium</option>
-                      <option>High</option>
-                    </select>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Priority</label>
+                    <div className="flex gap-2">
+                      {['Low', 'Medium', 'High'].map((p) => (
+                        <button
+                          key={p}
+                          type="button"
+                          onClick={() => setForm({ ...form, priority: p })}
+                          className={`flex-1 py-2 text-xs font-bold rounded-lg border transition-all ${form.priority === p ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-slate-200 text-slate-500 hover:border-indigo-200'}`}
+                        >
+                          {p}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
-
                 <div>
-                  <label className="block text-xs text-slate-500 mb-1">Description</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Description</label>
                   <textarea
-                    className="w-full border border-slate-200 rounded-lg px-2 py-1.5 h-20"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-indigo-500 transition-all outline-none h-24 resize-none"
                     value={form.description}
                     onChange={(e) => setForm({ ...form, description: e.target.value })}
-                    placeholder="Additional details..."
+                    placeholder="Describe the task details..."
                   />
-                </div>
-
-                <div className="flex flex-col sm:flex-row justify-end gap-2 mt-4">
-                  <button
-                    type="button"
-                    onClick={() => setModalOpen(false)}
-                    className="px-3 py-1.5 text-sm rounded-lg border border-slate-200 w-full sm:w-auto"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-1.5 text-sm rounded-lg bg-[#075E54] text-white hover:bg-[#05483f] inline-flex items-center gap-1 transition w-full sm:w-auto justify-center"
-                  >
-                    <Mail size={14} />
-                    {editingId ? "Save & Notify" : "Create & Notify"}
-                  </button>
                 </div>
               </form>
             </div>
+            <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setModalOpen(false)}
+                className="px-6 py-2.5 text-sm font-bold text-slate-500 hover:bg-slate-200 rounded-xl transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                form="task-form"
+                type="submit"
+                className="px-8 py-2.5 text-sm font-bold rounded-xl bg-orange-600 text-white shadow-lg shadow-orange-100 hover:bg-orange-700 active:scale-95 transition-all flex items-center gap-2"
+              >
+                <Mail size={16} />
+                {editingId ? "Update & Notify" : "Create & Notify"}
+              </button>
+            </div>
           </div>
-        )
-      }
+        </div>
+      )}
 
       {/* EVIDENCE VERIFICATION MODAL */}
       {evidenceModalOpen && viewingTask && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col md:flex-row">
-            {/* Left: Image Proof */}
-            <div className="flex-1 bg-black relative min-h-[300px] md:h-auto group flex items-center justify-center">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col animate-zoom-in relative">
+            {/* Modal Header */}
+            <div className="p-4 bg-slate-50 border-b flex justify-between items-center">
+              <div>
+                <h3 className="text-lg font-bold text-slate-800">{viewingTask.title}</h3>
+                <p className="text-xs text-slate-500 font-medium">{viewingTask.project?.name} • COMPLETED PROOF</p>
+              </div>
+              <button
+                onClick={() => setEvidenceModalOpen(false)}
+                className="p-2 hover:bg-slate-200 rounded-full transition-colors"
+              >
+                <X size={20} className="text-slate-500" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="flex-1 overflow-y-auto p-0 bg-slate-900 flex items-center justify-center relative">
               {(() => {
                 const hasEvidence = viewingTask.evidence && viewingTask.evidence.length > 0;
-                // If has evidence array, use index, otherwise fallback to completionFileUrl
                 const currentEvidence = hasEvidence ? viewingTask.evidence[evidenceIndex] : null;
                 const imageUrl = currentEvidence ? currentEvidence.url : viewingTask.completionFileUrl;
 
                 // Helper to get full URL
                 const getFullUrl = (path) => `${(import.meta.env.VITE_API_URL || "http://localhost:5000/api").replace(/\/api$/, '')}${path}`;
                 const fullUrl = getFullUrl(imageUrl);
-
                 const isImage = imageUrl?.match(/\.(jpeg|jpg|png|gif|webp)$/i);
 
                 return (
@@ -820,28 +634,28 @@ const Tasks = () => {
                         <Folder size={48} className="mx-auto mb-4 text-slate-400" />
                         <p className="text-lg font-bold mb-2">File Attachment</p>
                         <p className="text-sm text-slate-400 mb-6 break-all">{imageUrl}</p>
-                        <a href={fullUrl} target="_blank" rel="noreferrer" className="px-6 py-2 bg-indigo-600 rounded-full font-bold hover:bg-indigo-500 transition">
-                          Download / View File
+                        <a href={fullUrl} target="_blank" rel="noreferrer" className="px-6 py-3 bg-indigo-600 rounded-xl font-bold hover:bg-indigo-500 transition-all flex items-center gap-2 mx-auto w-fit">
+                          <Download size={18} /> Download / View File
                         </a>
                       </div>
                     ) : (
                       <img
                         src={fullUrl}
                         alt="Evidence"
-                        className="absolute inset-0 w-full h-full object-contain"
+                        className="max-w-full max-h-full object-contain"
                       />
                     )}
 
                     {/* Navigation Buttons (Only if multiple items) */}
                     {hasEvidence && viewingTask.evidence.length > 1 && (
-                      <>
+                      <div className="absolute inset-0 flex items-center justify-between p-4 pointer-events-none">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             setEvidenceIndex(prev => Math.max(0, prev - 1));
                           }}
                           disabled={evidenceIndex === 0}
-                          className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/80 disabled:opacity-30 transition"
+                          className="pointer-events-auto bg-black/50 text-white p-3 rounded-full hover:bg-black/80 disabled:opacity-30 transition-all"
                         >
                           <ChevronLeft size={24} />
                         </button>
@@ -852,134 +666,94 @@ const Tasks = () => {
                             setEvidenceIndex(prev => Math.min(viewingTask.evidence.length - 1, prev + 1));
                           }}
                           disabled={evidenceIndex === viewingTask.evidence.length - 1}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/80 disabled:opacity-30 transition"
+                          className="pointer-events-auto bg-black/50 text-white p-3 rounded-full hover:bg-black/80 disabled:opacity-30 transition-all"
                         >
                           <ChevronRight size={24} />
                         </button>
-                      </>
+                      </div>
+                    )}
+
+                    {/* Counter Badge */}
+                    {hasEvidence && viewingTask.evidence.length > 1 && (
+                      <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-md text-white px-3 py-1 rounded-full text-[10px] font-bold border border-white/20">
+                        {evidenceIndex + 1} / {viewingTask.evidence.length}
+                      </div>
                     )}
                   </>
                 );
               })()}
-
-              <div className="absolute top-4 left-4 right-4 flex justify-between items-start pointer-events-none">
-                <div className="flex flex-col gap-1 items-start">
-                  <span className="bg-black/50 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-mono border border-white/20">
-                    {viewingTask.evidence && viewingTask.evidence.length > 0
-                      ? new Date(viewingTask.evidence[evidenceIndex].capturedAt).toLocaleString()
-                      : "Task Completion Upload"
-                    }
-                  </span>
-                  {/* Counter Badge */}
-                  {viewingTask.evidence && viewingTask.evidence.length > 1 && (
-                    <span className="bg-indigo-600 text-white px-2 py-0.5 rounded text-[10px] font-bold">
-                      {evidenceIndex + 1} / {viewingTask.evidence.length}
-                    </span>
-                  )}
-                </div>
-
-                {(() => {
-                  const hasEvidence = viewingTask.evidence && viewingTask.evidence.length > 0;
-                  const urlPath = hasEvidence ? viewingTask.evidence[evidenceIndex].url : viewingTask.completionFileUrl;
-                  const dlUrl = `${(import.meta.env.VITE_API_URL || "http://localhost:5000/api").replace(/\/api$/, '')}${urlPath}`;
-
-                  return (
-                    <a
-                      href={dlUrl}
-                      download
-                      target="_blank"
-                      rel="noreferrer"
-                      className="bg-black/50 backdrop-blur-md text-white p-2 rounded-full border border-white/20 hover:bg-white/20 transition pointer-events-auto flex items-center justify-center"
-                      title="Download File"
-                    >
-                      <Download size={16} />
-                    </a>
-                  );
-                })()}
-              </div>
             </div>
 
-            {/* Right: Map & Details */}
-            <div className="w-full md:w-[350px] bg-slate-50 p-6 flex flex-col border-l border-slate-200">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-slate-800">Verify Work</h2>
-                <button
-                  onClick={() => setEvidenceModalOpen(false)}
-                  className="p-2 hover:bg-slate-200 rounded-full transition-colors"
-                >
-                  <X size={20} className="text-slate-500" />
-                </button>
-              </div>
-
-              <div className="space-y-6 flex-1 overflow-y-auto">
-                {/* Task Info */}
+            {/* Modal Footer (Map/Details) */}
+            <div className="p-6 bg-white border-t flex flex-col md:flex-row gap-6">
+              <div className="flex-1 space-y-5">
                 <div>
                   <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Task Details</h3>
-                  <p className="font-bold text-slate-800">{viewingTask.title}</p>
-                  <p className="text-sm text-slate-500">{viewingTask.project?.name || 'Unknown Project'}</p>
+                  <p className="font-bold text-slate-800 text-lg">{viewingTask.title}</p>
+                  <div className="flex items-center gap-2 text-sm text-slate-500 font-medium">
+                    <Folder size={14} /> {viewingTask.project?.name || 'Global Task'}
+                  </div>
                 </div>
 
-                {/* Location Map (Only if GPS Evidence exists) */}
-                {viewingTask.evidence && viewingTask.evidence.length > 0 && viewingTask.evidence[evidenceIndex]?.latitude != null ? (
-                  <>
-                    <div className="h-48 rounded-2xl overflow-hidden border-2 border-white shadow-md relative">
-                      <MapContainer
-                        key={evidenceIndex} // Re-render map when index changes to flyTo new center
-                        center={[viewingTask.evidence[evidenceIndex].latitude, viewingTask.evidence[evidenceIndex].longitude]}
-                        zoom={15}
-                        style={{ height: '100%', width: '100%' }}
-                        dragging={false}
-                        zoomControl={false}
-                      >
-                        <TileLayer
-                          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                        />
-                        <Marker position={[viewingTask.evidence[evidenceIndex].latitude, viewingTask.evidence[evidenceIndex].longitude]} />
-                      </MapContainer>
-                      <div className="absolute bottom-2 left-2 bg-white/90 px-2 py-1 rounded-md text-[10px] font-bold shadow-sm z-[1000] flex items-center gap-1">
-                        <MapPin size={10} className="text-red-500" />
-                        GPS Location
-                      </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-emerald-50 rounded-xl">
+                      <CheckCircle2 className="w-5 h-5 text-emerald-600" />
                     </div>
+                    <div>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase">Status</p>
+                      <p className="text-sm font-bold text-slate-700">Completed</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-indigo-50 rounded-xl">
+                      <Clock className="w-5 h-5 text-indigo-600" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase">Time</p>
+                      <p className="text-sm font-bold text-slate-700">{new Date(viewingTask.updatedAt).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-                    {/* Status */}
-                    <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100">
-                      <div className="flex items-center gap-2 mb-1">
-                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                        <span className="text-xs font-bold text-emerald-700 uppercase">Live Proof</span>
-                      </div>
-                      <p className="text-xs text-emerald-600">
-                        Supervisor captured this image at the specified location coordinates.
-                      </p>
-                    </div>
-                  </>
+              {/* Location Map */}
+              <div className="flex-1">
+                {viewingTask.evidence && viewingTask.evidence.length > 0 && viewingTask.evidence[evidenceIndex]?.latitude != null ? (
+                  <div className="h-40 rounded-2xl overflow-hidden border border-slate-200 relative">
+                    <MapContainer
+                      key={evidenceIndex}
+                      center={[viewingTask.evidence[evidenceIndex].latitude, viewingTask.evidence[evidenceIndex].longitude]}
+                      zoom={15}
+                      style={{ height: '100%', width: '100%' }}
+                      dragging={false}
+                      zoomControl={false}
+                    >
+                      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                      <Marker position={[viewingTask.evidence[evidenceIndex].latitude, viewingTask.evidence[evidenceIndex].longitude]} />
+                    </MapContainer>
+                  </div>
                 ) : (
-                  <div className="bg-slate-100 rounded-xl p-6 text-center border border-slate-200">
-                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm">
-                      <CheckCircle2 className="w-6 h-6 text-emerald-500" />
-                    </div>
-                    <p className="text-sm font-bold text-slate-700 mb-1">Task Completed</p>
-                    <p className="text-xs text-slate-500">
-                      This file was uploaded by the employee upon task completion. No GPS data associated.
-                    </p>
+                  <div className="h-40 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col items-center justify-center text-center p-4">
+                    <MapPin className="w-8 h-8 text-slate-200 mb-2" />
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">No GPS Data</p>
                   </div>
                 )}
               </div>
+            </div>
 
-              <div className="mt-6 pt-6 border-t border-slate-200">
-                <button
-                  onClick={() => setEvidenceModalOpen(false)}
-                  className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition shadow-lg shadow-slate-200"
-                >
-                  Close Verification
-                </button>
-              </div>
+            <div className="p-4 bg-slate-50 border-t flex justify-center">
+              <button
+                onClick={() => setEvidenceModalOpen(false)}
+                className="px-10 py-2.5 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all shadow-lg active:scale-95"
+              >
+                Close Verification
+              </button>
             </div>
           </div>
         </div>
       )}
-
-    </div >
+    </div>
   );
 };
 

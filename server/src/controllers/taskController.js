@@ -255,7 +255,7 @@ exports.updateTask = async (req, res) => {
                                             <a href="#" style="background-color: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Review Task</a>
                                          </div>`
                                     ),
-                                    "admin@orbix.com"
+                                    null // Removed CC to prevent header mismatch
                                 );
                             }
                         }
