@@ -1,5 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
+const path = require('path');
 const prisma = new PrismaClient();
+const { sendNotificationEmail, getEmailTemplate } = require('../services/emailService');
 
 // Send an email (or draft)
 exports.sendEmail = async (req, res) => {
@@ -30,6 +32,43 @@ exports.sendEmail = async (req, res) => {
                 receiver: { select: { name: true, email: true } }
             }
         });
+
+        // SEND REAL EMAIL (Gmail Integration)
+        if (!isDraft && email.receiver && email.receiver.email) {
+            try {
+                // Format attachments for Nodemailer
+                let mailAttachments = [];
+                if (attachments && Array.isArray(attachments)) {
+                    mailAttachments = attachments.map(att => {
+                        // Extract filename from URL (handles full URLs like http://localhost:5000/uploads/file.ext)
+                        const filename = att.url.split('/').pop();
+                        return {
+                            filename: att.name, // Display name
+                            path: path.join(__dirname, '../../uploads', filename) // Absolute file path
+                        };
+                    });
+                }
+
+                await sendNotificationEmail(
+                    email.receiver.email,
+                    `[Internal Message] ${subject}`,
+                    `You received a new message from ${email.sender.name}:\n\n${content}\n\n(Sent via Orbix Dashboard)`,
+                    getEmailTemplate(
+                        `New Message from ${email.sender.name}`,
+                        `<p style="font-size: 16px; margin-bottom: 20px;">You received a new message via the Orbix Dashboard:</p>
+                         <div style="background-color: #f8fafc; border-left: 4px solid #ea580c; padding: 16px; margin-bottom: 24px;">
+                            <p style="margin: 0; font-style: italic; white-space: pre-wrap;">${content}</p>
+                         </div>
+                         <p style="font-size: 14px; color: #64748b;">Log in to the dashboard to reply.</p>`
+                    ),
+                    null, // CC
+                    mailAttachments // Pass Attachments
+                );
+            } catch (emailErr) {
+                console.error("Failed to send real email copy:", emailErr);
+                // We don't fail the request, just log it
+            }
+        }
 
         res.status(201).json(email);
     } catch (error) {

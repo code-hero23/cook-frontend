@@ -80,3 +80,66 @@ exports.deleteEmployee = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+// Bulk Create Employees
+exports.bulkCreateEmployees = async (req, res) => {
+    try {
+        const users = req.body; // Array of user objects
+        if (!Array.isArray(users) || users.length === 0) {
+            return res.status(400).json({ error: "Invalid data format. Expected an array of users." });
+        }
+
+        const stats = { added: 0, skipped: 0, errors: [] };
+        const newUsers = [];
+
+        // 1. Identify Emails
+        const inputEmails = users.filter(u => u.email).map(u => u.email);
+
+        // 2. Find Existing Users
+        const existingUsers = await prisma.user.findMany({
+            where: { email: { in: inputEmails } },
+            select: { email: true }
+        });
+        const existingEmailSet = new Set(existingUsers.map(u => u.email));
+
+        // 3. Process Input
+        for (const user of users) {
+            if (!user.email || !user.name || !user.role) {
+                stats.errors.push(`Row missing required fields: ${user.email || 'No Email'}`);
+                continue;
+            }
+
+            if (existingEmailSet.has(user.email)) {
+                stats.skipped++;
+                continue;
+            }
+
+            // Hash Password
+            const passwordHash = await bcrypt.hash(user.password || 'Orbix@123', 10);
+
+            newUsers.push({
+                name: user.name,
+                email: user.email,
+                role: user.role, // "EMPLOYEE", "MANAGER" etc.
+                department: user.department || null,
+                phone: user.phone || null,
+                passwordHash,
+                status: 'ACTIVE'
+            });
+        }
+
+        // 4. Batch Insert
+        if (newUsers.length > 0) {
+            // SQLite supports createMany
+            const result = await prisma.user.createMany({
+                data: newUsers
+            });
+            stats.added = result.count;
+        }
+
+        res.json({ success: true, ...stats });
+
+    } catch (error) {
+        console.error("Bulk Import Error:", error);
+        res.status(500).json({ error: "Bulk import failed: " + error.message });
+    }
+};

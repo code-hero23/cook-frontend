@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "../shared/utils/axios";
+import { GoogleLogin } from '@react-oauth/google';
+import { jwtDecode } from "jwt-decode";
 
 // NOTE: We assume the mock axios instances are available and work for their respective endpoints.
 // For the unified login, we'll try to use the admin axios as a base if it points to the same API.
@@ -37,6 +39,52 @@ const UnifiedLogin = () => {
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleGoogleSuccess = async (credentialResponse) => {
+        setLoading(true);
+        setError("");
+        try {
+            const { credential } = credentialResponse;
+            // Send to backend for verification and login
+            const res = await axios.post("/auth/google-login", { token: credential });
+
+            const userRole = res.data.user.role;
+
+            // Strict Role Validation based on selected tab
+            if (activePortal === 'admin' && !['SUPER_ADMIN', 'MANAGER', 'VIEW_ONLY_ADMIN'].includes(userRole)) {
+                setError("Access denied. Google account not linked to an Admin role.");
+                setLoading(false);
+                return;
+            }
+
+            if (activePortal === 'employee' && !['EMPLOYEE', 'SITE_SUPERVISOR'].includes(userRole)) {
+                setError("Access denied. Google account not linked to an Employee role.");
+                setLoading(false);
+                return;
+            }
+
+            // Store Auth Data
+            localStorage.setItem("token", res.data.token);
+            localStorage.setItem("user", JSON.stringify(res.data.user));
+
+            // Routing
+            if (userRole === 'SUPER_ADMIN' || userRole === 'MANAGER' || userRole === 'VIEW_ONLY_ADMIN') {
+                navigate("/admin/dashboard");
+            } else if (userRole === 'EMPLOYEE') {
+                navigate("/employee");
+            } else if (userRole === 'SITE_SUPERVISOR') {
+                navigate("/supervisor");
+            } else {
+                setError("Unknown role.");
+            }
+
+        } catch (err) {
+            console.error("Google Login Error:", err);
+            setError(err.response?.data?.message || err.message || "Google Sign-In failed.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleLogin = async (e) => {
@@ -205,6 +253,15 @@ const UnifiedLogin = () => {
                                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                     </button>
                                 </div>
+                                <div className="flex justify-end mt-1">
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate('/forgot-password')}
+                                        className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline"
+                                    >
+                                        Forgot Password?
+                                    </button>
+                                </div>
                             </div>
 
                             <button
@@ -223,18 +280,29 @@ const UnifiedLogin = () => {
                                     </>
                                 )}
                             </button>
+
+                            {/* Google Sign In Divider */}
+                            <div className="relative flex items-center gap-2 my-4">
+                                <div className="h-[1px] bg-slate-200 w-full"></div>
+                                <span className="text-xs text-slate-400 font-medium">OR</span>
+                                <div className="h-[1px] bg-slate-200 w-full"></div>
+                            </div>
+
+                            {/* Google Button */}
+                            <div className="flex justify-center">
+                                <GoogleLogin
+                                    onSuccess={handleGoogleSuccess}
+                                    onError={() => setError("Google Sign-In Failed")}
+                                    useOneTap
+                                    shape="pill"
+                                />
+                            </div>
                         </motion.form>
                     </AnimatePresence>
 
                     {/* Quick Hints */}
                     <div className="mt-8 pt-6 border-t border-slate-100 text-center">
-                        <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mb-3">Demo Credentials</p>
-                        <div className="bg-slate-50 rounded-xl p-3 text-[11px] text-slate-600 font-medium">
-                            {activePortal === "admin" && "admin@orbix.com | admin123"}
-                            {activePortal === "employee" && "Any credentials will work (Mock mode)"}
-                        </div>
-
-                        <div className="mt-4 border-t border-slate-100 pt-3">
+                        <div className="mt-4 pt-3">
                             <button onClick={() => navigate("/client/login", { replace: true })} className="inline-flex items-center gap-1 text-xs font-semibold text-slate-400 hover:text-orange-500 transition-colors bg-transparent border-none cursor-pointer">
                                 Customer Login <ArrowRight size={10} />
                             </button>
@@ -246,10 +314,10 @@ const UnifiedLogin = () => {
                 <p className="text-center text-slate-400 text-xs mt-8">
                     &copy; 2026 Orbix Projects. All rights reserved.
                 </p>
-            </motion.div>
+            </motion.div >
 
             {/* In-page Styles */}
-            <style dangerouslySetInnerHTML={{
+            < style dangerouslySetInnerHTML={{
                 __html: `
                 @keyframes shake {
                     0%, 100% { transform: translateX(0); }
@@ -260,7 +328,7 @@ const UnifiedLogin = () => {
                     animation: shake 0.3s ease-in-out;
                 }
             `}} />
-        </div>
+        </div >
     );
 };
 

@@ -26,6 +26,11 @@ model User {
   
   sentEmails     Email[] @relation("SentEmails")
   receivedEmails Email[] @relation("ReceivedEmails")
+
+  resetOTP        String?
+  resetOTPExpires DateTime?
+  
+  pushSubscriptions PushSubscription[]
 }
 
 model Project {
@@ -240,5 +245,14 @@ model ActivityLog {
   message   String
   category  String   @default("GENERAL") // GENERAL, TASK, UPLOAD, MILESTONE
   taskId    String?  // Optional link if related to a specific task
+  createdAt DateTime @default(now())
+}
+
+model PushSubscription {
+  id        String   @id @default(uuid())
+  endpoint  String   @unique
+  keys      Json     // Stores { p256dh, auth }
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 }

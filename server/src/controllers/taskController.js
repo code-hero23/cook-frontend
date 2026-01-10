@@ -1,5 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const { logActivity } = require('./activityController');
+const { sendNotificationEmail, getEmailTemplate } = require('../services/emailService');
+const { sendUserPushNotification } = require('../services/notificationService');
 const prisma = new PrismaClient();
 
 // Get tasks (with optional filtering)
@@ -61,6 +63,43 @@ exports.createTask = async (req, res) => {
                             isRead: false
                         }
                     });
+
+                    // [GMAIL INTEGRATION] Send Real Email
+                    const emp = await prisma.user.findUnique({ where: { id: req.body.employeeId } });
+                    if (emp && emp.email) {
+                        await sendNotificationEmail(
+                            emp.email,
+                            `New Task Assigned: ${task.title}`,
+                            `You have been assigned a new task.\n\nPriority: ${task.priority}\nDue: ${task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'N/A'}`,
+                            getEmailTemplate(
+                                `New Task Assigned: ${task.title}`,
+                                `<p style="font-size: 16px;">You have been assigned a new task by <strong>${sender.name}</strong>.</p>
+                                 <div style="background-color: #f8fafc; padding: 16px; border-radius: 8px; margin: 20px 0;">
+                                    <p style="margin: 0 0 10px;"><strong>Type:</strong> ${task.type}</p>
+                                    <p style="margin: 0 0 10px;"><strong>Priority:</strong> <span style="color: ${task.priority === 'HIGH' ? 'red' : 'orange'};">${task.priority}</span></p>
+                                    <p style="margin: 0;"><strong>Due Date:</strong> ${task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No Due Date'}</p>
+                                 </div>
+                                 <p style="font-weight: bold; margin-bottom: 5px;">Description:</p>
+                                 <p style="background-color: #fff; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-style: italic;">${task.description || 'No description provided.'}</p>
+                                 <div style="text-align: center; margin-top: 24px;">
+                                    <a href="#" style="background-color: #ea580c; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">View Task in Dashboard</a>
+                                 </div>`
+                            ),
+                            "admin@orbix.com"
+                        );
+                    }
+
+                    // [PUSH NOTIFICATION]
+                    try {
+                        await sendUserPushNotification(
+                            req.body.employeeId,
+                            `New Task Assigned!`,
+                            `Task: ${task.title} (${task.priority})`
+                        );
+                    } catch (pushErr) {
+                        console.error("[Notification] Push failed:", pushErr);
+                    }
+
                     console.log(`[Notification] Email sent to Employee ${req.body.employeeId} from ${sender.name}`);
                 } else {
                     console.warn(`[Notification] Could not find an admin to send the notification email.`);
@@ -186,6 +225,37 @@ exports.updateTask = async (req, res) => {
                                 isRead: false
                             }
                         });
+
+                        // [GMAIL INTEGRATION] Send Real Email
+                        if (admin.email) {
+                            await sendNotificationEmail(
+                                admin.email,
+                                `Task Completed: ${fullTask.title}`,
+                                `Project: ${projectName}\nCompleted By: ${completorName}\n\nThe task has been marked as completed.`,
+                                getEmailTemplate(
+                                    `Task Completed: ${fullTask.title}`,
+                                    `<p style="font-size: 16px; margin-bottom: 24px;">The task has been marked as <strong>COMPLETED</strong>.</p>
+                                     <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
+                                        <tr>
+                                            <td style="padding: 8px; border-bottom: 1px solid #e2e8f0; color: #64748b;">Project</td>
+                                            <td style="padding: 8px; border-bottom: 1px solid #e2e8f0; font-weight: 600;">${projectName}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 8px; border-bottom: 1px solid #e2e8f0; color: #64748b;">Completed By</td>
+                                            <td style="padding: 8px; border-bottom: 1px solid #e2e8f0; font-weight: 600;">${completorName}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 8px; border-bottom: 1px solid #e2e8f0; color: #64748b;">Completion Time</td>
+                                            <td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${new Date().toLocaleString()}</td>
+                                        </tr>
+                                     </table>
+                                     <div style="text-align: center;">
+                                        <a href="#" style="background-color: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Review Task</a>
+                                     </div>`
+                                ),
+                                "admin@orbix.com"
+                            );
+                        }
                     }
                     console.log(`[Notification] Task Completion email sent to ${admins.length} admins.`);
                 }

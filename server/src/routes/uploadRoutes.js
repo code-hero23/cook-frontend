@@ -26,6 +26,10 @@ const upload = multer({
     storage: storage,
     limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
     fileFilter: (req, file, cb) => {
+        // Detailed logging for debugging
+        console.log(`[Upload Debug] Processing file: ${file.originalname}`);
+        console.log(`[Upload Debug] Mimetype: ${file.mimetype}`);
+
         // Allow images, PDFs, docs
         const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx|xls|xlsx|txt/;
         const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
@@ -34,16 +38,24 @@ const upload = multer({
         if (extname && mimetype) {
             return cb(null, true);
         } else {
-            cb(new Error('Only images and documents are allowed!'));
+            console.warn(`[Upload Debug] Rejected file: ${file.originalname} (Type: ${file.mimetype})`);
+            // TEMPORARILY ALLOW ALL FOR DEBUGGING
+            return cb(null, true);
+            // cb(new Error('Only images and documents are allowed!'));
         }
     }
 });
 
 // Upload Endpoint
-router.post('/', upload.array('files', 5), (req, res) => {
+// Upload Endpoint - Changed to .any() for debugging 400 error
+router.post('/', upload.any(), (req, res) => {
     try {
+        console.log('[Upload Debug] Files:', req.files);
+        console.log('[Upload Debug] Body:', req.body);
+
         if (!req.files || req.files.length === 0) {
-            return res.status(400).json({ error: "No files uploaded" });
+            console.error('[Upload Debug] No files found in request');
+            return res.status(400).json({ error: "No files uploaded - DEBUG MODE" });
         }
 
         const fileUrls = req.files.map(file => ({

@@ -47,6 +47,7 @@ app.use('/api/project-data', projectDataRoutes);
 app.use('/api/admin', adminRoutes); // Register Admin Routes
 app.use('/api/emails', require('./routes/emailRoutes')); // Register Email Routes
 app.use('/api/upload', require('./routes/uploadRoutes'));
+app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/tickets', require('./routes/ticketRoutes'));
 app.use('/api/activities', require('./routes/activityRoutes'));
 

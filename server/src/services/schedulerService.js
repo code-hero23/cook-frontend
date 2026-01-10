@@ -1,4 +1,5 @@
 const cron = require('node-cron');
+const { sendNotificationEmail, getEmailTemplate } = require('./emailService');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
@@ -54,6 +55,36 @@ const checkOverdueTasks = async () => {
                     isRead: false
                 }
             });
+
+            // [GMAIL INTEGRATION] Send Real Email
+            if (task.employee && task.employee.email) {
+                await sendNotificationEmail(
+                    task.employee.email,
+                    `Overdue Task Alert: ${task.title}`,
+                    `ACTION REQUIRED\n\nThe task "${task.title}" for project "${task.project.name}" is OVERDUE.\nDue Date: ${new Date(task.dueDate).toLocaleDateString()}.\n\nPlease attend to this immediately.`,
+                    getEmailTemplate(
+                        `Overdue Alert: ${task.title}`,
+                        `<div style="text-align: center; margin-bottom: 24px;">
+                            <p style="background-color: #fee2e2; color: #dc2626; padding: 12px; border-radius: 8px; font-weight: bold; display: inline-block;">ACTION REQUIRED: OVERDUE TASK</p>
+                         </div>
+                         <p style="font-size: 16px;">This is a reminder that the following task is past its due date.</p>
+                         <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                            <tr>
+                                <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; color: #64748b;">Project</td>
+                                <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; font-weight: 600;">${task.project.name}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; color: #64748b;">Originally Due</td>
+                                <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; color: #dc2626; font-weight: bold;">${new Date(task.dueDate).toLocaleDateString()}</td>
+                            </tr>
+                         </table>
+                         <div style="text-align: center; margin-top: 24px;">
+                            <a href="#" style="background-color: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">View Task Immediately</a>
+                         </div>`
+                    ),
+                    "admin@orbix.com"
+                );
+            }
             emailCount++;
         }
 

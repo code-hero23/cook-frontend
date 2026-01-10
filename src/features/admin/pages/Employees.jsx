@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useApp } from "../context/AppContext.jsx";
 import StatusBadge from "../components/common/StatusBadge.jsx";
-import { Plus, Pencil } from "lucide-react";
+import { Plus, Pencil, Upload } from "lucide-react";
+import BulkEmployeeImport from "../components/BulkEmployeeImport.jsx";
 
 const emptyForm = {
   name: "",
@@ -19,6 +20,7 @@ const Employees = () => {
   const [searchParams] = useSearchParams();
   const [search, setSearch] = useState(searchParams.get("q") || "");
   const [modalOpen, setModalOpen] = useState(false);
+  const [bulkModalOpen, setBulkModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyForm);
 
@@ -78,15 +80,34 @@ const Employees = () => {
           </p>
         </div>
         {((user || {}).role !== "VIEW_ONLY_ADMIN") && (
-          <button
-            onClick={openCreate}
-            className="inline-flex items-center gap-2 rounded-xl bg-orange-600 text-white px-4 py-2 text-sm shadow-sm hover:bg-orange-500 transition"
-          >
-            <Plus size={16} />
-            Add Employee
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setBulkModalOpen(true)}
+              className="inline-flex items-center gap-2 rounded-xl bg-white border border-slate-200 text-slate-700 px-4 py-2 text-sm shadow-sm hover:bg-slate-50 transition"
+            >
+              <Upload size={16} />
+              Import CSV
+            </button>
+            <button
+              onClick={openCreate}
+              className="inline-flex items-center gap-2 rounded-xl bg-orange-600 text-white px-4 py-2 text-sm shadow-sm hover:bg-orange-500 transition"
+            >
+              <Plus size={16} />
+              Add Employee
+            </button>
+          </div>
         )}
       </div>
+
+      {bulkModalOpen && (
+        <BulkEmployeeImport
+          onClose={() => setBulkModalOpen(false)}
+          onSuccess={() => {
+            setBulkModalOpen(false);
+            window.location.reload();
+          }}
+        />
+      )}
 
       {/* SEARCH + TABLE */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 space-y-4">

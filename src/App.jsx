@@ -8,6 +8,7 @@ import SupervisorApp from '@supervisor/App';
 import ClientApp from '@client/App';
 import Login from './pages/Login';
 import ClientLogin from './pages/ClientLogin';
+import ForgotPassword from './pages/ForgotPassword';
 import ReloadPrompt from './components/pwa/ReloadPrompt';
 import InstallPrompt from './components/pwa/InstallPrompt';
 import IOSInstallPrompt from './components/pwa/IOSInstallPrompt';
@@ -61,6 +62,7 @@ function App() {
                         <Routes>
                             <Route path="/" element={<RootRedirect />} />
                             <Route path="/login" element={<Login />} />
+                            <Route path="/forgot-password" element={<ForgotPassword />} />
                             <Route path="/client/login" element={<ClientLogin />} />
 
                             {/* Feature Routes */}
