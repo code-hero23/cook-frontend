@@ -118,6 +118,21 @@ exports.updateTask = async (req, res) => {
             console.log(`[Auto-Start] Project ${task.projectId} timeline started via Task ${task.id}`);
         }
 
+        // ------------------------------------------------------------------
+        // NEW: Auto-Close Project Logic
+        // ------------------------------------------------------------------
+        // When "Completion Certificate" is COMPLETED, set Project Status to COMPLETED
+        if (task.title === "Completion Certificate" && task.status === "COMPLETED") {
+            await prisma.project.update({
+                where: { id: task.projectId },
+                data: {
+                    status: "COMPLETED",
+                    handoverDate: new Date()
+                }
+            });
+            console.log(`[Auto-Close] Project ${task.projectId} marked as COMPLETED via Task ${task.id}`);
+        }
+
         // 2. If a file was uploaded as proof, auto-add to Project Documents so Client sees it
         if (completionFileUrl && completionFileName) {
             await prisma.projectDocument.create({
