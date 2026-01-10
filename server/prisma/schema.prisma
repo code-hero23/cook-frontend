@@ -79,6 +79,7 @@ model Project {
   assignedEmployees User[]
   tickets           Ticket[]
   magicLinks        MagicLink[]
+  activityLogs      ActivityLog[]
 }
 
 model ProjectImage {
@@ -98,7 +99,7 @@ model ProjectDocument {
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   
   taskId    String?
-  task      Task?    @relation(fields: [taskId], references: [id]) // Optional link to a specific task
+  task      Task?    @relation(fields: [taskId], references: [id], onDelete: SetNull) // Linked task deleted -> Document remains
   
   createdAt DateTime @default(now())
 }
@@ -157,7 +158,7 @@ model TaskEvidence {
   longitude Float
   capturedAt DateTime
   taskId    String
-  task      Task     @relation(fields: [taskId], references: [id])
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 }
 
@@ -205,7 +206,7 @@ model Ticket {
   
   // Link to Task (Issue)
   taskId      String?  @unique
-  task        Task?    @relation(fields: [taskId], references: [id])
+  task        Task?    @relation(fields: [taskId], references: [id], onDelete: SetNull)
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -229,5 +230,15 @@ model MagicLink {
   projectId String
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  message   String
+  category  String   @default("GENERAL") // GENERAL, TASK, UPLOAD, MILESTONE
+  taskId    String?  // Optional link if related to a specific task
   createdAt DateTime @default(now())
 }

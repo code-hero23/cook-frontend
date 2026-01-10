@@ -48,6 +48,7 @@ app.use('/api/admin', adminRoutes); // Register Admin Routes
 app.use('/api/emails', require('./routes/emailRoutes')); // Register Email Routes
 app.use('/api/upload', require('./routes/uploadRoutes'));
 app.use('/api/tickets', require('./routes/ticketRoutes'));
+app.use('/api/activities', require('./routes/activityRoutes'));
 
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'Cookscape Backend is running' });

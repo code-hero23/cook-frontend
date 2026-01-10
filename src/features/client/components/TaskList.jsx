@@ -92,7 +92,7 @@ const TaskList = ({ tasks }) => {
                       <div className="flex items-center gap-3">
                         {getStatusIcon(task.status)}
                         <div className="flex flex-col">
-                          <p className="text-sm font-medium text-gray-800">{task.title || task.name}</p>
+                          <p className="text-sm font-medium text-gray-800">{task.title}</p>
                           <span
                             className={`text-[10px] font-bold mt-0.5 px-1.5 py-0.5 rounded w-fit ${task.status === "Completed"
                               ? "bg-green-100 text-green-700"
@@ -152,7 +152,7 @@ const TaskList = ({ tasks }) => {
                   <div className="flex items-center gap-3">
                     {getStatusIcon(task.status)}
                     <div className="flex flex-col">
-                      <p className="text-sm font-medium text-gray-800">{task.title || task.name}</p>
+                      <p className="text-sm font-medium text-gray-800">{task.title}</p>
                       <span
                         className={`text-[10px] font-bold mt-0.5 px-1.5 py-0.5 rounded w-fit ${task.status === "Completed"
                           ? "bg-green-100 text-green-700"

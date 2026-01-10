@@ -22,7 +22,7 @@ const Timeline = ({ tasks, compact }) => {
     });
 
   const getStatusIcon = (status) => {
-    if (status === "completed") {
+    if (status && status.toLowerCase() === "completed") {
       return (
         <div className="tick-wrapper">
           <svg
@@ -109,7 +109,7 @@ const Timeline = ({ tasks, compact }) => {
           {getStatusIcon(task.status)}
         </div>
         <div>
-          <p className="text-sm font-medium text-gray-800">{task.name}</p>
+          <p className="text-sm font-medium text-gray-800">{task.title}</p>
           <p className="text-[10px] text-gray-500">
             {dateDisplay}
           </p>
@@ -157,7 +157,7 @@ const Timeline = ({ tasks, compact }) => {
           const stageTasks = tasks.filter((t) => t.stage === stageName);
           if (stageTasks.length === 0) return null;
 
-          const isCompleted = stageTasks.every(t => t.status === "completed");
+          const isCompleted = stageTasks.every(t => t.status && t.status.toLowerCase() === "completed");
 
           return (
             <div key={stageName} className="flex flex-col">

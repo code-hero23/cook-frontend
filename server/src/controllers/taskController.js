@@ -1,4 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
+const { logActivity } = require('./activityController');
 const prisma = new PrismaClient();
 
 // Get tasks (with optional filtering)
@@ -127,6 +128,55 @@ exports.updateTask = async (req, res) => {
                 }
             });
             console.log(`[Auto-Doc] Created ProjectDocument for Task ${task.id}`);
+        }
+
+        // 3. Log Activity if completed
+        if (task.status === "COMPLETED") {
+            await logActivity(task.projectId, `${task.title} marked as completed`, "TASK", task.id);
+
+            // 4. Notify Admins
+            try {
+                // Fetch full task details with Project and Employee info for the email content
+                const fullTask = await prisma.task.findUnique({
+                    where: { id: task.id },
+                    include: {
+                        project: true,
+                        employee: true
+                    }
+                });
+
+                if (fullTask) {
+                    const admins = await prisma.user.findMany({
+                        where: { role: { in: ['SUPER_ADMIN', 'ADMIN', 'MANAGER'] }, status: 'ACTIVE' }
+                    });
+
+                    // Determine who completed it (Employee or system)
+                    const completorName = fullTask.employee ? fullTask.employee.name : "An employee";
+                    const projectName = fullTask.project ? fullTask.project.name : "Unknown Project";
+
+                    for (const admin of admins) {
+                        // Don't send email to the person who did the action (e.g. if Admin marked it completed themselves)
+                        if (fullTask.employeeId && admin.id === fullTask.employeeId) continue;
+
+                        await prisma.email.create({
+                            data: {
+                                senderId: fullTask.employeeId || admin.id, // If no employee, sender is self (internal system msg) - or better, use the first admin found as sender if needed, but here senderId references User table.
+                                // Actually, senderId MUST exist. If employeeId is null, use the admin themselves or a system user?
+                                // Let's use the admin being notified as the "sender" if employee is missing (system notification), or reuse a known system ID if we had one.
+                                // Safe fallback: if fullTask.employeeId exists, use it. If not, use admin.id (internal note to self).
+                                senderId: fullTask.employeeId || admin.id,
+                                receiverId: admin.id,
+                                subject: `Task Completed: ${fullTask.title} (${projectName})`,
+                                content: `Task Completion Report:\n\nTask: ${fullTask.title}\nProject: ${projectName}\nCompleted By: ${completorName}\nTime: ${new Date().toLocaleString()}\n\nThe task has been successfully marked as completed.`,
+                                isRead: false
+                            }
+                        });
+                    }
+                    console.log(`[Notification] Task Completion email sent to ${admins.length} admins.`);
+                }
+            } catch (emailErr) {
+                console.error("[Notification] Failed to send admin completion email:", emailErr);
+            }
         }
 
         res.json(task);

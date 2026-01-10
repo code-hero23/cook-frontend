@@ -32,22 +32,34 @@ const App = () => {
   const project = JSON.parse(localStorage.getItem("clientProject") || "{}");
 
   useEffect(() => {
-    const fetchProjectTasks = async () => {
+    const fetchProjectData = async () => {
       try {
         setLoading(true);
-        const res = await axios.get("/tasks", {
-          params: { projectId: project.id }
-        });
-        setTasks(res.data);
+        const [taskRes, activityRes] = await Promise.all([
+          axios.get("/tasks", { params: { projectId: project.id } }),
+          axios.get(`/activities/${project.id}`)
+        ]);
+
+        setTasks(taskRes.data);
+
+        // Transform backend logs to frontend format
+        const formattedActivity = activityRes.data.map(log => ({
+          id: log.id,
+          message: log.message,
+          time: log.createdAt,
+          category: log.category
+        }));
+        setActivity(formattedActivity);
+
       } catch (err) {
-        console.error("Error fetching client tasks:", err);
+        console.error("Error fetching client data:", err);
       } finally {
         setLoading(false);
       }
     };
 
     if (project.id) {
-      fetchProjectTasks();
+      fetchProjectData();
     }
   }, [project.id]);
 
@@ -142,7 +154,7 @@ const App = () => {
           {selected === "overview" && <ProjectProgress tasks={tasks} />}
           {selected === "profile" && <Profile />}
           {selected === "tasks" && <TaskList tasks={tasks} toggleStatus={toggleStatus} />}
-          {selected === "activity" && <ActivityFeed activity={activity} dummyActivity={dummyActivityFeed} />}
+          {selected === "activity" && <ActivityFeed activity={activity} dummyActivity={[]} />}
           {selected === "gallery" && <Gallery />}
           {selected === "documents" && <Documents />}
           {selected === "timeline" && <Timeline tasks={tasks} />}
