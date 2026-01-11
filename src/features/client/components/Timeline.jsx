@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "../../../shared/utils/axios";
 
-const Timeline = ({ tasks, compact }) => {
-  const isMobile = window.innerWidth < 768;
-  const useCompact = compact || isMobile;
+const Timeline = ({ tasks, projectStartDate }) => {
   const [projectData, setProjectData] = useState(null);
 
   useEffect(() => {
@@ -22,16 +20,11 @@ const Timeline = ({ tasks, compact }) => {
     });
 
   const getStatusIcon = (status) => {
-    if (status && status.toLowerCase() === "completed") {
+    const isCompleted = status && status.toLowerCase() === "completed";
+    if (isCompleted) {
       return (
         <div className="tick-wrapper">
-          <svg
-            className="tick-svg"
-            width="38"
-            height="38"
-            viewBox="0 0 50 50"
-            fill="none"
-          >
+          <svg className="tick-svg" width="32" height="32" viewBox="0 0 50 50" fill="none">
             <path
               className="tick-path"
               d="M14 26 L22 34 L36 16"
@@ -47,36 +40,14 @@ const Timeline = ({ tasks, compact }) => {
 
     return (
       <div className="warn-wrapper">
-        <svg
-          className="warn-svg"
-          width="38"
-          height="38"
-          viewBox="0 0 50 50"
-          fill="none"
-        >
-          <circle
-            cx="25"
-            cy="25"
-            r="20"
-            fill="rgba(234,88,12,0.12)"
-            className="warn-circle"
-          />
-          <line
-            x1="25"
-            y1="13"
-            x2="25"
-            y2="30"
-            stroke="#ea580c"
-            strokeWidth="5"
-            strokeLinecap="round"
-            className="warn-line"
-          />
+        <svg className="warn-svg" width="32" height="32" viewBox="0 0 50 50" fill="none">
+          <circle cx="25" cy="25" r="20" fill="rgba(234,88,12,0.1)" className="warn-circle" />
+          <line x1="25" y1="13" x2="25" y2="30" stroke="#ea580c" strokeWidth="5" strokeLinecap="round" className="warn-line" />
           <circle cx="25" cy="37" r="3" fill="#ea580c" className="warn-dot" />
         </svg>
       </div>
     );
   };
-
 
   const stages = [
     "Freezing Mail",
@@ -86,31 +57,25 @@ const Timeline = ({ tasks, compact }) => {
   ];
 
   const renderTask = (task, i) => {
-    // Logic: Use projectStartDate if available
-    // If not available, we show "Pending Start"
-
     let dateDisplay = "Pending Start";
-
     if (projectData?.startDate) {
       const start = new Date(projectData.startDate);
-      start.setDate(start.getDate() + i); // Assuming sequential items? 
-      // NOTE: The previous logic assumed tasks are 1 day apart. 
-      // We keep this "Estimated Schedule" logic for now.
+      start.setDate(start.getDate() + i);
       dateDisplay = formatDateTime(start);
     }
 
     return (
       <div
         key={task.id}
-        className="flex items-center gap-3 mb-4 last:mb-0 animate-slide-up"
-        style={{ animationDelay: `${i * 0.1}s` }}
+        className="flex items-center gap-3 mb-6 last:mb-0 animate-slide-up"
+        style={{ animationDelay: `${i * 0.05}s` }}
       >
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center">
           {getStatusIcon(task.status)}
         </div>
-        <div>
-          <p className="text-sm font-medium text-gray-800">{task.title}</p>
-          <p className="text-[10px] text-gray-500">
+        <div className="min-w-0">
+          <p className="text-[13px] font-bold text-slate-700 leading-tight">{task.title}</p>
+          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">
             {dateDisplay}
           </p>
         </div>
@@ -118,25 +83,27 @@ const Timeline = ({ tasks, compact }) => {
     );
   };
 
-  // ---------------- MOBILE VIEW ----------------
-  if (useCompact) {
-    return (
-      <div className="w-full">
-        <h2 className="text-base font-semibold mb-4 text-indigo-700">Project Timeline</h2>
-        <div className="space-y-6">
-          {stages.map((stageName) => {
+  return (
+    <div className="space-y-8">
+      {/* MOBILE TIMELINE */}
+      <div className="md:hidden space-y-10">
+        <h2 className="text-xl font-black text-slate-800 tracking-tight">Project Timeline</h2>
+        <div className="space-y-8">
+          {stages.map((stageName, sIdx) => {
             const stageTasks = tasks.filter((t) => t.stage === stageName);
             if (stageTasks.length === 0) return null;
 
             return (
               <div key={stageName} className="relative">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
-                  <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-black text-xs shadow-lg shadow-indigo-100 shrink-0">
+                    {sIdx + 1}
+                  </div>
+                  <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">
                     {stageName}
                   </h3>
                 </div>
-                <div className="ml-3 pl-4 border-l-2 border-indigo-100 space-y-3">
+                <div className="ml-5 pl-8 border-l-2 border-slate-100 space-y-2 relative">
                   {stageTasks.map((task, idx) => renderTask(task, idx))}
                 </div>
               </div>
@@ -144,46 +111,42 @@ const Timeline = ({ tasks, compact }) => {
           })}
         </div>
       </div>
-    );
-  }
 
-  // ---------------- DESKTOP VIEW ----------------
-  return (
-    <div className="bg-white p-6 rounded-2xl shadow-lg border">
-      <h2 className="text-xl font-bold mb-8 text-indigo-800">Project Timeline</h2>
+      {/* DESKTOP TIMELINE */}
+      <div className="hidden md:block bg-white/70 backdrop-blur-2xl p-10 rounded-[3rem] shadow-2xl shadow-indigo-100/30 border border-white">
+        <h2 className="text-2xl font-black text-slate-800 tracking-tight mb-12">Project Timeline</h2>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+          {stages.map((stageName, stageIdx) => {
+            const stageTasks = tasks.filter((t) => t.stage === stageName);
+            if (stageTasks.length === 0) return null;
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stages.map((stageName, stageIdx) => {
-          const stageTasks = tasks.filter((t) => t.stage === stageName);
-          if (stageTasks.length === 0) return null;
+            const isCompleted = stageTasks.every(t => t.status && t.status.toLowerCase() === "completed");
 
-          const isCompleted = stageTasks.every(t => t.status && t.status.toLowerCase() === "completed");
-
-          return (
-            <div key={stageName} className="flex flex-col">
-              {/* STAGE HEADER */}
-              <div className="flex items-center gap-2 mb-4">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${isCompleted ? "bg-green-100 text-green-700" : "bg-indigo-100 text-indigo-700"
-                  }`}>
-                  {stageIdx + 1}
+            return (
+              <div key={stageName} className="flex flex-col">
+                {/* STAGE HEADER */}
+                <div className="flex items-center gap-2 mb-4">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${isCompleted ? "bg-green-100 text-green-700" : "bg-indigo-100 text-indigo-700"
+                    }`}>
+                    {stageIdx + 1}
+                  </div>
+                  <h3 className="font-bold text-gray-800 text-sm leading-tight">
+                    {stageName}
+                  </h3>
                 </div>
-                <h3 className="font-bold text-gray-800 text-sm leading-tight">
-                  {stageName}
-                </h3>
-              </div>
 
-              {/* STAGE TASKS */}
-              <div className="flex-1 bg-gray-50 rounded-xl p-4 border border-dashed border-gray-200">
-                {stageTasks.map((task, idx) => renderTask(task, idx))}
+                {/* STAGE TASKS */}
+                <div className="flex-1 bg-gray-50 rounded-xl p-4 border border-dashed border-gray-200">
+                  {stageTasks.map((task, idx) => renderTask(task, idx))}
+                </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
 
-      {/* Animations */}
-      <style>
-        {`
+        {/* Animations */}
+        <style>
+          {`
         /* wrapper space to avoid text collisions */
 .icon-wrap { display:inline-flex; align-items:center; justify-content:center; width:40px; height:40px; }
 
@@ -436,10 +399,9 @@ const Timeline = ({ tasks, compact }) => {
         @keyframes warningPulse {
           0%   { transform: scale(1);   opacity: 0.9; }
           50%  { transform: scale(1.25); opacity: 1; }
-          100% { transform: scale(1);   opacity: 0.9; }
-        }
         `}
-      </style>
+        </style>
+      </div>
     </div>
   );
 };

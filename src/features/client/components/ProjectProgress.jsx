@@ -172,7 +172,7 @@ const ProjectProgress = ({ tasks = [] }) => {
       <motion.div
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-white/70 backdrop-blur-2xl rounded-[3.5rem] p-6 md:p-10 shadow-2xl shadow-indigo-100/50 border border-white relative overflow-hidden group"
+        className="bg-white/70 backdrop-blur-2xl rounded-3xl md:rounded-[3.5rem] p-5 md:p-10 shadow-2xl shadow-indigo-100/50 border border-white relative overflow-hidden group"
       >
         <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-indigo-100/40 to-purple-100/40 rounded-full blur-3xl -mr-32 -mt-32"></div>
 
@@ -186,16 +186,16 @@ const ProjectProgress = ({ tasks = [] }) => {
             <p className="text-slate-500 font-semibold max-w-md leading-relaxed text-sm">Track your interior journey across four distinct phases of excellence.</p>
           </div>
           <div className="text-left md:text-right">
-            <div className="text-6xl font-black text-slate-900 tracking-tighter tabular-nums flex items-baseline gap-1 md:justify-end leading-none">
-              {percentage}<span className="text-3xl text-indigo-600">%</span>
+            <div className="text-4xl md:text-6xl font-black text-slate-900 tracking-tighter tabular-nums flex items-baseline gap-1 md:justify-end leading-none">
+              {percentage}<span className="text-2xl md:text-3xl text-indigo-600">%</span>
             </div>
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mt-3">Overall Progress</p>
           </div>
         </div>
 
         {/* PROGRESS BAR */}
-        <div className="relative mb-16 px-2">
-          <div className="relative h-24 w-full bg-slate-100 rounded-3xl border-8 border-white overflow-hidden shadow-inner">
+        <div className="relative mb-12 md:mb-16 px-1 md:px-2">
+          <div className="relative h-16 sm:h-20 md:h-24 w-full bg-slate-100 rounded-2xl md:rounded-3xl border-4 md:border-8 border-white overflow-hidden shadow-inner">
             {/* Fill */}
             <motion.div
               initial={{ width: 0 }}
@@ -223,17 +223,17 @@ const ProjectProgress = ({ tasks = [] }) => {
                 const isDone = stageData[i]?.isDone;
                 return (
                   <div key={i} style={{ width: s.w }} className={`relative border-r border-white/20 flex flex-col items-center justify-center transition-all duration-500 ${isLocked ? 'bg-slate-950/5' : ''}`}>
-                    <div className="relative z-10 flex flex-col items-center gap-2">
+                    <div className="relative z-10 flex flex-col items-center gap-1 md:gap-2">
                       {isDone ? (
-                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="p-1 bg-white rounded-full shadow-lg">
-                          <CheckCircle size={20} className="text-green-500" />
+                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="p-0.5 md:p-1 bg-white rounded-full shadow-lg">
+                          <CheckCircle className="w-4 h-4 md:w-5 md:h-5 text-green-500" />
                         </motion.div>
                       ) : isLocked ? (
-                        <Lock size={16} className="text-slate-400/50" />
+                        <Lock size={12} className="text-slate-400/50 md:size-4" />
                       ) : (
-                        <Unlock size={16} className="text-white/80 animate-pulse" />
+                        <Unlock size={12} className="text-white/80 animate-pulse md:size-4" />
                       )}
-                      <span className={`text-[10px] font-black uppercase tracking-widest ${isDone || (!isLocked && percentage >= (i * 25)) ? 'text-white' : 'text-slate-400'}`}>
+                      <span className={`text-[8px] md:text-[10px] font-black uppercase tracking-widest ${isDone || (!isLocked && percentage >= (i * 25)) ? 'text-white' : 'text-slate-400'}`}>
                         {s.label}
                       </span>
                     </div>
@@ -268,7 +268,7 @@ const ProjectProgress = ({ tasks = [] }) => {
           </div>
           <button
             onClick={toggleViewTasks}
-            className={`px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg transform active:scale-95 flex items-center gap-2
+            className={`w-full md:w-auto px-8 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg transform active:scale-95 flex items-center justify-center gap-2
               ${percentage > paymentPercentage
                 ? 'bg-amber-600 text-white shadow-amber-200 hover:bg-amber-700'
                 : 'bg-indigo-600 text-white shadow-indigo-200 hover:bg-indigo-700'}`}
@@ -285,21 +285,21 @@ const ProjectProgress = ({ tasks = [] }) => {
         {/* TIMELINE CARD */}
         <motion.div
           whileHover={{ y: -5 }}
-          className="lg:col-span-2 bg-white/70 backdrop-blur-2xl p-8 rounded-[3rem] shadow-xl shadow-slate-200/50 border border-white group"
+          className="lg:col-span-2 bg-white/70 backdrop-blur-2xl p-6 md:p-8 rounded-3xl md:rounded-[3rem] shadow-xl shadow-slate-200/50 border border-white group"
         >
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-pink-50 text-pink-500 flex items-center justify-center shadow-inner">
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-pink-50 text-pink-500 flex items-center justify-center shadow-inner">
                 <Clock size={24} />
               </div>
               <div>
-                <h3 className="text-xl font-black text-slate-800 tracking-tight">Timeline Health</h3>
+                <h3 className="text-lg md:text-xl font-black text-slate-800 tracking-tight">Timeline Health</h3>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Delivery Window</p>
               </div>
             </div>
-            <div className="text-right px-6 py-2 bg-slate-50 rounded-2xl border border-slate-100">
+            <div className="w-fit px-6 py-2 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-3">
               <span className="text-2xl font-black text-slate-900 leading-none">{daysLeft}</span>
-              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Days Remaining</p>
+              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Days Remaining</p>
             </div>
           </div>
 
@@ -326,9 +326,9 @@ const ProjectProgress = ({ tasks = [] }) => {
         {/* ANALYTICS PIE */}
         <motion.div
           whileHover={{ y: -5 }}
-          className="bg-white/70 backdrop-blur-2xl p-8 rounded-[3rem] shadow-xl shadow-slate-200/50 border border-white relative overflow-hidden"
+          className="bg-white/70 backdrop-blur-2xl p-6 md:p-8 rounded-3xl md:rounded-[3rem] shadow-xl shadow-slate-200/50 border border-white relative overflow-hidden"
         >
-          <h3 className="text-xl font-black text-slate-800 tracking-tight mb-1">Deliverables</h3>
+          <h3 className="text-lg md:text-xl font-black text-slate-800 tracking-tight mb-1">Deliverables</h3>
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-8">Data Breakdown</p>
 
           <div className="h-[240px] relative">

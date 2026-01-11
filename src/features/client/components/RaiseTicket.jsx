@@ -151,15 +151,15 @@ const RaiseTicket = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-4 md:p-10 lg:h-[calc(100vh-6rem)] flex flex-col lg:flex-row gap-8 overflow-hidden">
+    <div className="max-w-7xl mx-auto p-4 md:p-8 lg:p-10 lg:h-[calc(100vh-6rem)] flex flex-col lg:flex-row gap-6 md:gap-8">
 
       {/* FORM PANEL */}
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
-        className="lg:w-1/3 bg-white/60 backdrop-blur-xl rounded-[2.5rem] border border-white/50 shadow-2xl shadow-slate-200/50 flex flex-col overflow-hidden shrink-0"
+        className="lg:w-1/3 bg-white/60 backdrop-blur-xl rounded-3xl md:rounded-[2.5rem] border border-white/50 shadow-2xl shadow-slate-200/50 flex flex-col overflow-hidden shrink-0"
       >
-        <div className="p-8 border-b border-white/50 bg-indigo-600/5">
+        <div className="p-6 md:p-8 border-b border-white/50 bg-indigo-600/5">
           <div className="flex items-center gap-4 mb-2">
             <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-100">
               <MessageSquare size={20} />
@@ -169,7 +169,7 @@ const RaiseTicket = () => {
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-relaxed">Submit your queries directly to our operations team.</p>
         </div>
 
-        <div className="p-8 space-y-6 overflow-y-auto flex-1 custom-scrollbar">
+        <div className="p-6 md:p-8 space-y-6 overflow-y-auto flex-1 custom-scrollbar">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Urgency</label>
@@ -247,9 +247,9 @@ const RaiseTicket = () => {
       <motion.div
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
-        className="flex-1 bg-white/40 backdrop-blur-xl rounded-[2.5rem] border border-white/50 shadow-2xl shadow-slate-200/50 flex flex-col overflow-hidden"
+        className="flex-1 bg-white/40 backdrop-blur-xl rounded-3xl md:rounded-[2.5rem] border border-white/50 shadow-2xl shadow-slate-200/50 flex flex-col overflow-hidden"
       >
-        <div className="p-8 border-b border-white/50 bg-slate-50/50 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="p-6 md:p-8 border-b border-white/50 bg-slate-50/50 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
             <h2 className="text-xl font-black text-slate-800 tracking-tight">Active Inquiries</h2>
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Track your open & historical requests</p>
@@ -293,9 +293,9 @@ const RaiseTicket = () => {
                 key={t.id}
                 onClick={() => { trigger('light'); setSelectedTicket(t); }}
                 whileHover={{ y: -4, scale: 1.01 }}
-                className="bg-white/70 backdrop-blur-md p-6 rounded-[2rem] border border-white shadow-sm hover:shadow-xl hover:shadow-indigo-50/50 transition-all cursor-pointer group flex flex-col md:flex-row md:items-center gap-6"
+                className="bg-white/70 backdrop-blur-md p-5 md:p-6 rounded-[1.5rem] md:rounded-[2rem] border border-white shadow-sm hover:shadow-xl hover:shadow-indigo-50/50 transition-all cursor-pointer group flex flex-col md:flex-row md:items-center gap-4 md:gap-6"
               >
-                <div className={`w-14 h-14 rounded-2xl shrink-0 flex items-center justify-center border font-black text-[10px] uppercase tracking-tighter ${statusColors[t.status] || 'bg-slate-50 text-slate-400'}`}>
+                <div className={`w-fit md:w-14 h-8 md:h-14 px-3 md:px-0 rounded-xl md:rounded-2xl shrink-0 flex items-center justify-center border font-black text-[9px] md:text-[10px] uppercase tracking-widest md:tracking-tighter ${statusColors[t.status] || 'bg-slate-50 text-slate-400'}`}>
                   {t.status}
                 </div>
                 <div className="flex-1 min-w-0">

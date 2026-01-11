@@ -10,7 +10,7 @@ const Profile = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay, duration: 0.5 }}
-            className="bg-white/60 backdrop-blur-xl rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 border border-white/50 hover:shadow-2xl transition-all group"
+            className="bg-white/60 backdrop-blur-xl rounded-3xl md:rounded-[2.5rem] p-6 md:p-8 shadow-xl shadow-slate-200/50 border border-white/50 hover:shadow-2xl transition-all group"
         >
             <div className="flex items-center gap-4 mb-8">
                 <div className={`w-12 h-12 rounded-2xl ${colorClass} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
@@ -42,7 +42,7 @@ const Profile = () => {
     );
 
     return (
-        <div className="max-w-5xl mx-auto p-4 md:p-10 space-y-10">
+        <div className="max-w-5xl mx-auto p-4 md:p-8 lg:p-10 space-y-8 md:space-y-10">
             <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -55,7 +55,7 @@ const Profile = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Personal Details */}
                 <Section title="Lead Contact" icon={User} colorClass="bg-indigo-600 text-white" delay={0.1}>
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                         <DetailItem label="First Name" value={project.firstName} />
                         <DetailItem label="Last Name" value={project.lastName} />
                     </div>
@@ -71,7 +71,7 @@ const Profile = () => {
 
                 {/* Project Details */}
                 <Section title="Project Scope" icon={Briefcase} colorClass="bg-emerald-600 text-white" delay={0.3}>
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                         <DetailItem label="Project Alias" value={project.name} />
                         <DetailItem label="Registry ID" value={project.cpNumber} />
                     </div>
@@ -81,7 +81,7 @@ const Profile = () => {
 
                 {/* Schedule */}
                 <Section title="Timeframe" icon={Calendar} colorClass="bg-amber-500 text-white" delay={0.4}>
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                         <DetailItem label="Kick-off Date" value={project.startDate ? new Date(project.startDate).toLocaleDateString() : 'Pending'} />
                         <DetailItem label="Delivery Goal" value={project.deadline ? new Date(project.deadline).toLocaleDateString() : 'TBD'} />
                     </div>
@@ -94,7 +94,7 @@ const Profile = () => {
                 <Section title="Financial Records" icon={CreditCard} colorClass="bg-slate-800 text-white" delay={0.5}>
                     <DetailItem label="Billing Name" value={project.billingName || `${project.firstName} ${project.lastName}`} />
                     <DetailItem label="Registered address" value={project.location} icon={MapPin} />
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                         <DetailItem label="Contact Link" value={project.billingPhone || project.clientPhone} icon={Phone} />
                         <DetailItem label="GST Identity" value={project.gstin} icon={ShieldCheck} />
                     </div>
@@ -106,20 +106,20 @@ const Profile = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.6 }}
-                className="p-8 bg-slate-900 rounded-[2.5rem] text-white relative overflow-hidden shadow-2xl"
+                className="p-6 md:p-8 bg-slate-900 rounded-3xl md:rounded-[2.5rem] text-white relative overflow-hidden shadow-2xl"
             >
                 <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl -mr-32 -mt-32"></div>
-                <div className="relative z-10 flex flex-col md:flex-row gap-8 items-center">
+                <div className="relative z-10 flex flex-col lg:flex-row gap-6 lg:gap-8 items-center text-center lg:text-left">
                     <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center shrink-0 border border-white/10 group-hover:bg-white/20 transition-colors">
                         <ShieldCheck className="text-indigo-400" size={32} />
                     </div>
-                    <div className="text-center md:text-left">
+                    <div className="flex-1">
                         <h4 className="text-lg font-black tracking-tight mb-2">Immutable Project Registry</h4>
-                        <p className="text-sm text-slate-400 font-bold leading-relaxed max-w-2xl">
+                        <p className="text-sm text-slate-400 font-bold leading-relaxed max-w-2xl mx-auto lg:mx-0">
                             These records are managed directly by ORBIX Operations. If any information requires correction, please initiate a formal update request through the <span className="text-indigo-400">Feedback & Support</span> portal.
                         </p>
                     </div>
-                    <button className="md:ml-auto px-8 py-3 bg-white text-slate-900 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-indigo-50 transition-colors">
+                    <button className="w-full lg:w-auto px-8 py-3.5 bg-white text-slate-900 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-indigo-50 transition-all transform active:scale-95 shadow-xl">
                         Request Change
                     </button>
                 </div>
