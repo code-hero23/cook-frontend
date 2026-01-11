@@ -93,12 +93,14 @@ const Documents = () => {
                                     </div>
                                 </div>
 
-                                <button
-                                    onClick={() => handleDownload(fullUrl)}
+                                <a
+                                    href={fullUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     className="shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:bg-indigo-600 hover:text-white transition-all active:scale-95"
                                 >
                                     <Download size={18} />
-                                </button>
+                                </a>
                             </motion.div>
                         );
                     })}

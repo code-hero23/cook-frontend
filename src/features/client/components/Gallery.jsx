@@ -92,21 +92,16 @@ const Gallery = () => {
                     <p className="text-white text-xs font-bold line-clamp-2 mb-2">{img.caption}</p>
                   )}
 
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDownload(fullUrl, img.caption || `image-${img.id}.jpg`);
-                    }}
-                    disabled={isDownloading}
-                    className="relative z-20 w-full py-2.5 bg-white text-slate-900 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-indigo-50 transition-colors active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer shadow-lg"
+                  <a
+                    href={fullUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="relative z-20 w-full py-2.5 bg-white text-slate-900 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-indigo-50 transition-colors active:scale-95 cursor-pointer shadow-lg"
                   >
-                    {isDownloading ? (
-                      <Loader2 size={12} className="animate-spin" />
-                    ) : (
-                      <Download size={12} />
-                    )}
-                    {isDownloading ? "Saving..." : "Download"}
-                  </button>
+                    <Download size={12} />
+                    Download
+                  </a>
                 </div>
               </motion.div>
             );
