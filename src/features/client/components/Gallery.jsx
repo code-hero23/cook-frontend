@@ -91,7 +91,12 @@ const Gallery = () => {
 
                   <a
                     href={fullUrl}
-                    download
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      alert("Debug: " + fullUrl);
+                      window.location.href = fullUrl;
+                    }}
                     className="relative z-20 w-full py-3 bg-white text-slate-900 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 md:hover:bg-indigo-50 active:bg-indigo-100 transition-colors cursor-pointer shadow-lg touch-manipulation"
                   >
                     <Download size={14} />
