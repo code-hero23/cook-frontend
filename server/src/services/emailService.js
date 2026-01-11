@@ -11,10 +11,11 @@ const createTransporter = () => {
     }
 
     const smtpPort = parseInt(process.env.SMTP_PORT) || 465;
-    const isSecure = smtpPort === 465;
+    const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com';
+    const isGmail = smtpHost.toLowerCase().includes('gmail.com');
 
     const config = {
-        secure: isSecure,
+        secure: smtpPort === 465,
         pool: true,
         maxConnections: 5,
         maxMessages: 100,
@@ -22,20 +23,25 @@ const createTransporter = () => {
             user: process.env.SMTP_USER,
             pass: process.env.SMTP_PASS,
         },
-        connectionTimeout: 20000,
-        greetingTimeout: 15000,
-        socketTimeout: 45000,
+        // Aggressive connection settings for cloud environments
+        connectionTimeout: 30000,
+        greetingTimeout: 20000,
+        socketTimeout: 60000,
+        dnsTimeout: 10000,
+        debug: true, // Enable debug for production logs
+        logger: true,
         tls: {
-            // Do not fail on invalid certs - common in cloud proxies
-            rejectUnauthorized: false
+            rejectUnauthorized: false,
+            minVersion: 'TLSv1.2'
         }
     };
 
-    // Use service shortcut if no host provided - Nodemailer handles Gmail better this way
-    if (!process.env.SMTP_HOST) {
+    // FORCE service: 'gmail' if it's a Gmail address
+    // This is much more reliable as it triggers Nodemailer's internal Gmail logic
+    if (isGmail) {
         config.service = 'gmail';
     } else {
-        config.host = process.env.SMTP_HOST;
+        config.host = smtpHost;
         config.port = smtpPort;
     }
 

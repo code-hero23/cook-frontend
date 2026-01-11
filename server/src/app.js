@@ -84,7 +84,7 @@ app.get('/api/health/smtp', async (req, res) => {
         // Race verification against a more generous timeout
         const verifyPromise = transporter.verify();
         const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('SMTP Verification timed out after 30s')), 30000)
+            setTimeout(() => reject(new Error('SMTP Verification timed out after 40s')), 40000)
         );
 
         await Promise.race([verifyPromise, timeoutPromise]);
@@ -92,10 +92,11 @@ app.get('/api/health/smtp', async (req, res) => {
         res.json({
             status: 'ok',
             message: 'SMTP connection verified successfully',
-            config: {
-                host: process.env.SMTP_HOST || 'smtp.gmail.com',
-                port: process.env.SMTP_PORT || 587,
-                secure: process.env.SMTP_PORT == '465'
+            diagnostic: {
+                transporter: 'Created',
+                auth: process.env.SMTP_USER ? 'Present' : 'Missing',
+                port: process.env.SMTP_PORT || '465 (default)',
+                host: process.env.SMTP_HOST || 'smtp.gmail.com (default)'
             }
         });
     } catch (error) {
@@ -103,9 +104,10 @@ app.get('/api/health/smtp', async (req, res) => {
         res.status(500).json({
             status: 'error',
             message: error.message,
-            config: {
-                host: process.env.SMTP_HOST || 'smtp.gmail.com',
-                port: process.env.SMTP_PORT || 587
+            diagnostic: {
+                error: error.code || 'TIMEOUT',
+                port: process.env.SMTP_PORT || '465',
+                host: process.env.SMTP_HOST || 'smtp.gmail.com'
             }
         });
     }
