@@ -1,35 +1,102 @@
 import React from "react";
+import { motion } from "framer-motion";
+import {
+  Zap,
+  CheckCircle2,
+  MessageSquare,
+  FileText,
+  Image as ImageIcon,
+  Clock,
+  Layout
+} from "lucide-react";
 
 const formatDateTime = (isoString) => {
-  return new Date(isoString).toLocaleString("en-IN", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
+  const date = new Date(isoString);
+  return {
+    date: date.toLocaleDateString("en-IN", { day: '2-digit', month: 'short' }),
+    time: date.toLocaleTimeString("en-IN", { hour: '2-digit', minute: '2-digit' })
+  };
 };
 
-const ActivityFeed = ({ activity, dummyActivity }) => {
+const getCategoryIcon = (category) => {
+  switch (category?.toLowerCase()) {
+    case 'task': return <CheckCircle2 size={16} className="text-emerald-500" />;
+    case 'comment': return <MessageSquare size={16} className="text-blue-500" />;
+    case 'document': return <FileText size={16} className="text-amber-500" />;
+    case 'image': return <ImageIcon size={16} className="text-purple-500" />;
+    case 'update': return <Zap size={16} className="text-indigo-500" />;
+    default: return <Clock size={16} className="text-slate-400" />;
+  }
+};
 
-  // Merge: dynamic logs (top) + dummy logs (bottom)
-  const mergedActivity = [...activity, ...dummyActivity];
+const ActivityFeed = ({ activity = [], dummyActivity = [] }) => {
+  const mergedActivity = [...activity, ...dummyActivity].sort((a, b) => new Date(b.time) - new Date(a.time));
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow border">
-      <h2 className="text-xl font-semibold mb-4">Activity Feed</h2>
-
-      {mergedActivity.length === 0 && (
-        <p className="text-gray-500 text-sm">No activity yet.</p>
-      )}
-
-      <div className="space-y-4 max-h-[300px] overflow-y-auto pr-1">
-        {mergedActivity.map((log) => (
-          <div key={log.id} className="border-b pb-3">
-            <p className="font-medium">{log.message}</p>
-            <p className="text-xs text-gray-500">
-              {formatDateTime(log.time)}
-            </p>
+    <div className="max-w-4xl mx-auto space-y-8">
+      <div className="flex items-center justify-between gap-4 mb-2">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-100">
+            <Zap size={24} />
           </div>
-        ))}
+          <div>
+            <h2 className="text-2xl font-black text-slate-800 tracking-tight">Activity Stream</h2>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Real-time updates on your project</p>
+          </div>
+        </div>
       </div>
+
+      {mergedActivity.length === 0 ? (
+        <div className="bg-white/60 backdrop-blur-xl rounded-[2.5rem] p-12 border border-white/50 text-center shadow-xl shadow-slate-200/50">
+          <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-slate-300 mx-auto mb-4">
+            <Layout size={32} />
+          </div>
+          <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">No Activity Recorded</h3>
+          <p className="text-xs text-slate-300 font-bold mt-1">Updates will appear here as the project progresses.</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {mergedActivity.map((log, idx) => {
+            const { date, time } = formatDateTime(log.time);
+            return (
+              <motion.div
+                key={log.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.05 }}
+                className="group relative flex gap-6"
+              >
+                {/* Timeline Line */}
+                {idx !== mergedActivity.length - 1 && (
+                  <div className="absolute left-6 top-14 bottom-0 w-[2px] bg-slate-100 group-last:hidden" />
+                )}
+
+                {/* Date Bubble */}
+                <div className="flex flex-col items-center shrink-0 w-12 text-center">
+                  <span className="text-[10px] font-black text-indigo-600 uppercase tracking-tighter">{date.split(' ')[0]}</span>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{date.split(' ')[1]}</span>
+                </div>
+
+                {/* Content Card */}
+                <div className="flex-1 bg-white/70 backdrop-blur-xl p-5 rounded-3xl border border-white shadow-sm hover:shadow-md transition-all group-hover:border-indigo-100 relative mb-4">
+                  <div className="flex items-center justify-between gap-4 mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100 shadow-sm">
+                        {getCategoryIcon(log.category)}
+                      </div>
+                      <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">{log.category || 'System'}</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded-lg">{time}</span>
+                  </div>
+                  <p className="text-sm font-bold text-slate-700 leading-relaxed">
+                    {log.message}
+                  </p>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };

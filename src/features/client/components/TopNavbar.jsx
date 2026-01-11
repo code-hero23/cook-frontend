@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import useHaptics from "../../../shared/hooks/useHaptics";
 
-const TopNavbar = ({ setSelected, menuOpen, setMenuOpen }) => {
+const TopNavbar = ({ setSelected, menuOpen, setMenuOpen, handleLogout }) => {
   const navigate = useNavigate();
   const [showProfile, setShowProfile] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -36,11 +36,8 @@ const TopNavbar = ({ setSelected, menuOpen, setMenuOpen }) => {
 
   const formattedTime = currentTime.toLocaleString();
 
-  const handleLogout = () => {
-    trigger('heavy');
-    localStorage.removeItem("clientToken");
-    localStorage.removeItem("clientProject");
-    navigate("/client/login");
+  const onLogoutClick = () => {
+    handleLogout();
   };
 
   const handleToggleMenu = () => {
@@ -146,7 +143,7 @@ const TopNavbar = ({ setSelected, menuOpen, setMenuOpen }) => {
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={handleLogout}
+                  onClick={onLogoutClick}
                   className="w-full flex items-center justify-center gap-3 py-3.5 bg-rose-50 text-rose-600 rounded-2xl hover:bg-rose-100 transition-colors font-black text-xs uppercase tracking-widest"
                 >
                   <LogOut size={16} />

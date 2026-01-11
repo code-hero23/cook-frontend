@@ -14,8 +14,10 @@ import TopNavbar from "./components/TopNavbar";
 import Profile from "./components/Profile";
 import TermsPopup from "./components/TermsPopup";
 import useHaptics from "../../shared/hooks/useHaptics";
+import { useNavigate } from "react-router-dom";
 
 const App = () => {
+  const navigate = useNavigate();
   const [tasks, setTasks] = useState([]);
   const [activity, setActivity] = useState([]);
   const [selected, setSelected] = useState("overview");
@@ -103,6 +105,13 @@ const App = () => {
     setHasAcceptedTerms(true);
   };
 
+  const handleLogout = () => {
+    trigger('heavy');
+    localStorage.removeItem("clientToken");
+    localStorage.removeItem("clientProject");
+    navigate("/client/login");
+  };
+
   const slideVars = {
     initial: { opacity: 0, x: 20 },
     animate: { opacity: 1, x: 0 },
@@ -117,12 +126,13 @@ const App = () => {
         setSelected={setSelected}
         menuOpen={menuOpen}
         setMenuOpen={setMenuOpen}
+        handleLogout={handleLogout}
       />
 
-      <div className="flex pt-16 sm:pt-20 h-screen">
+      <div className="flex pt-16 sm:pt-20 h-[100dvh] overflow-hidden">
         {/* Desktop Sidebar */}
         <div className="hidden md:block w-72 border-r border-slate-200 bg-white/50 backdrop-blur-xl">
-          <Sidebar selected={selected} setSelected={setSelected} />
+          <Sidebar selected={selected} setSelected={setSelected} onLogout={handleLogout} />
         </div>
 
         {/* Mobile Sidebar Overlay */}
@@ -158,6 +168,7 @@ const App = () => {
                       setSelected(val);
                       setMenuOpen(false);
                     }}
+                    onLogout={handleLogout}
                   />
                 </div>
               </motion.div>
@@ -171,7 +182,7 @@ const App = () => {
             <motion.div
               key={selected}
               {...slideVars}
-              className="p-4 md:p-6 lg:p-8"
+              className="p-4 md:p-6 lg:p-8 pb-32 md:pb-12"
             >
               {selected === "overview" && <ProjectProgress tasks={tasks} />}
               {selected === "profile" && <Profile />}

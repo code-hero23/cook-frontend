@@ -9,10 +9,11 @@ import {
   Image as GalleryIcon,
   Calendar,
   FileText,
-  MessageSquare
+  MessageSquare,
+  LogOut
 } from "lucide-react";
 
-const Sidebar = ({ selected, setSelected }) => {
+const Sidebar = ({ selected, setSelected, onLogout }) => {
   const { trigger } = useHaptics();
 
   const menu = [
@@ -32,16 +33,16 @@ const Sidebar = ({ selected, setSelected }) => {
   };
 
   return (
-    <div className="h-full overflow-y-auto px-4 py-8 bg-white/50 backdrop-blur-xl">
+    <div className="h-full flex flex-col px-4 py-8 bg-white/50 backdrop-blur-xl">
 
-      <div className="mb-10 px-4">
+      <div className="mb-8 px-4">
         <h2 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">
           Menu
         </h2>
       </div>
 
       {/* Menu Items */}
-      <div className="space-y-2">
+      <div className="flex-1 space-y-2 overflow-y-auto custom-scrollbar">
         {menu.map((item) => {
           const isActive = selected === item.id;
           return (
@@ -72,16 +73,29 @@ const Sidebar = ({ selected, setSelected }) => {
         })}
       </div>
 
-      {/* Info Card */}
-      <div className="mt-12 p-5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-[2rem] text-white shadow-lg shadow-indigo-100 hidden md:block">
-        <p className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-2">Need Help?</p>
-        <p className="text-xs font-bold leading-relaxed mb-4">Our project managers are available to assist you.</p>
-        <button
-          onClick={() => handleSelect("feedback")}
-          className="w-full py-2 bg-white/20 backdrop-blur-md rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white/30 transition-colors"
+      {/* Logout & Support Section */}
+      <div className="mt-auto pt-6 space-y-4">
+        <motion.button
+          whileHover={{ x: 4 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={onLogout}
+          className="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-bold bg-rose-50 text-rose-600 hover:bg-rose-100 transition-all border border-rose-100 md:hidden"
         >
-          Contact Support
-        </button>
+          <LogOut size={20} />
+          <span>Logout Portal</span>
+        </motion.button>
+
+        {/* Info Card */}
+        <div className="p-5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-[2rem] text-white shadow-lg shadow-indigo-100 hidden md:block">
+          <p className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-2">Need Help?</p>
+          <p className="text-xs font-bold leading-relaxed mb-4">Our project managers are available to assist you.</p>
+          <button
+            onClick={() => handleSelect("feedback")}
+            className="w-full py-2 bg-white/20 backdrop-blur-md rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white/30 transition-colors"
+          >
+            Contact Support
+          </button>
+        </div>
       </div>
     </div>
   );
