@@ -9,17 +9,17 @@ const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const { subscribeToPush, isSubscribed, loading } = usePushNotifications(user?.id);
-  const { vibrateLight, vibrateSuccess } = useHaptics();
+  const { trigger } = useHaptics();
 
   const handleSidebarToggle = () => {
-    vibrateLight();
+    trigger('light');
     setSidebarOpen(!sidebarOpen);
   };
 
   const handleNotificationActivate = async () => {
-    vibrateLight();
+    trigger('light');
     await subscribeToPush();
-    if (!isSubscribed) vibrateSuccess(); // Trigger success haptic after subscription
+    if (!isSubscribed) trigger('success'); // Trigger success haptic after subscription
   };
 
   return (
