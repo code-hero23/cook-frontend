@@ -108,7 +108,7 @@ const Gallery = () => {
               <div
                 key={img.id}
                 onClick={() => setSelectedImage(img)}
-                className="group relative aspect-[4/5] overflow-hidden rounded-2xl bg-slate-100 border border-slate-200 shadow-sm cursor-pointer active:scale-95 transition-transform duration-200"
+                className="group relative aspect-[4/5] overflow-hidden rounded-2xl bg-slate-100 border border-slate-200 shadow-sm cursor-pointer transition-transform duration-200 touch-manipulation"
               >
                 <img
                   src={fullUrl}
