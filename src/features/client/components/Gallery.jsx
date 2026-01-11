@@ -117,7 +117,7 @@ const Gallery = () => {
                 />
 
                 {/* Overlay (NO pointer-events-none now) */}
-                <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-4">
+                <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-4 pointer-events-none">
                   {img.caption && (
                     <p className="text-white text-xs font-bold line-clamp-2 mb-2">
                       {img.caption}
@@ -131,7 +131,7 @@ const Gallery = () => {
                       e.stopPropagation();
                       handleDownload(fullUrl, img.id);
                     }}
-                    className="relative z-20 w-full py-3 bg-white text-slate-900 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 active:bg-indigo-100 transition-colors shadow-lg touch-manipulation cursor-pointer pointer-events-auto"
+                    className="relative z-50 w-full py-3 bg-white text-slate-900 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 active:bg-indigo-100 transition-colors shadow-lg touch-manipulation cursor-pointer pointer-events-auto"
                   >
                     {isDownloading ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
