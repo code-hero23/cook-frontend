@@ -90,12 +90,12 @@ const Navbar = ({ setSidebarOpen }) => {
       </div>
 
       {/* CENTER SEARCH - NOW VISIBLE EVERYWHERE */}
-      <div className="flex-1 max-w-xl px-1 sm:px-0 min-w-0"> {/* Added min-w-0 to prevent flex item overflow */}
+      <div className="flex-1 max-w-xl px-1 sm:px-0 min-w-0">
         <div className="relative group">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <Search
               className="text-gray-400 group-focus-within:text-[#FF7A00] transition-colors"
-              size={16}
+              size={14}
             />
           </div>
           <input
@@ -103,7 +103,7 @@ const Navbar = ({ setSidebarOpen }) => {
             placeholder={context.placeholder}
             value={searchValue}
             onChange={(e) => handleSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm 
+            className="w-full pl-8 pr-4 py-1.5 rounded-full text-[10px] sm:text-sm 
                        bg-white border border-gray-200
                        placeholder-gray-400 text-gray-900 
                        focus:ring-2 focus:ring-[#FF7A00]/50 focus:border-[#FF7A00] 
@@ -114,8 +114,7 @@ const Navbar = ({ setSidebarOpen }) => {
       </div>
 
       {/* RIGHT SECTION - COMPACT ON MOBILE */}
-      <div className="flex gap-2 sm:gap-5 items-center flex-shrink-0">
-        {/* Only show profile and logout on mobile if search is wide */}
+      <div className="flex gap-1.5 sm:gap-5 items-center flex-shrink-0">
         <div className="hidden sm:flex items-center gap-4">
           <button
             onClick={() => navigate("/employee/issues")}
@@ -131,16 +130,16 @@ const Navbar = ({ setSidebarOpen }) => {
 
         {/* Profile */}
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[#FF7A00] text-white rounded-full flex items-center justify-center text-xs sm:text-sm font-bold shadow-lg shadow-[#FF7A00]/20">
+          <div className="w-7 h-7 sm:w-10 sm:h-10 bg-[#FF7A00] text-white rounded-full flex items-center justify-center text-[10px] sm:text-sm font-bold shadow-lg shadow-[#FF7A00]/20 shrink-0">
             {getInitials(employee.name)}
           </div>
           <div className="hidden lg:block leading-tight">
-            <p className="text-sm font-semibold">{employee.name}</p>
+            <p className="text-sm font-semibold truncate max-w-[100px]">{employee.name}</p>
             <p className="text-[10px] text-gray-400">{employee.role}</p>
           </div>
         </div>
 
-        {/* Logout - Hidden on mobile, in sidebar there */}
+        {/* Logout - Hidden on mobile */}
         <button onClick={() => navigate("/login")} className="hidden md:block text-gray-400 hover:text-red-400 transition-colors p-1">
           <LogOut size={20} />
         </button>

@@ -134,7 +134,7 @@ const App = () => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setMenuOpen(false)}
-                className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[110] md:hidden"
+                className="fixed inset-0 top-20 bg-slate-900/40 backdrop-blur-md z-[110] md:hidden"
               />
               <motion.div
                 initial={{ x: "-100%" }}
@@ -171,7 +171,7 @@ const App = () => {
             <motion.div
               key={selected}
               {...slideVars}
-              className="p-0 md:p-4 lg:p-6"
+              className="p-4 md:p-6 lg:p-8"
             >
               {selected === "overview" && <ProjectProgress tasks={tasks} />}
               {selected === "profile" && <Profile />}

@@ -61,7 +61,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
       {sidebarOpen && (
         <div
           onClick={() => setSidebarOpen(false)}
-          className="fixed inset-0 bg-black/60 z-40 md:hidden"
+          className="fixed inset-0 bg-black/60 z-[90] md:hidden"
         />
       )}
 
@@ -74,7 +74,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
           flex flex-col transition-all duration-300 ease-in-out
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
           ${isCollapsed ? "md:w-20" : "md:w-64"}
-          md:translate-x-0 md:static md:relative overflow-visible
+          md:translate-x-0 md:relative overflow-visible
           z-[100] md:z-40
         `}
       >
