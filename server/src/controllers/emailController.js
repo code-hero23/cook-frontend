@@ -35,6 +35,13 @@ exports.sendEmail = async (req, res) => {
 
         // Return success response immediately once internal record is created
         // Background Gmail Relay (SYNCHRONIZED for Production Reliability)
+        const relayReceiverEmail = email.receiver?.email;
+        const relayEmailId = email.id;
+        const relaySubject = email.subject || "No Subject";
+        const relaySenderName = email.sender?.name || "Someone";
+        const relayContent = email.content || "";
+        const relayAttachments = attachments;
+
         if (!isDraft && relayReceiverEmail) {
             try {
                 console.log(`[EmailRelay] Starting awaited relay for message: ${relayEmailId} to ${relayReceiverEmail}`);
