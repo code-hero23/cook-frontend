@@ -67,7 +67,7 @@ const TopNavbar = ({ setSelected, menuOpen, setMenuOpen }) => {
           onClick={() => setSelected("overview")}
         />
         <div className="hidden sm:block h-8 w-[1px] bg-slate-200 flex-shrink-0"></div>
-        <div className="min-w-0 flex items-center">
+        <div className="hidden sm:flex items-center">
           <h2 className="text-sm sm:text-lg font-black tracking-tight text-slate-800 truncate px-2 max-w-[150px] sm:max-w-none">
             {clientName}
           </h2>
@@ -75,14 +75,14 @@ const TopNavbar = ({ setSelected, menuOpen, setMenuOpen }) => {
       </div>
 
       {/* RIGHT SIDE ICONS */}
-      <div className="relative flex items-center gap-2 sm:gap-6 flex-shrink-0">
+      <div className="relative flex items-center gap-3 sm:gap-6 flex-shrink-0">
         {/* Mobile Menu Button */}
         <motion.button
           whileTap={{ scale: 0.9 }}
           className="md:hidden p-2 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors"
           onClick={handleToggleMenu}
         >
-          <Menu size={22} className="text-slate-800" />
+          <Menu size={24} className="text-slate-800" />
         </motion.button>
 
         {/* Notification Bell */}

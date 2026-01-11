@@ -119,7 +119,7 @@ const App = () => {
         setMenuOpen={setMenuOpen}
       />
 
-      <div className="flex pt-16 sm:pt-20 h-[calc(100vh-4rem)] sm:h-[calc(100vh-5rem)]">
+      <div className="flex pt-16 sm:pt-20 h-screen">
         {/* Desktop Sidebar */}
         <div className="hidden md:block w-72 border-r border-slate-200 bg-white/50 backdrop-blur-xl">
           <Sidebar selected={selected} setSelected={setSelected} />
