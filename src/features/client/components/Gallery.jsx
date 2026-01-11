@@ -106,21 +106,28 @@ const Gallery = () => {
             return (
               <div
                 key={img.id}
-                onClick={() => setSelectedImage(img)}
-                className="group relative aspect-[4/5] overflow-hidden rounded-2xl bg-slate-100 border border-slate-200 shadow-sm cursor-pointer transition-transform duration-200 touch-manipulation"
+                className="group relative aspect-[4/5] overflow-hidden rounded-2xl bg-slate-100 border border-slate-200 shadow-sm transition-transform duration-200"
               >
                 <img
                   src={fullUrl}
                   alt={img.caption || "Site Image"}
-                  className="relative z-0 w-full h-full object-cover pointer-events-none"
+                  className="relative z-0 w-full h-full object-cover"
                   loading="lazy"
                 />
 
                 {img.caption && (
-                  <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/80 to-transparent p-4 pt-12">
+                  <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/80 to-transparent p-4 pt-12 pointer-events-none">
                     <p className="text-white text-[10px] font-bold line-clamp-2 uppercase tracking-wide">{img.caption}</p>
                   </div>
                 )}
+
+                {/* Click Catcher - Button for better mobile heuristics */}
+                <button
+                  type="button"
+                  className="absolute inset-0 z-50 w-full h-full cursor-pointer touch-manipulation opacity-0 pointer-events-auto"
+                  onClick={() => setSelectedImage(img)}
+                  aria-label="View Image"
+                />
               </div>
             );
           })}
