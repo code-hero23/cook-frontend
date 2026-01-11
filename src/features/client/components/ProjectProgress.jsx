@@ -7,21 +7,19 @@ import {
   Cell,
   ResponsiveContainer,
 } from "recharts";
-import { Lock, Unlock, CheckCircle, Clock, Zap, Target, Calendar } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Lock, Unlock, CheckCircle, Clock, Zap, Target, Calendar, ChevronRight } from "lucide-react";
+import useHaptics from "../../../shared/hooks/useHaptics";
 
 const ProjectProgress = ({ tasks = [] }) => {
-  // -------------------------------------------------------------------------
-  // 1. STATE INITIALIZATION
-  // -------------------------------------------------------------------------
   const [showTaskList, setShowTaskList] = useState(false);
   const [percentage, setPercentage] = useState(0);
   const [dayProgress, setDayProgress] = useState(0);
   const [paymentPercentage, setPaymentPercentage] = useState(0);
-  const [targetPaymentVal, setTargetPaymentVal] = useState(0); // Admin Unlocked Stage %
+  const [targetPaymentVal, setTargetPaymentVal] = useState(0);
+  const [projectData, setProjectData] = useState(null);
+  const { trigger } = useHaptics();
 
-  // -------------------------------------------------------------------------
-  // 2. DATA PROCESSING
-  // -------------------------------------------------------------------------
   const stages = [
     "Freezing Mail",
     "Approval of finalized designs",
@@ -29,98 +27,64 @@ const ProjectProgress = ({ tasks = [] }) => {
     "Installation",
   ];
 
-  const stageData = stages.map(s => {
+  const stageWeights = [15, 35, 40, 10];
+  const stageData = stages.map((s, index) => {
     const stageTasks = tasks.filter(t => t.stage === s);
     const completed = stageTasks.filter(t => t.status === "Completed").length;
     return {
       name: s,
       total: stageTasks.length,
       completed,
-      isDone: stageTasks.length > 0 && completed === stageTasks.length
+      isDone: stageTasks.length > 0 && completed === stageTasks.length,
+      weight: stageWeights[index]
     };
   });
 
   const totalStages = stageData.length;
   const completedStages = stageData.filter(s => s.isDone).length;
-
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter((t) => t.status === "Completed").length;
 
-  const [projectData, setProjectData] = useState(null);
-
-  // -------------------------------------------------------------------------
-  // 3. CORE LOGIC: WEIGHTED PROGRESS & CAPPING
-  // -------------------------------------------------------------------------
-
-  // Define weights for each stage (must sum to 100)
-  const stageWeights = [15, 35, 40, 10];
-
-  // Calculate weighted progress
-  // If a stage has 0 tasks, it contributes 0% to its weight.
   let weightedProgress = 0;
-  stageData.forEach((stage, index) => {
-    const weight = stageWeights[index] || 0;
+  stageData.forEach((stage) => {
     if (stage.total > 0) {
-      const stageCompletion = stage.completed / stage.total;
-      weightedProgress += stageCompletion * weight;
+      weightedProgress += (stage.completed / stage.total) * stage.weight;
     }
   });
 
   const taskPercentage = Math.round(weightedProgress);
-
-  // Progress is limited by the Admin's Unlocked Stage % (targetPaymentVal)
   const targetPercentage = Math.min(taskPercentage, targetPaymentVal || 0);
 
-  // Dynamic Timeline Logic
   const timelineDuration = projectData?.timelineDuration || 45;
   const today = new Date();
-
-  // New Logic: Timeline starts ONLY after "Approval of finalized designs" is complete
   const designStageName = "Approval of finalized designs";
   const designStage = stageData.find(s => s.name === designStageName);
   const designTasks = tasks.filter(t => t.stage === designStageName);
 
   let startDate = null;
-  let timelineLabel = "Pending Start";
-
   if (designStage && designStage.isDone) {
-    // Stage is done, find the latest completion time
     const completionTimes = designTasks
       .filter(t => t.completedAt)
       .map(t => new Date(t.completedAt).getTime());
-
     if (completionTimes.length > 0) {
-      // Use the latest task completion as the start date
       startDate = new Date(Math.max(...completionTimes));
     } else {
-      // Fallback for legacy data: Stage done but no timestamps -> Use Project Start Date
       startDate = projectData?.startDate ? new Date(projectData.startDate) : null;
     }
-    timelineLabel = "Active";
-  } else {
-    // Stage not done -> Timeline hasn't started
-    startDate = null;
   }
 
-  // Calculate Days Passed
   let daysPassed = 0;
   if (startDate) {
-    const diffTime = today - startDate; // Can be negative if started in future (unlikely)
-    // We only count if positive
+    const diffTime = today - startDate;
     if (diffTime > 0) {
       daysPassed = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     }
   }
 
-  // Cap daysPassed to be within 0 and timelineDuration range for progress bar logic
   const effectiveDaysPassed = Math.min(Math.max(0, daysPassed), timelineDuration);
-
   const daysLeft = Math.max(0, timelineDuration - effectiveDaysPassed);
   const daysPercentage = Math.round((effectiveDaysPassed / timelineDuration) * 100);
 
-  // -------------------------------------------------------------------------
-  // 4. SIDE EFFECTS (Data Fetching & Animations)
-  // -------------------------------------------------------------------------
   useEffect(() => {
     const project = JSON.parse(localStorage.getItem("clientProject") || "{}");
     if (project.projectCode) {
@@ -133,426 +97,297 @@ const ProjectProgress = ({ tasks = [] }) => {
     }
   }, []);
 
-  // Animate Main Progress Ring
   useEffect(() => {
-    if (percentage > targetPercentage) {
-      setPercentage(targetPercentage);
-      return;
-    }
+    setPercentage(targetPercentage);
+    setDayProgress(daysPercentage);
+    setPaymentPercentage(targetPaymentVal);
+  }, [targetPercentage, daysPercentage, targetPaymentVal]);
 
-    let start = 0;
-    const interval = setInterval(() => {
-      start++;
-      if (start <= targetPercentage) setPercentage(start);
-      else clearInterval(interval);
-    }, 20);
-    return () => clearInterval(interval);
-  }, [targetPercentage]);
-
-  // Animate Day Progress
-  useEffect(() => {
-    let start = 0;
-    const interval = setInterval(() => {
-      start++;
-      if (start <= daysPercentage) setDayProgress(start);
-      else clearInterval(interval);
-    }, 20);
-    return () => clearInterval(interval);
-  }, [daysPercentage]);
-
-  // Animate Payment/Admin Unlock Marker
-  useEffect(() => {
-    let start = 0;
-    const interval = setInterval(() => {
-      start++;
-      if (start <= targetPaymentVal) setPaymentPercentage(start);
-      else clearInterval(interval);
-    }, 20);
-    return () => clearInterval(interval);
-  }, [targetPaymentVal]);
-
-  const data = [
+  const pieData = [
     { name: "Completed", value: completedTasks },
     { name: "Pending", value: totalTasks - completedTasks },
   ];
 
-  const project = JSON.parse(localStorage.getItem("clientProject") || "{}");
-  const clientName = project.firstName ? `${project.firstName} ${project.lastName}` : "Client";
+  const clientName = projectData?.firstName ? `${projectData.firstName} ${projectData.lastName}` : "Client";
 
-  // -------------------------------------------------------------------------
-  // 5. RENDER
-  // -------------------------------------------------------------------------
+  const toggleViewTasks = () => {
+    trigger('medium');
+    setShowTaskList(!showTaskList);
+  };
 
   if (showTaskList) {
     return (
-      <div className="max-w-5xl mx-auto p-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 20 }}
+        className="max-w-5xl mx-auto p-4 md:p-8"
+      >
         <button
-          onClick={() => setShowTaskList(false)}
-          className="mb-6 px-6 py-2.5 bg-white text-indigo-600 font-bold rounded-xl shadow-md border border-indigo-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+          onClick={toggleViewTasks}
+          className="mb-8 flex items-center gap-2 px-6 py-3 bg-white/80 backdrop-blur-md text-indigo-600 font-black text-xs uppercase tracking-widest rounded-2xl shadow-xl shadow-indigo-100 border border-white transition-all transform hover:-translate-y-1 active:scale-95"
         >
           ← Back to Dashboard
         </button>
-        <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden">
+        <div className="bg-white/90 backdrop-blur-2xl rounded-[3rem] shadow-2xl border border-white/50 overflow-hidden">
           <TaskList tasks={tasks} />
         </div>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] p-0 font-sans text-slate-900 overflow-x-hidden">
-      {/* DEBUG BANNER */}
+    <div className="min-h-screen bg-[#f8fafc] p-4 md:p-8 space-y-8 max-w-7xl mx-auto">
 
+      {/* HEADER */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col md:flex-row md:items-center justify-between gap-6"
+      >
+        <div className="space-y-1">
+          <h1 className="text-3xl md:text-4xl font-black tracking-tighter text-slate-900">
+            Project Dashboard
+          </h1>
+          <div className="flex items-center gap-2 text-slate-500 font-bold text-sm bg-white/50 backdrop-blur-sm self-start px-3 py-1 rounded-full border border-white/50">
+            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+            Syncing updates for {clientName}
+          </div>
+        </div>
 
-      <div className="space-y-1 p-2 md:p-6 lg:p-8">
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-1000 px-2 sm:px-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-black tracking-tight text-slate-950">
-              Project Overview
-            </h1>
-            <p className="text-slate-500 mt-1 font-medium flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-              Real-time update for {clientName}
+        <div className="flex items-center gap-4">
+          <div className="bg-white/80 backdrop-blur-md p-3 rounded-2xl shadow-xl shadow-slate-200/50 border border-white flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+              <Calendar size={20} />
+            </div>
+            <div>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Status Date</p>
+              <p className="text-sm font-black text-slate-700">{new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* MAIN TRACKER */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="bg-white/70 backdrop-blur-2xl rounded-[3.5rem] p-6 md:p-10 shadow-2xl shadow-indigo-100/50 border border-white relative overflow-hidden group"
+      >
+        <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-indigo-100/40 to-purple-100/40 rounded-full blur-3xl -mr-32 -mt-32"></div>
+
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-8 relative z-10">
+          <div className="space-y-4">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-200">
+              <Target size={14} />
+              Current Status
+            </div>
+            <h2 className="text-2xl font-black text-slate-800 tracking-tight leading-tight">Master Project Timeline</h2>
+            <p className="text-slate-500 font-semibold max-w-md leading-relaxed text-sm">Track your interior journey across four distinct phases of excellence.</p>
+          </div>
+          <div className="text-left md:text-right">
+            <div className="text-6xl font-black text-slate-900 tracking-tighter tabular-nums flex items-baseline gap-1 md:justify-end leading-none">
+              {percentage}<span className="text-3xl text-indigo-600">%</span>
+            </div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mt-3">Overall Progress</p>
+          </div>
+        </div>
+
+        {/* PROGRESS BAR */}
+        <div className="relative mb-16 px-2">
+          <div className="relative h-24 w-full bg-slate-100 rounded-3xl border-8 border-white overflow-hidden shadow-inner">
+            {/* Fill */}
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${percentage}%` }}
+              transition={{ duration: 1.5, ease: "easeOut" }}
+              className="absolute top-0 left-0 h-full bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-end"
+              style={{
+                boxShadow: "inset 0 0 40px rgba(0,0,0,0.1)",
+                opacity: percentage > paymentPercentage ? 0.7 : 1,
+                filter: percentage > paymentPercentage ? 'grayscale(0.4)' : 'none'
+              }}
+            >
+              <div className="h-full w-full absolute inset-0 shimmer-glass opacity-30"></div>
+            </motion.div>
+
+            {/* Stage Indicators */}
+            <div className="absolute inset-0 flex">
+              {[
+                { w: '15%', threshold: 15, label: "Design" },
+                { w: '35%', threshold: 50, label: "Finalize" },
+                { w: '40%', threshold: 90, label: "Production" },
+                { w: '10%', threshold: 100, label: "Fit-out" }
+              ].map((s, i) => {
+                const isLocked = targetPaymentVal < s.threshold;
+                const isDone = stageData[i]?.isDone;
+                return (
+                  <div key={i} style={{ width: s.w }} className={`relative border-r border-white/20 flex flex-col items-center justify-center transition-all duration-500 ${isLocked ? 'bg-slate-950/5' : ''}`}>
+                    <div className="relative z-10 flex flex-col items-center gap-2">
+                      {isDone ? (
+                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="p-1 bg-white rounded-full shadow-lg">
+                          <CheckCircle size={20} className="text-green-500" />
+                        </motion.div>
+                      ) : isLocked ? (
+                        <Lock size={16} className="text-slate-400/50" />
+                      ) : (
+                        <Unlock size={16} className="text-white/80 animate-pulse" />
+                      )}
+                      <span className={`text-[10px] font-black uppercase tracking-widest ${isDone || (!isLocked && percentage >= (i * 25)) ? 'text-white' : 'text-slate-400'}`}>
+                        {s.label}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* STATUS CARD */}
+        <motion.div
+          whileHover={{ y: -5 }}
+          className={`relative z-10 p-6 rounded-3xl border flex flex-col md:flex-row items-center gap-6 transition-all duration-500
+            ${percentage > paymentPercentage
+              ? 'bg-amber-50/80 border-amber-100 shadow-xl shadow-amber-100/50'
+              : 'bg-indigo-50/80 border-indigo-100 shadow-xl shadow-indigo-100/50'}`}
+        >
+          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 
+            ${percentage > paymentPercentage ? 'bg-amber-100 text-amber-600' : 'bg-indigo-100 text-indigo-600'}`}>
+            {percentage > paymentPercentage ? <Clock size={28} className="animate-spin-slow" /> : <Zap size={28} />}
+          </div>
+          <div className="flex-1 text-center md:text-left space-y-1">
+            <h4 className={`text-xs font-black uppercase tracking-widest ${percentage > paymentPercentage ? 'text-amber-700' : 'text-indigo-700'}`}>
+              {percentage > paymentPercentage ? 'Pending Milestone Activation' : 'Lifecycle Health: Optimal'}
+            </h4>
+            <p className="text-sm font-bold text-slate-600 leading-relaxed">
+              {percentage > paymentPercentage
+                ? "Your project is ahead of the official activation schedule. We'll unlock the next phase shortly."
+                : "Your project is progressing smoothly within the active lifecycle phase. Everything is on track!"}
             </p>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="bg-white p-2.5 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
-                <Calendar size={18} />
+          <button
+            onClick={toggleViewTasks}
+            className={`px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg transform active:scale-95 flex items-center gap-2
+              ${percentage > paymentPercentage
+                ? 'bg-amber-600 text-white shadow-amber-200 hover:bg-amber-700'
+                : 'bg-indigo-600 text-white shadow-indigo-200 hover:bg-indigo-700'}`}
+          >
+            Explore Tasks
+            <ChevronRight size={16} />
+          </button>
+        </motion.div>
+      </motion.div>
+
+      {/* SECONDARY GRID */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+        {/* TIMELINE CARD */}
+        <motion.div
+          whileHover={{ y: -5 }}
+          className="lg:col-span-2 bg-white/70 backdrop-blur-2xl p-8 rounded-[3rem] shadow-xl shadow-slate-200/50 border border-white group"
+        >
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-pink-50 text-pink-500 flex items-center justify-center shadow-inner">
+                <Clock size={24} />
               </div>
               <div>
-                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider leading-none">Today</p>
-                <p className="text-sm font-bold text-slate-700">{new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                <h3 className="text-xl font-black text-slate-800 tracking-tight">Timeline Health</h3>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Delivery Window</p>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* Phase Enablement Unified Tracker */}
-        <div className="bg-white rounded-[2.5rem] p-4 md:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-slate-50 relative overflow-hidden group animate-in zoom-in-95 duration-1000">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50/50 rounded-full blur-3xl -mr-32 -mt-32"></div>
-
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6 relative z-10">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 text-[10px] font-black uppercase tracking-widest mb-3">
-                <Target size={12} />
-                Project Lifecycle
-              </div>
-              <h2 className="text-xl font-black text-slate-800 tracking-tight">Overall Project Progress</h2>
-              <p className="text-slate-500 mt-1 font-medium">Your project progress synced with key milestones</p>
-            </div>
-            <div className="text-left md:text-right">
-              <div className="text-5xl font-black text-slate-900 tracking-tighter tabular-nums flex items-baseline gap-1 md:justify-end">
-                {percentage}<span className="text-2xl text-indigo-600">%</span>
-              </div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">Physical Completion</p>
+            <div className="text-right px-6 py-2 bg-slate-50 rounded-2xl border border-slate-100">
+              <span className="text-2xl font-black text-slate-900 leading-none">{daysLeft}</span>
+              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Days Remaining</p>
             </div>
           </div>
 
-          <div className="relative mb-16 px-2">
-            {/* The Main Track */}
-            <div className={`relative h-20 w-full bg-slate-100 rounded-[1.25rem] border-4 border-slate-50 overflow-hidden shadow-inner`}>
-              {/* Progress Fill with Liquid Effect */}
-              <div
-                className="liquid-progress absolute top-0 left-0 h-full transition-all duration-1000 ease-out flex items-center justify-end"
-                style={{
-                  width: `${percentage}%`,
-                  filter: percentage > paymentPercentage ? 'hue-rotate(30deg) saturate(0.8)' : 'none',
-                  opacity: percentage > paymentPercentage ? 0.8 : 1
-                }}
-              >
-                <div className="h-full w-full bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 relative overflow-hidden">
-                  <div className="shimmer-effect absolute inset-0"></div>
-                </div>
-              </div>
-
-              {/* Glass Dividers & Stage Labels */}
-              <div className="absolute inset-0 flex">
-                {[
-                  { w: '15%', threshold: 15, label: "Phase 01" },
-                  { w: '35%', threshold: 50, label: "Phase 02" },
-                  { w: '40%', threshold: 90, label: "Phase 03" },
-                  { w: '10%', threshold: 100, label: "Phase 04" }
-                ].map((s, i) => {
-                  const isLocked = targetPaymentVal < s.threshold;
-                  const isDone = stageData[i]?.isDone; // ✅ Use actual stage completion
-                  return (
-                    <div key={i} style={{ width: s.w }} className={`relative border-r border-white/10 group/stage transition-colors duration-500 ${isLocked ? 'bg-slate-900/[0.02]' : 'bg-transparent'}`}>
-                      <div className="absolute inset-0 flex flex-col items-center justify-center p-2">
-                        <div className={`mb-1 transition-all duration-500 transform ${isDone ? 'scale-110 drop-shadow-glow' : ''}`}>
-                          {isDone ? (
-                            <CheckCircle size={22} className="text-white drop-shadow-[0_2px_8px_rgba(255,255,255,0.4)]" />
-                          ) : isLocked ? (
-                            <Lock size={18} className="text-slate-400/40" />
-                          ) : (
-                            <Unlock size={18} className="text-indigo-200 animate-pulse" />
-                          )}
-                        </div>
-                        <span className={`text-[10px] sm:text-xs font-black uppercase tracking-widest leading-none ${isDone ? 'text-white' : isLocked ? 'text-slate-400' : 'text-indigo-900/60'}`}>
-                          {s.label}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Dynamic Milestone Labels */}
-            <div className="grid grid-cols-[15%_35%_40%_10%] mt-6 text-center">
-              {[
-                { label: "Freezing Mail", target: "15%" },
-                { label: "Final Docs", target: "50%" },
-                { label: "Production", target: "90%" },
-                { label: "Installation", target: "100%" }
-              ].map((s, i) => (
-                <div key={i} className={`flex flex-col items-center px-1 ${i > 0 ? 'border-l border-slate-100' : ''}`}>
-                  <span className="text-xs sm:text-sm font-black text-slate-800 tracking-tight">Phase {i + 1} ➝ {s.label}</span>
-                  <span className="text-[10px] sm:text-xs font-bold text-slate-400 mt-0.5">{s.target} Target</span>
-                </div>
-              ))}
-            </div>
+          <div className="relative h-6 bg-slate-100 rounded-full overflow-hidden shadow-inner mb-6 border-4 border-white">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${dayProgress}%` }}
+              className="absolute top-0 left-0 h-full bg-gradient-to-r from-pink-500 to-rose-500 flex items-center justify-end px-2"
+            >
+              <div className="w-2 h-2 bg-white rounded-full shadow-lg"></div>
+            </motion.div>
           </div>
 
-          {/* Smart Status Indicator Card */}
-          <div className="relative z-10 animate-in slide-in-from-bottom-6 duration-1000 delay-300">
-            <div className={`flex flex-col md:flex-row items-center gap-4 px-8 py-5 rounded-3xl border transition-all duration-500 ${percentage > paymentPercentage ? 'bg-amber-50 border-amber-100 shadow-[0_10px_30px_rgba(245,158,11,0.1)]' : 'bg-green-50 border-green-100 shadow-[0_10px_30px_rgba(34,197,94,0.1)]'}`}>
-              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${percentage > paymentPercentage ? 'bg-amber-100 text-amber-600' : 'bg-green-100 text-green-600'}`}>
-                {percentage > paymentPercentage ? <Clock size={24} className="animate-spin-slow" /> : <Zap size={24} className="animate-bounce-subtle" />}
-              </div>
-              <div className="flex-1 text-center md:text-left">
-                <p className={`text-xs font-black uppercase tracking-widest ${percentage > paymentPercentage ? 'text-amber-700' : 'text-green-700'}`}>
-                  {percentage > paymentPercentage ? 'Phase Awaiting Activation' : 'Lifecycle Health: Optimal'}
-                </p>
-                <p className="text-sm font-bold text-slate-600 mt-1">
-                  {percentage > paymentPercentage
-                    ? "Execution speed is excellent. We are awaiting the next milestone approval to officially unlock the upcoming production phase."
-                    : "Your project is humming along perfectly within the current active lifecycle phase."}
-                </p>
-              </div>
-              <button
-                onClick={() => setShowTaskList(true)}
-                className={`px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all duration-300 transform hover:-translate-y-1 active:scale-95 ${percentage > paymentPercentage ? 'bg-amber-600 text-white shadow-lg shadow-amber-200 hover:bg-amber-700' : 'bg-green-600 text-white shadow-lg shadow-green-200 hover:bg-green-700'}`}
-              >
-                View Detailed Tasks
-              </button>
+          <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.2em]">
+            <span className="text-slate-400">Project Launch</span>
+            <div className="flex items-center gap-2 px-4 py-1.5 bg-pink-50 text-pink-600 rounded-full border border-pink-100">
+              <span className="w-1.5 h-1.5 rounded-full bg-pink-500 animate-pulse"></span>
+              Day {effectiveDaysPassed} of {timelineDuration}
             </div>
+            <span className="text-slate-400">Handoff Goal</span>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Secondary Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* ANALYTICS PIE */}
+        <motion.div
+          whileHover={{ y: -5 }}
+          className="bg-white/70 backdrop-blur-2xl p-8 rounded-[3rem] shadow-xl shadow-slate-200/50 border border-white relative overflow-hidden"
+        >
+          <h3 className="text-xl font-black text-slate-800 tracking-tight mb-1">Deliverables</h3>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-8">Data Breakdown</p>
 
-          {/* Timeline & Stats Card */}
-          <div className="lg:col-span-2 space-y-8 animate-in slide-in-from-left-6 duration-1000">
-            {/* Timeline Bar */}
-            <div className="bg-white p-8 rounded-[2rem] shadow-[0_10px_30px_rgba(0,0,0,0.03)] border border-slate-50 overflow-hidden group">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-pink-50 text-pink-500 flex items-center justify-center">
-                    <Clock size={18} />
-                  </div>
-                  <h3 className="font-black text-slate-800 tracking-tight">Project Timeline</h3>
-                </div>
-                <div className="text-right">
-                  <span className="text-xl font-black text-slate-900">{daysLeft}</span>
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Days left</span>
-                </div>
-              </div>
+          <div className="h-[240px] relative">
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-4">
+              <span className="text-4xl font-black text-slate-900 tracking-tighter leading-none">{completedTasks}</span>
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">of {totalTasks} Done</span>
+            </div>
 
-              <div className="relative h-4 bg-slate-100 rounded-full overflow-hidden shadow-inner">
-                <div
-                  className="absolute top-0 left-0 h-full bg-gradient-to-r from-pink-500 to-rose-500 transition-all duration-1000 ease-out flex items-center justify-end px-2"
-                  style={{ width: `${dayProgress}%` }}
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={pieData}
+                  dataKey="value"
+                  innerRadius={75}
+                  outerRadius={95}
+                  paddingAngle={8}
+                  stroke="none"
+                  cornerRadius={12}
+                  startAngle={90}
+                  endAngle={450}
                 >
-                  <div className="w-1.5 h-1.5 bg-white rounded-full shadow-[0_0_8px_rgba(255,255,255,0.8)]"></div>
-                </div>
-              </div>
-
-              <div className="flex justify-between mt-4">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Day 1</p>
-                <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-pink-500 animate-pulse"></span>
-                  <p className="text-[10px] font-black text-pink-600 uppercase tracking-widest">
-                    {startDate ? `Current: Day ${effectiveDaysPassed}` : `Waiting for Design Approval`}
-                  </p>
-                </div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Day {timelineDuration}</p>
-              </div>
-            </div>
-
-            {/* Quick Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div onClick={() => setShowTaskList(true)} className="bg-white p-8 rounded-[2rem] shadow-[0_10px_30px_rgba(0,0,0,0.03)] border border-slate-50 cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-green-50 rounded-full -mr-8 -mt-8 transition-all duration-500 group-hover:scale-150"></div>
-                <div className="relative z-10 flex items-center gap-6">
-                  <div className="w-14 h-14 rounded-2xl bg-green-100 text-green-600 flex items-center justify-center shrink-0">
-                    <CheckCircle size={28} />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Stages Completed</p>
-                    <p className="text-4xl font-black text-slate-900 tabular-nums">{completedStages}<span className="text-lg text-slate-300 ml-1">/ {totalStages}</span></p>
-                  </div>
-                </div>
-              </div>
-
-              <div onClick={() => setShowTaskList(true)} className="bg-white p-8 rounded-[2rem] shadow-[0_10px_30px_rgba(0,0,0,0.03)] border border-slate-50 cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50 rounded-full -mr-8 -mt-8 transition-all duration-500 group-hover:scale-150"></div>
-                <div className="relative z-10 flex items-center gap-6">
-                  <div className="w-14 h-14 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
-                    <Target size={28} />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Deliverables</p>
-                    <p className="text-4xl font-black text-slate-900 tabular-nums">{completedTasks}<span className="text-lg text-slate-300 ml-1">/ {totalTasks}</span></p>
-                  </div>
-                </div>
-              </div>
-            </div>
+                  <Cell fill="url(#blueGrad)" />
+                  <Cell fill="#f1f5f9" />
+                </Pie>
+                <defs>
+                  <linearGradient id="blueGrad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#6366f1" />
+                    <stop offset="100%" stopColor="#a855f7" />
+                  </linearGradient>
+                </defs>
+              </PieChart>
+            </ResponsiveContainer>
           </div>
-
-          {/* Progress Dial Card */}
-          <div className="bg-white p-8 rounded-[2rem] shadow-[0_10px_30px_rgba(0,0,0,0.03)] border border-slate-50 animate-in slide-in-from-right-6 duration-1000 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50/30 rounded-full blur-2xl -mr-16 -mt-16"></div>
-
-            <h3 className="font-black text-slate-800 tracking-tight text-xl mb-1 relative z-10">Task Analytics</h3>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 relative z-10">Deliverables breakdown</p>
-
-            <div className="h-[280px] relative">
-              {/* Central Label overlay */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-6">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Progress</span>
-                <span className="text-5xl font-black text-slate-900 tracking-tighter tabular-nums leading-none">
-                  {percentage}<span className="text-xl text-indigo-600 font-bold">%</span>
-                </span>
-                <span className="text-[10px] font-bold text-indigo-500/60 uppercase tracking-widest mt-2">{completedTasks} / {totalTasks} Tasks</span>
-              </div>
-
-              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-                <PieChart margin={{ top: 0, right: 10, bottom: 20, left: 10 }}>
-                  <Pie
-                    data={[{ value: 1 }]}
-                    dataKey="value"
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={80}
-                    outerRadius={100}
-                    stroke="none"
-                    isAnimationActive={false}
-                    fill="#f1f5f9"
-                  />
-                  <Pie
-                    data={data}
-                    dataKey="value"
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={80}
-                    outerRadius={100}
-                    paddingAngle={0}
-                    stroke="none"
-                    cornerRadius={10}
-                    startAngle={90}
-                    endAngle={450}
-                  >
-                    <Cell fill="url(#pieDashGradient)" className="drop-shadow-[0_6px_15px_rgba(99,102,241,0.4)]" />
-                    <Cell fill="transparent" />
-                  </Pie>
-                  <defs>
-                    <linearGradient id="pieDashGradient" x1="0" y1="0" x2="1" y2="1">
-                      <stop offset="0%" stopColor="#6366f1" />
-                      <stop offset="100%" stopColor="#8b5cf6" />
-                    </linearGradient>
-                  </defs>
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-
-            <div className="flex justify-center gap-8 mt-4">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-indigo-500 shadow-[0_0_10px_#6366f1]"></div>
-                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Done</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-slate-200"></div>
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pending</span>
-              </div>
-            </div>
-          </div>
-
-        </div>
+        </motion.div>
       </div>
 
-      <style>
-        {`
-        @keyframes shimmer {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-        
-        .shimmer-effect {
+      <style>{`
+        .shimmer-glass {
           background: linear-gradient(
             90deg,
             rgba(255, 255, 255, 0) 0%,
-            rgba(255, 255, 255, 0.2) 50%,
+            rgba(255, 255, 255, 0.4) 50%,
             rgba(255, 255, 255, 0) 100%
           );
-          animation: shimmer 2s infinite;
+          background-size: 200% 100%;
+          animation: shimmer 3s infinite linear;
         }
-
-        .liquid-progress {
-          box-shadow: 0 0 20px rgba(79, 70, 229, 0.4);
-          position: relative;
+        @keyframes shimmer {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
         }
-
-        .liquid-progress::after {
-          content: "";
-          position: absolute;
-          top: 0;
-          right: 0;
-          height: 100%;
-          width: 20px;
-          background: white;
-          filter: blur(8px);
-          opacity: 0.3;
-        }
-
-        .drop-shadow-glow {
-          filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.6));
-        }
-
         .animate-spin-slow {
-          animation: spin 3s linear infinite;
+          animation: spin 8s linear infinite;
         }
-
         @keyframes spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
         }
-
-        .animate-bounce-subtle {
-          animation: bounce-subtle 1.5s ease-in-out infinite;
-        }
-
-        @keyframes bounce-subtle {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-3px); }
-        }
-
-        /* Standard Tailwind missing animations */
-        .fade-in { animation: fadeIn 1s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        .slide-in-from-top-4 { animation: slideInTop 1s ease-out forwards; }
-        @keyframes slideInTop { from { transform: translateY(-1rem); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-        .slide-in-from-bottom-4 { animation: slideInBottom 1s ease-out forwards; }
-        @keyframes slideInBottom { from { transform: translateY(1rem); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-        .zoom-in-95 { animation: zoomIn 1s ease-out forwards; }
-        @keyframes zoomIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        `}
-      </style>
+      `}</style>
     </div>
   );
 };

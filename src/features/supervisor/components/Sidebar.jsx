@@ -4,6 +4,7 @@ import axios from '../../../shared/utils/axios';
 import {
     LayoutDashboard,
     ClipboardList,
+    Briefcase,
     MapPin,
     LogOut,
     Settings,
@@ -53,6 +54,7 @@ const Sidebar = ({ isOpen, setIsOpen, isMobile }) => {
 
     const links = [
         { label: 'Dashboard', path: '/supervisor/dashboard', icon: LayoutDashboard },
+        { label: 'Projects', path: '/supervisor/projects', icon: Briefcase },
         { label: 'My Tasks', path: '/supervisor/tasks', icon: ClipboardList },
         { label: 'Team Chat', path: '/supervisor/chat', icon: MessageSquare },
         { label: 'Email', path: '/supervisor/email', icon: Mail },

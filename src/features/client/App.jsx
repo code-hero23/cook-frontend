@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "../../shared/utils/axios";
+import { motion, AnimatePresence } from "framer-motion";
 
 import Sidebar from "./components/Sidebar";
 import ProjectProgress from "./components/ProjectProgress";
@@ -11,13 +12,8 @@ import Timeline from "./components/Timeline";
 import RaiseTicket from "./components/RaiseTicket";
 import TopNavbar from "./components/TopNavbar";
 import Profile from "./components/Profile";
-
-
-import { dummyActivityFeed } from "./data/dummyActivityFeed";
-// Removed initialTasks import
-
 import TermsPopup from "./components/TermsPopup";
-
+import useHaptics from "../../shared/hooks/useHaptics";
 
 const App = () => {
   const [tasks, setTasks] = useState([]);
@@ -25,6 +21,8 @@ const App = () => {
   const [selected, setSelected] = useState("overview");
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { trigger } = useHaptics();
+
   const [hasAcceptedTerms, setHasAcceptedTerms] = useState(() => {
     return localStorage.getItem("termsAccepted") === "true";
   });
@@ -41,8 +39,6 @@ const App = () => {
         ]);
 
         setTasks(taskRes.data);
-
-        // Transform backend logs to frontend format
         const formattedActivity = activityRes.data.map(log => ({
           id: log.id,
           message: log.message,
@@ -63,11 +59,11 @@ const App = () => {
     }
   }, [project.id]);
 
-  // ---- Task Status Toggle + Activity Logging ----
   const toggleStatus = async (id) => {
     const task = tasks.find(t => t.id === id);
     if (!task) return;
 
+    trigger('medium');
     const newStatus = task.status === "Completed" ? "Pending" : "Completed";
 
     try {
@@ -102,12 +98,20 @@ const App = () => {
   };
 
   const handleAcceptTerms = () => {
+    trigger('success');
     localStorage.setItem("termsAccepted", "true");
     setHasAcceptedTerms(true);
   };
 
+  const slideVars = {
+    initial: { opacity: 0, x: 20 },
+    animate: { opacity: 1, x: 0 },
+    exit: { opacity: 0, x: -20 },
+    transition: { duration: 0.4, ease: "circOut" }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-[#F1F5F9] font-sans selection:bg-indigo-100 selection:text-indigo-900 overflow-x-hidden">
 
       <TopNavbar
         setSelected={setSelected}
@@ -115,54 +119,95 @@ const App = () => {
         setMenuOpen={setMenuOpen}
       />
 
-      <div className="flex pt-20">
-        <div className="hidden md:block w-64 border-r bg-white min-h-screen">
+      <div className="flex pt-20 h-[calc(100vh-5rem)]">
+        {/* Desktop Sidebar */}
+        <div className="hidden md:block w-72 border-r border-slate-200 bg-white/50 backdrop-blur-xl">
           <Sidebar selected={selected} setSelected={setSelected} />
         </div>
 
-        {menuOpen && (
-          <div
-            onClick={() => setMenuOpen(false)}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden"
-          ></div>
-        )}
+        {/* Mobile Sidebar Overlay */}
+        <AnimatePresence>
+          {menuOpen && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setMenuOpen(false)}
+                className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[110] md:hidden"
+              />
+              <motion.div
+                initial={{ x: "-100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "-100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                className="fixed top-20 bottom-0 left-0 w-72 bg-white z-[120] md:hidden shadow-2xl rounded-r-3xl overflow-hidden border-r border-white/50"
+              >
+                <div
+                  className="h-full"
+                  onTouchStart={(e) => { window._touchStartX = e.touches[0].clientX; }}
+                  onTouchMove={(e) => {
+                    const touchEndX = e.touches[0].clientX;
+                    const diff = window._touchStartX - touchEndX;
+                    if (diff > 50) { trigger('light'); setMenuOpen(false); }
+                  }}
+                >
+                  <Sidebar
+                    selected={selected}
+                    setSelected={(val) => {
+                      setSelected(val);
+                      setMenuOpen(false);
+                    }}
+                  />
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
 
-        <div
-          className={`fixed top-20 bottom-0 left-0 w-64 bg-white z-50 transform transition-transform duration-300 md:hidden
-  ${menuOpen ? "translate-x-0" : "-translate-x-full"}`}
-          onTouchStart={(e) => {
-            window._touchStartX = e.touches[0].clientX;
-          }}
-          onTouchMove={(e) => {
-            const touchEndX = e.touches[0].clientX;
-            const diff = window._touchStartX - touchEndX;
-            if (diff > 70) {
-              setMenuOpen(false);
-            }
-          }}
-        >
-          <Sidebar
-            selected={selected}
-            setSelected={(val) => {
-              setSelected(val);
-              setMenuOpen(false);
-            }}
-          />
-        </div>
-
-        <div className="flex-1 overflow-y-auto min-h-screen">
-          {selected === "overview" && <ProjectProgress tasks={tasks} />}
-          {selected === "profile" && <Profile />}
-          {selected === "tasks" && <TaskList tasks={tasks} toggleStatus={toggleStatus} />}
-          {selected === "activity" && <ActivityFeed activity={activity} dummyActivity={[]} />}
-          {selected === "gallery" && <Gallery />}
-          {selected === "documents" && <Documents />}
-          {selected === "timeline" && <Timeline tasks={tasks} />}
-          {selected === "feedback" && <RaiseTicket />}
+        {/* Main Content Area */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar bg-slate-50/30">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={selected}
+              {...slideVars}
+              className="p-0 md:p-4 lg:p-6"
+            >
+              {selected === "overview" && <ProjectProgress tasks={tasks} />}
+              {selected === "profile" && <Profile />}
+              {selected === "tasks" && <TaskList tasks={tasks} toggleStatus={toggleStatus} />}
+              {selected === "activity" && <ActivityFeed activity={activity} dummyActivity={[]} />}
+              {selected === "gallery" && <Gallery />}
+              {selected === "documents" && <Documents />}
+              {selected === "timeline" && <Timeline tasks={tasks} />}
+              {selected === "feedback" && <RaiseTicket />}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
 
-      {!hasAcceptedTerms && <TermsPopup onAccept={handleAcceptTerms} />}
+      <AnimatePresence>
+        {!hasAcceptedTerms && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-lg"
+          >
+            <TermsPopup onAccept={handleAcceptTerms} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { 
+          background: #E2E8F0; 
+          border-radius: 10px; 
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #CBD5E1; }
+      `}</style>
     </div>
   );
 };

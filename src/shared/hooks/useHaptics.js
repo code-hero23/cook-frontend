@@ -1,36 +1,37 @@
 import { useCallback } from 'react';
 
 /**
- * useHaptics Hook
- * Provides a standardized way to trigger haptic feedback (vibration) on supported devices (Android).
- * 
- * Usage:
- * const { vibrateLight, vibrateMedium, vibrateSuccess } = useHaptics();
+ * Hook for triggered haptic feedback on mobile devices.
+ * Uses navigator.vibrate for Android.
+ * For iOS, we rely on Framer Motion's scale-down effects for visual haptics
+ * since the Web Vibrations API is not supported on iOS Safari.
  */
 const useHaptics = () => {
-    const vibrate = useCallback((pattern) => {
-        if (typeof window !== 'undefined' && 'navigator' in window && 'vibrate' in navigator) {
-            try {
-                navigator.vibrate(pattern);
-            } catch (e) {
-                // Silently fail if vibration isn't supported or fails
+    const trigger = useCallback((type = 'light') => {
+        if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+            switch (type) {
+                case 'light':
+                    navigator.vibrate(10);
+                    break;
+                case 'medium':
+                    navigator.vibrate(20);
+                    break;
+                case 'heavy':
+                    navigator.vibrate(35);
+                    break;
+                case 'success':
+                    navigator.vibrate([10, 30, 10]);
+                    break;
+                case 'error':
+                    navigator.vibrate([20, 50, 20]);
+                    break;
+                default:
+                    navigator.vibrate(10);
             }
         }
     }, []);
 
-    const vibrateLight = useCallback(() => vibrate(10), [vibrate]);
-    const vibrateMedium = useCallback(() => vibrate(20), [vibrate]);
-    const vibrateHeavy = useCallback(() => vibrate(50), [vibrate]);
-    const vibrateSuccess = useCallback(() => vibrate([10, 30, 20]), [vibrate]);
-    const vibrateError = useCallback(() => vibrate([50, 50, 50]), [vibrate]);
-
-    return {
-        vibrateLight,
-        vibrateMedium,
-        vibrateHeavy,
-        vibrateSuccess,
-        vibrateError
-    };
+    return { trigger };
 };
 
 export default useHaptics;

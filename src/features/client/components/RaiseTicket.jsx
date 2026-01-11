@@ -1,31 +1,37 @@
 import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import axios from "../../../shared/utils/axios"; // Use shared axios instance
-import { Upload, X, FileText, Image as ImageIcon, Send, Filter, ChevronDown, ChevronUp } from "lucide-react";
+import axios from "../../../shared/utils/axios";
+import {
+  Upload,
+  X,
+  FileText,
+  Image as ImageIcon,
+  Send,
+  Filter,
+  ChevronDown,
+  ChevronUp,
+  MessageSquare,
+  AlertCircle
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import TicketDetailModal from "./TicketDetailModal";
+import useHaptics from "../../../shared/hooks/useHaptics";
 
 const RaiseTicket = () => {
-  // Form state
+  const { trigger } = useHaptics();
   const [issue, setIssue] = useState("");
   const [priority, setPriority] = useState("Medium");
   const [category, setCategory] = useState("Support");
   const [file, setFile] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Tickets state
   const [tickets, setTickets] = useState([]);
   const [filterStatus, setFilterStatus] = useState("All");
   const [sortBy, setSortBy] = useState("Newest First");
-
-  // Modal State
   const [selectedTicket, setSelectedTicket] = useState(null);
 
-  // Get Project ID from Client Context/Storage
   const project = JSON.parse(localStorage.getItem("clientProject") || "{}");
   const projectId = project.id;
-  const apiUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
-  // Load tickets from API
   useEffect(() => {
     if (projectId) {
       const fetchTickets = async () => {
@@ -42,16 +48,16 @@ const RaiseTicket = () => {
   }, [projectId]);
 
   const priorityColors = {
-    Low: "bg-green-100 text-green-700 border-green-300",
-    Medium: "bg-yellow-100 text-yellow-700 border-yellow-300",
-    High: "bg-orange-100 text-orange-700 border-orange-300",
-    Urgent: "bg-red-100 text-red-700 border-red-300",
+    Low: "bg-green-50 text-green-600 border-green-100",
+    Medium: "bg-amber-50 text-amber-600 border-amber-100",
+    High: "bg-orange-50 text-orange-600 border-orange-100",
+    Urgent: "bg-rose-50 text-rose-600 border-rose-100",
   };
 
   const statusColors = {
-    Open: "bg-blue-100 text-blue-700 border-blue-300",
-    "In Progress": "bg-purple-100 text-purple-700 border-purple-300",
-    Resolved: "bg-green-100 text-green-700 border-green-300",
+    Open: "bg-indigo-50 text-indigo-600 border-indigo-100",
+    "In Progress": "bg-purple-50 text-purple-600 border-purple-100",
+    Resolved: "bg-emerald-50 text-emerald-600 border-emerald-100",
   };
 
   const handleFileChange = (e) => {
@@ -61,45 +67,34 @@ const RaiseTicket = () => {
         toast.error("File size must be less than 5MB");
         return;
       }
+      trigger('light');
       setFile(selectedFile);
-      toast.success("File selected");
+      toast.success("File attached");
     }
   };
 
   const removeFile = () => {
     setFile(null);
-    toast.success("File removed");
-  };
-
-  const validateForm = () => {
-    if (issue.trim().length < 20) {
-      toast.error("Issue description must be at least 20 characters");
-      return false;
-    }
-    return true;
+    trigger('light');
   };
 
   const handleSubmit = async () => {
-    if (!validateForm()) return;
-    if (!projectId) {
-      toast.error("Project Session Invalid. Please Login Again.");
+    if (issue.trim().length < 20) {
+      toast.error("Please provide more detail (min 20 chars)");
       return;
     }
 
+    trigger('medium');
     setIsSubmitting(true);
 
     try {
       let attachmentData = null;
-
-      // 1. Upload File if exists
       if (file) {
         const formData = new FormData();
         formData.append('files', file);
-
         const uploadRes = await axios.post('/upload', formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
-
         const uploadedFile = uploadRes.data[0];
         attachmentData = {
           name: uploadedFile.name,
@@ -108,11 +103,10 @@ const RaiseTicket = () => {
         };
       }
 
-      // 2. Create Ticket
       const ticketPayload = {
         subject: category + " Request",
         description: issue,
-        email: project.clientEmail || "", // Auto-fetched
+        email: project.clientEmail || "",
         priority,
         category,
         projectId,
@@ -120,304 +114,238 @@ const RaiseTicket = () => {
       };
 
       const res = await axios.post('/tickets', ticketPayload);
-      const newTicket = res.data;
+      setTickets((prev) => [res.data, ...prev]);
 
-      setTickets((prev) => [newTicket, ...prev]);
-
-      // Clear form
       setIssue("");
       setPriority("Medium");
       setCategory("Support");
       setFile(null);
 
-      toast.success(`✅ Ticket created successfully!`);
+      trigger('success');
+      toast.success(`Success! Ticket created.`);
 
     } catch (error) {
       console.error("Submit Error:", error);
-      toast.error("Failed to submit ticket. Please try again.");
+      toast.error("Failed to submit. Try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Filter and sort tickets
-  const filteredTickets = tickets
+  const sortedTickets = [...tickets]
     .filter((t) => filterStatus === "All" || t.status === filterStatus)
     .sort((a, b) => {
-      if (sortBy === "Newest First") {
-        return new Date(b.createdAt) - new Date(a.createdAt);
-      } else if (sortBy === "Oldest First") {
-        return new Date(a.createdAt) - new Date(b.createdAt);
-      } else if (sortBy === "Priority") {
-        const priorityOrder = { Urgent: 4, High: 3, Medium: 2, Low: 1 };
-        return priorityOrder[b.priority] - priorityOrder[a.priority];
+      if (sortBy === "Newest First") return new Date(b.createdAt) - new Date(a.createdAt);
+      if (sortBy === "Oldest First") return new Date(a.createdAt) - new Date(b.createdAt);
+      if (sortBy === "Priority") {
+        const order = { Urgent: 4, High: 3, Medium: 2, Low: 1 };
+        return order[b.priority] - order[a.priority];
       }
       return 0;
     });
-
-  const formatDate = (isoString) => {
-    const date = new Date(isoString);
-    return date.toLocaleDateString() + " " + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
-
-  const formatFileSize = (bytes) => {
-    if (bytes < 1024) return bytes + " B";
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
-    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
-  };
-
-  const charCount = issue.length;
-  const charMin = 20;
-  const isCharCountValid = charCount >= charMin;
 
   const handleTicketUpdate = (ticketId, updatedComments) => {
     setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, comments: updatedComments } : t));
   };
 
   return (
-    <div className="min-h-[calc(100vh-6rem)] lg:h-[calc(100vh-6rem)] bg-gray-100 p-4 h-auto">
-      <div className="max-w-7xl mx-auto lg:h-full h-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <div className="max-w-7xl mx-auto p-4 md:p-10 lg:h-[calc(100vh-6rem)] flex flex-col lg:flex-row gap-8 overflow-hidden">
 
-        {/* Left Panel: Raise New Ticket Form */}
-        <div className="lg:col-span-4 bg-white rounded-xl shadow-lg border flex flex-col lg:h-full h-auto overflow-hidden">
-          <div className="p-6 border-b bg-gray-50">
-            <h2 className="text-xl font-bold text-gray-800">New Ticket</h2>
-            <p className="text-xs text-gray-500 mt-1">
-              Submit a new issue to support.
-            </p>
+      {/* FORM PANEL */}
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        className="lg:w-1/3 bg-white/60 backdrop-blur-xl rounded-[2.5rem] border border-white/50 shadow-2xl shadow-slate-200/50 flex flex-col overflow-hidden shrink-0"
+      >
+        <div className="p-8 border-b border-white/50 bg-indigo-600/5">
+          <div className="flex items-center gap-4 mb-2">
+            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-100">
+              <MessageSquare size={20} />
+            </div>
+            <h2 className="text-xl font-black text-slate-800 tracking-tight">Support Desk</h2>
           </div>
-
-          <div className="p-6 overflow-y-auto flex-1">
-
-            {/* Priority and Category */}
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  Priority <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={priority}
-                  onChange={(e) => setPriority(e.target.value)}
-                  className="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
-                >
-                  <option value="Low">Low</option>
-                  <option value="Medium">Medium</option>
-                  <option value="High">High</option>
-                  <option value="Urgent">Urgent</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  Category <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
-                >
-                  <option value="Bug">Bug</option>
-                  <option value="Feature">Feature</option>
-                  <option value="Support">Support</option>
-                  <option value="Question">Question</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Issue Description */}
-            <div className="mb-2">
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
-                Description <span className="text-red-500">*</span>
-              </label>
-              <textarea
-                rows="5"
-                value={issue}
-                onChange={(e) => setIssue(e.target.value)}
-                placeholder="Describe your issue..."
-                className="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition resize-none"
-              />
-              <div className={`text-xs mt-1 text-right ${isCharCountValid ? 'text-green-600' : 'text-red-500'}`}>
-                {charCount} / {charMin}
-              </div>
-            </div>
-
-            {/* File Upload */}
-            <div className="mb-6">
-              <label className="block text-xs font-semibold text-gray-700 mb-2">
-                Attachment
-              </label>
-
-              {!file ? (
-                <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition">
-                  <Upload className="w-5 h-5 text-gray-400 mb-1" />
-                  <span className="text-xs text-gray-500">Upload File</span>
-                  <input
-                    type="file"
-                    onChange={handleFileChange}
-                    accept="image/*,.pdf,.doc,.docx"
-                    className="hidden"
-                  />
-                </label>
-              ) : (
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
-                  <div className="flex items-center gap-3 overflow-hidden">
-                    {file.type.startsWith("image/") ? (
-                      <ImageIcon className="w-5 h-5 text-indigo-600 shrink-0" />
-                    ) : (
-                      <FileText className="w-5 h-5 text-indigo-600 shrink-0" />
-                    )}
-                    <div className="truncate">
-                      <p className="text-xs font-medium text-gray-700 truncate">{file.name}</p>
-                      <p className="text-[10px] text-gray-500">{formatFileSize(file.size)}</p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={removeFile}
-                    className="p-1 hover:bg-gray-200 rounded-full transition"
-                  >
-                    <X className="w-4 h-4 text-red-500" />
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Submit Button */}
-            <button
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white py-2.5 rounded-lg text-sm font-semibold transition flex items-center justify-center gap-2"
-            >
-              {isSubmitting ? (
-                "Submitting..."
-              ) : (
-                <>
-                  <Send className="w-4 h-4" />
-                  Submit Ticket
-                </>
-              )}
-            </button>
-          </div>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-relaxed">Submit your queries directly to our operations team.</p>
         </div>
 
-        {/* Right Panel: My Tickets Section */}
-        <div className="lg:col-span-8 bg-white rounded-xl shadow-lg border flex flex-col lg:h-full h-auto overflow-hidden">
-          <div className="p-6 border-b bg-gray-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h2 className="text-xl font-bold text-gray-800">My Tickets</h2>
-              <p className="text-xs text-gray-500 mt-1">Track your support requests</p>
-            </div>
-
-            {/* Compact Filter Controls */}
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <Filter className="w-3 h-3 text-gray-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
-                <select
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
-                  className="pl-8 pr-3 py-1.5 border rounded-lg text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
-                >
-                  <option value="All">All Status</option>
-                  <option value="Open">Open</option>
-                  <option value="In Progress">In Progress</option>
-                  <option value="Resolved">Resolved</option>
-                </select>
-              </div>
-
+        <div className="p-8 space-y-6 overflow-y-auto flex-1 custom-scrollbar">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Urgency</label>
               <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="px-3 py-1.5 border rounded-lg text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
+                value={priority}
+                onChange={(e) => setPriority(e.target.value)}
+                className="w-full bg-white/80 border border-slate-100 rounded-2xl px-4 py-3 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none transition-all shadow-sm"
               >
-                <option value="Newest First">Newest</option>
-                <option value="Oldest First">Oldest</option>
-                <option value="Priority">Priority</option>
+                {["Low", "Medium", "High", "Urgent"].map(p => <option key={p} value={p}>{p}</option>)}
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Type</label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full bg-white/80 border border-slate-100 rounded-2xl px-4 py-3 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none transition-all shadow-sm"
+              >
+                {["Support", "Bug", "Feature", "Question"].map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
           </div>
 
-          {/* Scrollable Tickets List */}
-          <div className="flex-1 overflow-y-auto p-6 bg-gray-50/50">
-            {filteredTickets.length === 0 ? (
-              <div className="text-center py-20">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <FileText className="w-8 h-8 text-gray-300" />
-                </div>
-                <p className="text-gray-500 font-medium">No tickets found</p>
-                <p className="text-xs text-gray-400 mt-1">
-                  Submitted tickets will appear here
-                </p>
-              </div>
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Description</label>
+            <textarea
+              value={issue}
+              onChange={(e) => setIssue(e.target.value)}
+              placeholder="How can we help you today?"
+              className="w-full bg-white/80 border border-slate-100 rounded-[1.5rem] px-5 py-4 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none transition-all shadow-sm h-40 resize-none placeholder:text-slate-300"
+            />
+            <div className="flex justify-between px-1">
+              <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Min 20 characters</p>
+              <p className={`text-[9px] font-black uppercase tracking-widest ${issue.length >= 20 ? 'text-green-500' : 'text-rose-400'}`}>
+                {issue.length} / 20
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Supporting Media</label>
+            {!file ? (
+              <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-slate-200 rounded-[1.5rem] bg-slate-50/50 cursor-pointer hover:bg-indigo-50/30 hover:border-indigo-200 transition-all group">
+                <Upload className="w-5 h-5 text-slate-300 group-hover:text-indigo-500 mb-1" />
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-indigo-600">Attach Evidence</span>
+                <input type="file" onChange={handleFileChange} className="hidden" />
+              </label>
             ) : (
-              <div className="space-y-3">
-                {filteredTickets.map((ticket) => (
-                  <div
-                    key={ticket.id}
-                    onClick={() => setSelectedTicket(ticket)}
-                    className="bg-white border rounded-lg p-4 hover:shadow-md hover:border-indigo-200 transition duration-200 cursor-pointer group"
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-start gap-4">
-                      {/* Status Badge */}
-                      <div className="shrink-0">
-                        <span
-                          className={`px-2.5 py-0.5 text-[10px] uppercase tracking-wider font-bold rounded-full border ${statusColors[ticket.status]}`}
-                        >
-                          {ticket.status}
-                        </span>
-                      </div>
-
-                      {/* Content */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="text-sm font-semibold text-gray-800 truncate group-hover:text-indigo-600 transition-colors">
-                            {ticket.ticketId}
-                          </h3>
-                          <span className="text-gray-300">•</span>
-                          <span className={`text-xs font-medium px-2 py-0.5 rounded ${priorityColors[ticket.priority].replace('border', '')} bg-opacity-50`}>
-                            {ticket.priority}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-2 text-xs text-gray-500 mb-3">
-                          <span>{ticket.category}</span>
-                          <span>•</span>
-                          <span>{formatDate(ticket.createdAt)}</span>
-                        </div>
-
-                        <div className="text-sm text-gray-600 line-clamp-1">
-                          {ticket.description}
-                        </div>
-
-                        {/* New Footer */}
-                        <div className="mt-2 flex items-center justify-between">
-                          <span className="text-xs text-indigo-500 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                            View Details & Chat →
-                          </span>
-                          {(ticket.comments?.length > 0) && (
-                            <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                              {ticket.comments.length} comments
-                            </span>
-                          )}
-                        </div>
-
-                      </div>
-                    </div>
+              <div className="p-4 bg-indigo-600 rounded-2xl flex items-center justify-between shadow-lg shadow-indigo-100">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-white shrink-0">
+                    {file.type.startsWith('image/') ? <ImageIcon size={16} /> : <FileText size={16} />}
                   </div>
-                ))}
+                  <p className="text-xs font-black text-white truncate px-1">{file.name}</p>
+                </div>
+                <button onClick={removeFile} className="p-1.5 bg-white/20 hover:bg-rose-500 rounded-lg text-white transition-colors">
+                  <X size={14} />
+                </button>
               </div>
             )}
           </div>
+
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-indigo-200 hover:bg-indigo-700 disabled:bg-slate-300 disabled:shadow-none transition-all flex items-center justify-center gap-3"
+          >
+            {isSubmitting ? "Processing..." : <><Send size={16} /> Dispatch Ticket</>}
+          </motion.button>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Detail Modal */}
-      {selectedTicket && (
-        <TicketDetailModal
-          ticket={selectedTicket}
-          onClose={() => setSelectedTicket(null)}
-          onUpdate={handleTicketUpdate}
-        />
-      )}
+      {/* TICKETS FEED */}
+      <motion.div
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        className="flex-1 bg-white/40 backdrop-blur-xl rounded-[2.5rem] border border-white/50 shadow-2xl shadow-slate-200/50 flex flex-col overflow-hidden"
+      >
+        <div className="p-8 border-b border-white/50 bg-slate-50/50 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <h2 className="text-xl font-black text-slate-800 tracking-tight">Active Inquiries</h2>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Track your open & historical requests</p>
+          </div>
 
+          <div className="flex items-center gap-3">
+            <div className="bg-white/80 p-1 rounded-xl border border-slate-100 flex items-center shadow-sm">
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="bg-transparent text-[10px] font-black uppercase tracking-widest px-3 py-1.5 outline-none text-slate-600 cursor-pointer"
+              >
+                {["All", "Open", "In Progress", "Resolved"].map(s => <option key={s} value={s}>{s} Status</option>)}
+              </select>
+            </div>
+            <div className="bg-white/80 p-1 rounded-xl border border-slate-100 flex items-center shadow-sm">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="bg-transparent text-[10px] font-black uppercase tracking-widest px-3 py-1.5 outline-none text-slate-600 cursor-pointer"
+              >
+                {["Newest First", "Oldest First", "Priority"].map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar space-y-4">
+          {sortedTickets.length === 0 ? (
+            <div className="h-full flex flex-col items-center justify-center text-center p-10">
+              <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-200 mb-4 border border-slate-100">
+                <AlertCircle size={32} />
+              </div>
+              <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">Workspace Empty</h3>
+              <p className="text-xs text-slate-300 font-bold mt-1">No support tickets found matching your filters.</p>
+            </div>
+          ) : (
+            sortedTickets.map((t) => (
+              <motion.div
+                layout
+                key={t.id}
+                onClick={() => { trigger('light'); setSelectedTicket(t); }}
+                whileHover={{ y: -4, scale: 1.01 }}
+                className="bg-white/70 backdrop-blur-md p-6 rounded-[2rem] border border-white shadow-sm hover:shadow-xl hover:shadow-indigo-50/50 transition-all cursor-pointer group flex flex-col md:flex-row md:items-center gap-6"
+              >
+                <div className={`w-14 h-14 rounded-2xl shrink-0 flex items-center justify-center border font-black text-[10px] uppercase tracking-tighter ${statusColors[t.status] || 'bg-slate-50 text-slate-400'}`}>
+                  {t.status}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-3 mb-1">
+                    <h4 className="text-sm font-black text-slate-800 tracking-tight group-hover:text-indigo-600 transition-colors">{t.ticketId}</h4>
+                    <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border ${priorityColors[t.priority]}`}>
+                      {t.priority}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 font-bold line-clamp-1">{t.description}</p>
+                  <div className="flex items-center gap-4 mt-3">
+                    <div className="flex items-center gap-1.5 text-slate-400">
+                      <Calendar size={12} />
+                      <span className="text-[9px] font-black uppercase tracking-widest">{new Date(t.createdAt).toLocaleDateString()}</span>
+                    </div>
+                    <div className="w-1 h-1 bg-slate-200 rounded-full"></div>
+                    <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">{t.category}</span>
+                  </div>
+                </div>
+                <div className="hidden md:flex flex-col items-end gap-2">
+                  {t.comments?.length > 0 && (
+                    <div className="flex items-center gap-1.5 px-3 py-1 bg-slate-50 rounded-full text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                      <MessageSquare size={10} />
+                      {t.comments.length}
+                    </div>
+                  )}
+                  <ChevronRight className="text-slate-300 group-hover:text-indigo-400 transition-colors" size={20} />
+                </div>
+              </motion.div>
+            ))
+          )}
+        </div>
+
+        <AnimatePresence>
+          {selectedTicket && (
+            <TicketDetailModal
+              ticket={selectedTicket}
+              onClose={() => setSelectedTicket(null)}
+              onUpdate={handleTicketUpdate}
+            />
+          )}
+        </AnimatePresence>
+      </motion.div>
+
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { 
+          background: #E2E8F0; 
+          border-radius: 10px; 
+        }
+      `}</style>
     </div>
   );
 };
