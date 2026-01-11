@@ -72,11 +72,8 @@ const Gallery = () => {
             const isDownloading = downloadingId === img.id;
 
             return (
-              <motion.div
+              <div
                 key={img.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: idx * 0.05 }}
                 className="group relative aspect-[4/5] overflow-hidden rounded-2xl bg-slate-100 border border-slate-200 shadow-sm"
               >
                 <img
@@ -95,17 +92,13 @@ const Gallery = () => {
                   <a
                     href={fullUrl}
                     download
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      console.log("Download link tapped");
-                    }}
-                    className="relative z-20 w-full py-3 bg-white text-slate-900 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 md:hover:bg-indigo-50 active:bg-indigo-50 transition-colors active:scale-95 cursor-pointer shadow-lg touch-manipulation"
+                    className="relative z-20 w-full py-3 bg-white text-slate-900 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 md:hover:bg-indigo-50 active:bg-indigo-100 transition-colors cursor-pointer shadow-lg touch-manipulation"
                   >
                     <Download size={14} />
-                    Save
+                    Save Now
                   </a>
                 </div>
-              </motion.div>
+              </div>
             );
           })}
         </div>
