@@ -112,7 +112,7 @@ const Gallery = () => {
                 <img
                   src={fullUrl}
                   alt={img.caption || "Site Image"}
-                  className="relative z-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  className="relative z-0 w-full h-full object-cover transition-transform duration-700 md:group-hover:scale-110"
                   loading="lazy"
                 />
 
@@ -131,7 +131,7 @@ const Gallery = () => {
                       e.stopPropagation();
                       handleDownload(fullUrl, img.id);
                     }}
-                    className="relative z-20 w-full py-3 bg-white text-slate-900 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 active:bg-indigo-100 transition-colors shadow-lg touch-manipulation"
+                    className="relative z-20 w-full py-3 bg-white text-slate-900 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 active:bg-indigo-100 transition-colors shadow-lg touch-manipulation cursor-pointer pointer-events-auto"
                   >
                     {isDownloading ? (
                       <Loader2 className="w-4 h-4 animate-spin" />

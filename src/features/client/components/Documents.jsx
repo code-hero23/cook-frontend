@@ -31,10 +31,18 @@ const Documents = () => {
 
     const handleDownload = (docUrl) => {
         trigger('medium');
-        // Direct navigation is most reliable for mobile
-        // The server sets Content-Disposition: attachment
-        window.open(docUrl, '_blank');
-        trigger('success');
+        try {
+            const link = document.createElement("a");
+            link.href = docUrl;
+            link.target = "_blank";
+            link.rel = "noopener";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            trigger('success');
+        } catch (e) {
+            console.error("Download failed", e);
+        }
     };
 
     if (!projectId) return null;
@@ -75,7 +83,7 @@ const Documents = () => {
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: idx * 0.05 }}
-                                className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all group"
+                                className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm md:hover:shadow-md transition-all group"
                             >
                                 <div className="shrink-0 w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 font-bold">
                                     <File size={20} />
@@ -95,12 +103,11 @@ const Documents = () => {
 
                                 <a
                                     href={fullUrl}
-                                    download
                                     onClick={(e) => {
                                         e.preventDefault();
-                                        window.location.href = fullUrl;
+                                        handleDownload(fullUrl);
                                     }}
-                                    className="shrink-0 w-12 h-12 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 md:hover:bg-indigo-600 md:hover:text-white active:bg-indigo-100 transition-all active:scale-95 touch-manipulation pointer-events-auto"
+                                    className="shrink-0 w-12 h-12 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 md:hover:bg-indigo-600 md:hover:text-white active:bg-indigo-100 transition-all touch-manipulation pointer-events-auto cursor-pointer"
                                 >
                                     <Download size={20} />
                                 </a>
