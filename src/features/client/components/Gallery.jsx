@@ -103,8 +103,8 @@ const Gallery = () => {
                   loading="lazy"
                 />
 
-                {/* Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-4">
+                {/* Overlay - Always visible on mobile, hover on desktop */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-4">
                   {img.caption && (
                     <p className="text-white text-xs font-bold line-clamp-2 mb-2">{img.caption}</p>
                   )}
