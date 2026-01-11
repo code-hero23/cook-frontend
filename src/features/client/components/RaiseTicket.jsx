@@ -11,7 +11,9 @@ import {
   ChevronDown,
   ChevronUp,
   MessageSquare,
-  AlertCircle
+  AlertCircle,
+  Calendar,
+  ChevronRight
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import TicketDetailModal from "./TicketDetailModal";

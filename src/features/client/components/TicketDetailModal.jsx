@@ -50,7 +50,7 @@ const TicketDetailModal = ({ ticket, onClose, onUpdate }) => {
     };
 
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[300] flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
 
                 {/* Header */}
@@ -59,7 +59,7 @@ const TicketDetailModal = ({ ticket, onClose, onUpdate }) => {
                         <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
                             {ticket.ticketId}
                             <span className={`px-2 py-0.5 text-xs rounded-full border ${ticket.status === 'Resolved' ? 'bg-green-100 text-green-700 border-green-200' :
-                                    'bg-blue-100 text-blue-700 border-blue-200'
+                                'bg-blue-100 text-blue-700 border-blue-200'
                                 }`}>
                                 {ticket.status}
                             </span>
@@ -124,8 +124,8 @@ const TicketDetailModal = ({ ticket, onClose, onUpdate }) => {
 
                                             <div className={`max-w-[80%] space-y-1 ${isAdmin ? 'items-start' : 'items-end flex flex-col'}`}>
                                                 <div className={`px-4 py-2.5 rounded-2xl text-sm ${isAdmin
-                                                        ? 'bg-white border text-gray-700 rounded-tl-none shadow-sm'
-                                                        : 'bg-indigo-600 text-white rounded-tr-none shadow-md'
+                                                    ? 'bg-white border text-gray-700 rounded-tl-none shadow-sm'
+                                                    : 'bg-indigo-600 text-white rounded-tr-none shadow-md'
                                                     }`}>
                                                     {msg.content}
                                                 </div>

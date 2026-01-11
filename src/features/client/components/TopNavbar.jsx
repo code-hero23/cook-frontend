@@ -54,7 +54,7 @@ const TopNavbar = ({ setSelected, menuOpen, setMenuOpen }) => {
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-[100] h-20 bg-white/80 backdrop-blur-xl border-b border-white/20 shadow-lg flex items-center justify-between px-4 md:px-6">
+    <div className="fixed top-0 left-0 right-0 z-[100] h-16 sm:h-20 bg-white/80 backdrop-blur-xl border-b border-white/20 shadow-lg flex items-center justify-between px-4 md:px-6">
 
       {/* LEFT SIDE - LOGO & CLIENT NAME */}
       <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0 min-w-0">
@@ -63,12 +63,12 @@ const TopNavbar = ({ setSelected, menuOpen, setMenuOpen }) => {
           whileTap={{ scale: 0.95 }}
           src="/FINAL_LOGO.png"
           alt="Cookscape Logo"
-          className="h-10 sm:h-12 md:h-14 object-contain flex-shrink-0 cursor-pointer"
+          className="h-8 sm:h-12 md:h-14 object-contain flex-shrink-0 cursor-pointer"
           onClick={() => setSelected("overview")}
         />
         <div className="hidden sm:block h-8 w-[1px] bg-slate-200 flex-shrink-0"></div>
         <div className="min-w-0 flex items-center">
-          <h2 className="text-sm sm:text-lg font-black tracking-tight text-slate-800 truncate px-2">
+          <h2 className="text-sm sm:text-lg font-black tracking-tight text-slate-800 truncate px-2 max-w-[150px] sm:max-w-none">
             {clientName}
           </h2>
         </div>

@@ -119,7 +119,7 @@ const App = () => {
         setMenuOpen={setMenuOpen}
       />
 
-      <div className="flex pt-20 h-[calc(100vh-5rem)]">
+      <div className="flex pt-16 sm:pt-20 h-[calc(100vh-4rem)] sm:h-[calc(100vh-5rem)]">
         {/* Desktop Sidebar */}
         <div className="hidden md:block w-72 border-r border-slate-200 bg-white/50 backdrop-blur-xl">
           <Sidebar selected={selected} setSelected={setSelected} />
@@ -134,14 +134,14 @@ const App = () => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setMenuOpen(false)}
-                className="fixed inset-0 top-20 bg-slate-900/40 backdrop-blur-md z-[110] md:hidden"
+                className="fixed inset-0 top-16 sm:top-20 bg-slate-900/40 backdrop-blur-md z-[110] md:hidden"
               />
               <motion.div
                 initial={{ x: "-100%" }}
                 animate={{ x: 0 }}
                 exit={{ x: "-100%" }}
                 transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                className="fixed top-20 bottom-0 left-0 w-72 bg-white z-[120] md:hidden shadow-2xl rounded-r-3xl overflow-hidden border-r border-white/50"
+                className="fixed top-16 sm:top-20 bottom-0 left-0 w-72 bg-white z-[120] md:hidden shadow-2xl rounded-r-3xl overflow-hidden border-r border-white/50"
               >
                 <div
                   className="h-full"
