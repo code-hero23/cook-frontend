@@ -10,10 +10,13 @@ const createTransporter = () => {
         return null;
     }
 
+    const smtpPort = parseInt(process.env.SMTP_PORT) || 587;
+    const isSecure = smtpPort === 465;
+
     return nodemailer.createTransport({
         host: process.env.SMTP_HOST || 'smtp.gmail.com',
-        port: parseInt(process.env.SMTP_PORT) || 587,
-        secure: process.env.SMTP_PORT == '465', // true for 465, false for other ports
+        port: smtpPort,
+        secure: isSecure, // true for 465, false for 587
         pool: true,
         maxConnections: 5,
         maxMessages: 100,
@@ -21,8 +24,9 @@ const createTransporter = () => {
             user: process.env.SMTP_USER,
             pass: process.env.SMTP_PASS,
         },
-        connectionTimeout: 10000,
-        greetingTimeout: 5000,
+        connectionTimeout: 15000, // Increased to 15s for production
+        greetingTimeout: 10000,   // Increased to 10s
+        socketTimeout: 30000,     // Added socket timeout
     });
 };
 
