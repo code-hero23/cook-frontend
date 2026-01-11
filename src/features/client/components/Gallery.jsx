@@ -94,13 +94,15 @@ const Gallery = () => {
 
                   <a
                     href={fullUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
+                    download
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      console.log("Download link tapped");
+                    }}
                     className="relative z-20 w-full py-3 bg-white text-slate-900 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 md:hover:bg-indigo-50 active:bg-indigo-50 transition-colors active:scale-95 cursor-pointer shadow-lg touch-manipulation"
                   >
                     <Download size={14} />
-                    Download
+                    Save
                   </a>
                 </div>
               </motion.div>
