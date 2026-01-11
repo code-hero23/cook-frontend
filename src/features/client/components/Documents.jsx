@@ -96,7 +96,7 @@ const Documents = () => {
                                 <a
                                     href={fullUrl}
                                     download
-                                    className="shrink-0 w-12 h-12 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 md:hover:bg-indigo-600 md:hover:text-white active:bg-indigo-100 transition-all active:scale-95 touch-manipulation"
+                                    className="shrink-0 w-12 h-12 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 md:hover:bg-indigo-600 md:hover:text-white active:bg-indigo-100 transition-all active:scale-95 touch-manipulation pointer-events-auto"
                                 >
                                     <Download size={20} />
                                 </a>

@@ -79,30 +79,24 @@ const Gallery = () => {
                 <img
                   src={fullUrl}
                   alt={img.caption || "Site Image"}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  className="relative z-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   loading="lazy"
                 />
 
                 {/* Overlay - Always visible on mobile, hover on desktop */}
-                <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-4">
+                <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-4 pointer-events-none">
                   {img.caption && (
                     <p className="text-white text-xs font-bold line-clamp-2 mb-2">{img.caption}</p>
                   )}
 
                   <a
                     href={fullUrl}
-                    style={{ position: 'relative', zIndex: 9999 }}
-                    onTouchStart={() => alert("DEBUG: Touch Start! Element is reachable.")}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      alert("DEBUG: Click! Navigating to: " + fullUrl);
-                      window.location.href = fullUrl;
-                    }}
-                    className="w-full py-3 bg-white text-slate-900 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 active:bg-indigo-100 transition-colors cursor-pointer shadow-lg touch-manipulation"
+                    download
+                    onClick={(e) => e.stopPropagation()}
+                    className="relative z-20 w-full py-3 bg-white text-slate-900 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 active:bg-indigo-100 transition-colors cursor-pointer shadow-lg touch-manipulation pointer-events-auto"
                   >
                     <Download size={14} />
-                    Debug Save
+                    Save
                   </a>
                 </div>
               </div>
