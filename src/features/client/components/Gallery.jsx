@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "../../../shared/utils/axios";
-import { Image as ImageIcon, Download, Loader2 } from "lucide-react";
+import { Image as ImageIcon, Download, Loader2, X } from "lucide-react";
 import { motion } from "framer-motion";
 import useHaptics from "../../../shared/hooks/useHaptics";
 
@@ -8,6 +8,7 @@ const Gallery = () => {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [downloadingId, setDownloadingId] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(null);
   const { trigger } = useHaptics();
 
   const project = JSON.parse(localStorage.getItem("clientProject") || "{}");
@@ -102,48 +103,65 @@ const Gallery = () => {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {images.map((img) => {
             const fullUrl = `${apiUrl}${img.url}`;
-            const isDownloading = downloadingId === img.id;
 
             return (
               <div
                 key={img.id}
-                className="group relative aspect-[4/5] overflow-hidden rounded-2xl bg-slate-100 border border-slate-200 shadow-sm"
+                onClick={() => setSelectedImage(img)}
+                className="group relative aspect-[4/5] overflow-hidden rounded-2xl bg-slate-100 border border-slate-200 shadow-sm cursor-pointer active:scale-95 transition-transform duration-200"
               >
                 <img
                   src={fullUrl}
                   alt={img.caption || "Site Image"}
-                  className="relative z-0 w-full h-full object-cover transition-transform duration-700 md:group-hover:scale-110"
+                  className="relative z-0 w-full h-full object-cover"
                   loading="lazy"
                 />
 
-                {/* Overlay (NO pointer-events-none now) */}
-                <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-4 pointer-events-none">
-                  {img.caption && (
-                    <p className="text-white text-xs font-bold line-clamp-2 mb-2">
-                      {img.caption}
-                    </p>
-                  )}
-
-                  {/* ✅ Real button for mobile */}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDownload(fullUrl, img.id);
-                    }}
-                    className="relative z-50 w-full py-3 bg-white text-slate-900 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 active:bg-indigo-100 transition-colors shadow-lg touch-manipulation cursor-pointer pointer-events-auto"
-                  >
-                    {isDownloading ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Download size={14} />
-                    )}
-                    {isDownloading ? "Saving..." : "Save"}
-                  </button>
-                </div>
+                {img.caption && (
+                  <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/80 to-transparent p-4 pt-12">
+                    <p className="text-white text-[10px] font-bold line-clamp-2 uppercase tracking-wide">{img.caption}</p>
+                  </div>
+                )}
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Lightbox Modal */}
+      {selectedImage && (
+        <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setSelectedImage(null)}>
+          <button className="absolute top-6 right-6 text-white/70 hover:text-white p-2 z-[110]" onClick={() => setSelectedImage(null)}>
+            <X size={32} />
+          </button>
+
+          <img
+            src={`${apiUrl}${selectedImage.url}`}
+            alt={selectedImage.caption}
+            className="max-w-full max-h-[75vh] object-contain rounded-lg shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+
+          <div
+            className="absolute bottom-0 left-0 right-0 p-8 pb-10 bg-gradient-to-t from-black via-black/90 to-transparent flex flex-col items-center gap-6 z-[110]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {selectedImage.caption && (
+              <p className="text-white text-sm font-medium text-center max-w-md leading-relaxed">{selectedImage.caption}</p>
+            )}
+
+            <button
+              onClick={() => handleDownload(`${apiUrl}${selectedImage.url}`, selectedImage.id)}
+              className="w-full max-w-sm bg-white text-slate-900 py-4 rounded-xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 active:scale-95 transition-transform shadow-xl"
+            >
+              {downloadingId === selectedImage.id ? (
+                <Loader2 className="w-5 h-5 animate-spin text-indigo-600" />
+              ) : (
+                <Download size={20} />
+              )}
+              {downloadingId === selectedImage.id ? "Saving..." : "Save to Gallery"}
+            </button>
+          </div>
         </div>
       )}
     </div>
