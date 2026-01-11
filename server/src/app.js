@@ -65,18 +65,49 @@ app.get('/api/env-debug', (req, res) => {
 });
 
 app.get('/api/health/smtp', async (req, res) => {
-    const { sendNotificationEmail } = require('./services/emailService');
     try {
         const { createTransporter } = require('./services/emailService');
         const transporter = createTransporter();
         if (!transporter) {
-            return res.status(500).json({ status: 'error', message: 'SMTP credentials missing' });
+            return res.status(500).json({
+                status: 'error',
+                message: 'SMTP credentials missing',
+                details: {
+                    user: process.env.SMTP_USER ? 'Present' : 'Missing',
+                    pass: process.env.SMTP_PASS ? 'Present' : 'Missing'
+                }
+            });
         }
-        await transporter.verify();
-        res.json({ status: 'ok', message: 'SMTP connection verified successfully' });
+
+        console.log(`[HealthCheck] Verifying SMTP: ${process.env.SMTP_HOST || 'smtp.gmail.com'}:${process.env.SMTP_PORT || 587}`);
+
+        // Race verification against a more generous timeout
+        const verifyPromise = transporter.verify();
+        const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('SMTP Verification timed out after 15s')), 15000)
+        );
+
+        await Promise.race([verifyPromise, timeoutPromise]);
+
+        res.json({
+            status: 'ok',
+            message: 'SMTP connection verified successfully',
+            config: {
+                host: process.env.SMTP_HOST || 'smtp.gmail.com',
+                port: process.env.SMTP_PORT || 587,
+                secure: process.env.SMTP_PORT == '465'
+            }
+        });
     } catch (error) {
         console.error('[HealthCheck] SMTP verification failed:', error);
-        res.status(500).json({ status: 'error', message: error.message });
+        res.status(500).json({
+            status: 'error',
+            message: error.message,
+            config: {
+                host: process.env.SMTP_HOST || 'smtp.gmail.com',
+                port: process.env.SMTP_PORT || 587
+            }
+        });
     }
 });
 
