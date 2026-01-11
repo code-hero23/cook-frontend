@@ -38,6 +38,14 @@
     overscroll-behavior-y: contain;
 }
 
+a,
+button,
+input,
+div[role="button"],
+.cursor-pointer {
+    touch-action: manipulation;
+}
+
 /* Glassmorphism Utilities */
 .glass-sidebar {
     background: rgba(13, 21, 42, 0.8) !important;

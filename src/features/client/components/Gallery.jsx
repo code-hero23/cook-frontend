@@ -113,7 +113,7 @@ const Gallery = () => {
                 <img
                   src={fullUrl}
                   alt={img.caption || "Site Image"}
-                  className="relative z-0 w-full h-full object-cover"
+                  className="relative z-0 w-full h-full object-cover pointer-events-none"
                   loading="lazy"
                 />
 
