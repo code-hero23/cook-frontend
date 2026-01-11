@@ -28,7 +28,8 @@ const createTransporter = () => {
         greetingTimeout: 20000,
         socketTimeout: 60000,
         dnsTimeout: 10000,
-        debug: true, // Enable debug for production logs
+        family: 4, // Force IPv4 to avoid Render IPv6 handshake stalls
+        debug: true,
         logger: true,
         tls: {
             rejectUnauthorized: false,

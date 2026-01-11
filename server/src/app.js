@@ -65,26 +65,67 @@ app.get('/api/env-debug', (req, res) => {
 });
 
 app.get('/api/health/smtp', async (req, res) => {
+    const net = require('net');
+    const dns = require('dns').promises;
+    const { createTransporter } = require('./services/emailService');
+
+    const host = process.env.SMTP_HOST || 'smtp.gmail.com';
+    const port = parseInt(process.env.SMTP_PORT) || 465;
+
+    // 1. DNS Test
+    const getDnsStatus = async () => {
+        try {
+            const result = await dns.lookup(host);
+            return { status: 'ok', address: result.address };
+        } catch (err) {
+            return { status: 'error', message: `DNS Lookup failed: ${err.message}` };
+        }
+    };
+
+    // 2. Raw Socket Test
+    const socketTest = () => new Promise((resolve) => {
+        const socket = new net.Socket();
+        const start = Date.now();
+
+        socket.setTimeout(10000);
+
+        socket.on('connect', () => {
+            const duration = Date.now() - start;
+            socket.destroy();
+            resolve({ status: 'ok', message: `TCP Connected in ${duration}ms` });
+        });
+
+        socket.on('timeout', () => {
+            socket.destroy();
+            resolve({ status: 'error', message: `TCP Connection timed out after 10s` });
+        });
+
+        socket.on('error', (err) => {
+            socket.destroy();
+            resolve({ status: 'error', message: `TCP Connection failed: ${err.message || 'Unknown error'}` });
+        });
+
+        socket.connect(port, host);
+    });
+
     try {
-        const { createTransporter } = require('./services/emailService');
+        const dnsStatus = await getDnsStatus();
+        const networkStatus = await socketTest();
+
         const transporter = createTransporter();
         if (!transporter) {
             return res.status(500).json({
                 status: 'error',
                 message: 'SMTP credentials missing',
-                details: {
-                    user: process.env.SMTP_USER ? 'Present' : 'Missing',
-                    pass: process.env.SMTP_PASS ? 'Present' : 'Missing'
-                }
+                dns: dnsStatus,
+                network: networkStatus
             });
         }
 
-        console.log(`[HealthCheck] Verifying SMTP: ${process.env.SMTP_HOST || 'smtp.gmail.com'}:${process.env.SMTP_PORT || 587}`);
-
-        // Race verification against a more generous timeout
+        // 3. Full SMTP Verify
         const verifyPromise = transporter.verify();
         const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('SMTP Verification timed out after 40s')), 40000)
+            setTimeout(() => reject(new Error('SMTP Handshake timed out after 50s')), 50000)
         );
 
         await Promise.race([verifyPromise, timeoutPromise]);
@@ -92,11 +133,12 @@ app.get('/api/health/smtp', async (req, res) => {
         res.json({
             status: 'ok',
             message: 'SMTP connection verified successfully',
+            dns: dnsStatus,
+            network: networkStatus,
             diagnostic: {
                 transporter: 'Created',
-                auth: process.env.SMTP_USER ? 'Present' : 'Missing',
-                port: process.env.SMTP_PORT || '465 (default)',
-                host: process.env.SMTP_HOST || 'smtp.gmail.com (default)'
+                port,
+                host
             }
         });
     } catch (error) {
@@ -104,10 +146,12 @@ app.get('/api/health/smtp', async (req, res) => {
         res.status(500).json({
             status: 'error',
             message: error.message,
+            dns: await getDnsStatus(),
+            network: await socketTest(),
             diagnostic: {
                 error: error.code || 'TIMEOUT',
-                port: process.env.SMTP_PORT || '465',
-                host: process.env.SMTP_HOST || 'smtp.gmail.com'
+                port,
+                host
             }
         });
     }
