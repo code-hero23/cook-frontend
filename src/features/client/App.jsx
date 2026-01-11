@@ -120,7 +120,7 @@ const App = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-[#F1F5F9] font-sans selection:bg-indigo-100 selection:text-indigo-900 overflow-hidden">
+    <div className="min-h-screen flex flex-col bg-[#F1F5F9] font-sans selection:bg-indigo-100 selection:text-indigo-900">
 
       <TopNavbar
         setSelected={setSelected}
@@ -129,9 +129,9 @@ const App = () => {
         handleLogout={handleLogout}
       />
 
-      <div className="flex-1 flex overflow-hidden relative">
-        {/* Desktop Sidebar */}
-        <div className="hidden md:block w-72 border-r border-slate-200 bg-white/50 backdrop-blur-xl h-full">
+      <div className="flex-1 flex relative">
+        {/* Desktop Sidebar - Sticky! */}
+        <div className="hidden md:block w-72 border-r border-slate-200 bg-white/50 backdrop-blur-xl h-[calc(100vh-5rem)] sticky top-20">
           <Sidebar selected={selected} setSelected={setSelected} onLogout={handleLogout} />
         </div>
 
@@ -144,14 +144,14 @@ const App = () => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setMenuOpen(false)}
-                className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[110] md:hidden"
+                className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[990] md:hidden"
               />
               <motion.div
                 initial={{ x: "-100%" }}
                 animate={{ x: 0 }}
                 exit={{ x: "-100%" }}
                 transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                className="fixed inset-y-0 left-0 w-72 bg-white z-[120] md:hidden shadow-2xl rounded-r-3xl overflow-hidden border-r border-white/50"
+                className="fixed inset-y-0 left-0 w-72 bg-white z-[1000] md:hidden shadow-2xl rounded-r-3xl overflow-hidden border-r border-white/50"
               >
                 <div
                   className="h-full"
@@ -176,8 +176,8 @@ const App = () => {
           )}
         </AnimatePresence>
 
-        {/* Main Content Area */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar bg-slate-50/30">
+        {/* Main Content Area - Window Scroll */}
+        <div className="flex-1 bg-slate-50/30 min-w-0">
           <AnimatePresence mode="wait">
             <motion.div
               key={selected}

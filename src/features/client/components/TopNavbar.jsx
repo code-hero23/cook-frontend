@@ -51,7 +51,7 @@ const TopNavbar = ({ setSelected, menuOpen, setMenuOpen, handleLogout }) => {
   };
 
   return (
-    <div className="sticky top-0 z-[100] h-16 sm:h-20 bg-white/80 backdrop-blur-xl border-b border-white/20 shadow-lg flex items-center justify-between px-4 md:px-6 shrink-0">
+    <div className="sticky top-0 z-[999] h-16 sm:h-20 bg-white/80 backdrop-blur-xl border-b border-white/20 shadow-lg flex items-center justify-between px-4 md:px-6 shrink-0">
 
       {/* LEFT SIDE - LOGO & CLIENT NAME */}
       <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0 min-w-0">
