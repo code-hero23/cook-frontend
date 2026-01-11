@@ -10,13 +10,11 @@ const createTransporter = () => {
         return null;
     }
 
-    const smtpPort = parseInt(process.env.SMTP_PORT) || 587;
+    const smtpPort = parseInt(process.env.SMTP_PORT) || 465;
     const isSecure = smtpPort === 465;
 
-    return nodemailer.createTransport({
-        host: process.env.SMTP_HOST || 'smtp.gmail.com',
-        port: smtpPort,
-        secure: isSecure, // true for 465, false for 587
+    const config = {
+        secure: isSecure,
         pool: true,
         maxConnections: 5,
         maxMessages: 100,
@@ -24,10 +22,24 @@ const createTransporter = () => {
             user: process.env.SMTP_USER,
             pass: process.env.SMTP_PASS,
         },
-        connectionTimeout: 15000, // Increased to 15s for production
-        greetingTimeout: 10000,   // Increased to 10s
-        socketTimeout: 30000,     // Added socket timeout
-    });
+        connectionTimeout: 20000,
+        greetingTimeout: 15000,
+        socketTimeout: 45000,
+        tls: {
+            // Do not fail on invalid certs - common in cloud proxies
+            rejectUnauthorized: false
+        }
+    };
+
+    // Use service shortcut if no host provided - Nodemailer handles Gmail better this way
+    if (!process.env.SMTP_HOST) {
+        config.service = 'gmail';
+    } else {
+        config.host = process.env.SMTP_HOST;
+        config.port = smtpPort;
+    }
+
+    return nodemailer.createTransport(config);
 };
 
 const sendBackupEmail = async (filePath, filename) => {

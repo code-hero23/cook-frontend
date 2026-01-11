@@ -84,7 +84,7 @@ app.get('/api/health/smtp', async (req, res) => {
         // Race verification against a more generous timeout
         const verifyPromise = transporter.verify();
         const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('SMTP Verification timed out after 15s')), 15000)
+            setTimeout(() => reject(new Error('SMTP Verification timed out after 30s')), 30000)
         );
 
         await Promise.race([verifyPromise, timeoutPromise]);
