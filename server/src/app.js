@@ -69,91 +69,70 @@ app.get('/api/health/smtp', async (req, res) => {
     const dns = require('dns').promises;
     const { createTransporter } = require('./services/emailService');
 
-    const host = process.env.SMTP_HOST || 'smtp.gmail.com';
-    const port = parseInt(process.env.SMTP_PORT) || 465;
+    const host = 'smtp.gmail.com';
+    const ports = [465, 587, 25, 2525];
 
     // 1. DNS Test
-    const getDnsStatus = async () => {
+    const dnsStatus = await (async () => {
         try {
             const result = await dns.lookup(host);
             return { status: 'ok', address: result.address };
         } catch (err) {
-            return { status: 'error', message: `DNS Lookup failed: ${err.message}` };
+            return { status: 'error', message: err.message };
         }
-    };
+    })();
 
-    // 2. Raw Socket Test
-    const socketTest = () => new Promise((resolve) => {
+    // 2. Multi-Port TCP Test
+    const portTests = await Promise.all(ports.map(port => new Promise((resolve) => {
         const socket = new net.Socket();
         const start = Date.now();
-
-        socket.setTimeout(10000);
+        socket.setTimeout(5000); // 5s is enough to see a block
 
         socket.on('connect', () => {
             const duration = Date.now() - start;
             socket.destroy();
-            resolve({ status: 'ok', message: `TCP Connected in ${duration}ms` });
+            resolve({ port, status: 'OPEN', duration: `${duration}ms` });
         });
 
         socket.on('timeout', () => {
             socket.destroy();
-            resolve({ status: 'error', message: `TCP Connection timed out after 10s` });
+            resolve({ port, status: 'BLOCKED (TIMEOUT)' });
         });
 
         socket.on('error', (err) => {
             socket.destroy();
-            resolve({ status: 'error', message: `TCP Connection failed: ${err.message || 'Unknown error'}` });
+            resolve({ port, status: 'BLOCKED (REFUSED)', error: err.message });
         });
 
         socket.connect(port, host);
-    });
+    })));
 
     try {
-        const dnsStatus = await getDnsStatus();
-        const networkStatus = await socketTest();
-
         const transporter = createTransporter();
-        if (!transporter) {
-            return res.status(500).json({
-                status: 'error',
-                message: 'SMTP credentials missing',
-                dns: dnsStatus,
-                network: networkStatus
-            });
+        const verifyPromise = transporter ? transporter.verify() : Promise.reject('No transporter');
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Handshake timeout')), 10000));
+
+        let smtpHandshake = 'SKIP';
+        try {
+            await Promise.race([verifyPromise, timeoutPromise]);
+            smtpHandshake = 'SUCCESS';
+        } catch (e) {
+            smtpHandshake = `FAILED: ${e.message}`;
         }
 
-        // 3. Full SMTP Verify
-        const verifyPromise = transporter.verify();
-        const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('SMTP Handshake timed out after 50s')), 50000)
-        );
-
-        await Promise.race([verifyPromise, timeoutPromise]);
-
         res.json({
-            status: 'ok',
-            message: 'SMTP connection verified successfully',
+            status: smtpHandshake === 'SUCCESS' ? 'ok' : 'error',
+            render_tier_check: "Possible Blockage Detected",
             dns: dnsStatus,
-            network: networkStatus,
-            diagnostic: {
-                transporter: 'Created',
-                port,
-                host
+            network_ports: portTests,
+            smtp_handshake: smtpHandshake,
+            environment: {
+                SMTP_USER: process.env.SMTP_USER ? 'Set' : 'Missing',
+                SMTP_PORT: process.env.SMTP_PORT || 'Default (465)'
             }
         });
     } catch (error) {
-        console.error('[HealthCheck] SMTP verification failed:', error);
-        res.status(500).json({
-            status: 'error',
-            message: error.message,
-            dns: await getDnsStatus(),
-            network: await socketTest(),
-            diagnostic: {
-                error: error.code || 'TIMEOUT',
-                port,
-                host
-            }
-        });
+        res.status(500).json({ status: 'error', error: error.message });
     }
 });
 

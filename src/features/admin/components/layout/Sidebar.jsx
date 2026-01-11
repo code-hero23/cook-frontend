@@ -83,7 +83,7 @@ const Sidebar = ({ open, onClose }) => {
         transform transition-all duration-300 ease-in-out border-r border-white/5
         ${open ? "translate-x-0" : "-translate-x-full"}
         ${isCollapsed ? "md:w-20" : "md:w-64"}
-        md:translate-x-0 md:static flex flex-col overflow-hidden`}
+        md:translate-x-0 md:static flex flex-col`}
       >
         {/* Collapse Toggle - Desktop */}
         <button

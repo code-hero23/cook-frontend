@@ -29,7 +29,7 @@ const IssueDrawer = ({ isOpen, onClose, initialData, isEditing, onSubmit, projec
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 transition-opacity"
+                        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[90] transition-opacity"
                     />
 
                     {/* Drawer */}
@@ -38,7 +38,7 @@ const IssueDrawer = ({ isOpen, onClose, initialData, isEditing, onSubmit, projec
                         animate={{ x: 0 }}
                         exit={{ x: "100%" }}
                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                        className="fixed right-0 top-0 h-full w-full sm:w-[500px] bg-white shadow-2xl z-50 overflow-y-auto"
+                        className="fixed right-0 top-0 h-full w-full sm:w-[500px] bg-white shadow-2xl z-[100] overflow-y-auto"
                     >
                         <form onSubmit={handleSubmit} className="flex flex-col h-full">
                             {/* Header */}

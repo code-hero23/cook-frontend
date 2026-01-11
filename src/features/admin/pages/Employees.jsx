@@ -185,7 +185,7 @@ const Employees = () => {
 
       {/* MODAL */}
       {modalOpen && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-xl w-[95%] max-w-md md:max-w-lg p-3 overflow-auto max-h-[85vh]">
             <h2 className="text-lg font-semibold mb-3">
               {editingId ? "Edit Employee" : "Add Employee"}

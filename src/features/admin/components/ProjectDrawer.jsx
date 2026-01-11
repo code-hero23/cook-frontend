@@ -33,7 +33,7 @@ const ProjectDrawer = ({ isOpen, onClose, onSubmit, initialData, isEditing }) =>
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90]"
                     />
 
                     {/* Drawer */}
@@ -42,7 +42,7 @@ const ProjectDrawer = ({ isOpen, onClose, onSubmit, initialData, isEditing }) =>
                         animate={{ x: 0 }}
                         exit={{ x: "100%" }}
                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                        className="fixed inset-y-0 right-0 z-50 w-full max-w-2xl bg-white shadow-2xl flex flex-col"
+                        className="fixed inset-y-0 right-0 z-[100] w-full max-w-2xl bg-white shadow-2xl flex flex-col"
                     >
                         {/* Header */}
                         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-white/80 backdrop-blur-xl sticky top-0 z-10">
