@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from "react";
 import axios from "../../../shared/utils/axios";
-import { FileText, Download } from "lucide-react";
+import { FileText, Download, Loader2, File } from "lucide-react";
+import { motion } from "framer-motion";
+import useHaptics from "../../../shared/hooks/useHaptics";
 
 const Documents = () => {
     const [docs, setDocs] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [downloadingId, setDownloadingId] = useState(null);
+    const { trigger } = useHaptics();
 
-    // Authenticated client has projectCode/ID in token or context
-    // But axios interceptor handles token.
-    // We need to know WHICH project. 
-    // The login response returned `project` object which is stored in localStorage.
     const project = JSON.parse(localStorage.getItem("clientProject") || "{}");
     const projectId = project.id;
+    const apiUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
     useEffect(() => {
         if (projectId) {
@@ -29,49 +30,102 @@ const Documents = () => {
         }
     }, [projectId]);
 
-    if (!projectId) return <div className="p-6 text-center text-slate-500">Session Error. Please Login Again.</div>;
+    const handleDownload = async (docUrl, fileName) => {
+        try {
+            trigger('medium');
+            setDownloadingId(fileName);
+
+            const response = await fetch(docUrl);
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = fileName || "document.pdf";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+
+            trigger('success');
+        } catch (error) {
+            console.error("Download failed:", error);
+            trigger('error');
+        } finally {
+            setDownloadingId(null);
+        }
+    };
+
+    if (!projectId) return null;
 
     return (
-        <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-100">
-            <h2 className="text-xl font-bold mb-6 text-indigo-900 flex items-center gap-2">
-                <FileText className="text-indigo-500" /> Project Documents
-            </h2>
+        <div className="max-w-4xl mx-auto space-y-8 pb-20">
+            <div className="flex items-center gap-4 mb-8">
+                <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-100">
+                    <FileText size={24} />
+                </div>
+                <div>
+                    <h2 className="text-2xl font-black text-slate-800 tracking-tight">Project Documents</h2>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Contracts & Specifications</p>
+                </div>
+            </div>
 
             {loading ? (
-                <div className="text-center py-10 text-slate-400">Loading documents...</div>
+                <div className="flex flex-col items-center justify-center py-20 bg-white/40 backdrop-blur-xl rounded-[2.5rem] border border-white/50">
+                    <Loader2 className="w-8 h-8 text-indigo-600 animate-spin mb-4" />
+                    <p className="text-sm font-bold text-slate-400">Loading documents...</p>
+                </div>
             ) : docs.length === 0 ? (
-                <div className="text-center py-10 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-                    <p className="text-slate-500 font-medium">No documents shared yet.</p>
+                <div className="flex flex-col items-center justify-center py-20 bg-white/40 backdrop-blur-xl rounded-[2.5rem] border border-white/50 text-center px-6">
+                    <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-slate-300 mb-4">
+                        <FileText size={32} />
+                    </div>
+                    <h3 className="text-sm font-black text-slate-500 uppercase tracking-widest">No Documents</h3>
+                    <p className="text-xs text-slate-400 font-bold mt-1">Important files shared by the team will appear here.</p>
                 </div>
             ) : (
                 <div className="space-y-3">
-                    {docs.map((doc) => (
-                        <div
-                            key={doc.id}
-                            className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100 hover:bg-white hover:shadow-md transition-all group"
-                        >
-                            <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-indigo-500 shadow-sm">
-                                    <FileText size={20} />
-                                </div>
-                                <div>
-                                    <p className="font-semibold text-slate-800 text-sm">{doc.name}</p>
-                                    <p className="text-xs text-slate-400">{new Date(doc.createdAt).toLocaleDateString()}</p>
-                                </div>
-                            </div>
+                    {docs.map((doc, idx) => {
+                        const fullUrl = `${apiUrl}${doc.url}`;
+                        const isDownloading = downloadingId === doc.name;
 
-                            <a
-                                href={`${import.meta.env.VITE_API_URL?.replace('/api', '')}${doc.url}`}
-                                download
-                                target="_blank"
-                                rel="noreferrer"
-                                className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                                title="Download"
+                        return (
+                            <motion.div
+                                key={doc.id}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: idx * 0.05 }}
+                                className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all group"
                             >
-                                <Download size={20} />
-                            </a>
-                        </div>
-                    ))}
+                                <div className="shrink-0 w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 font-bold">
+                                    <File size={20} />
+                                </div>
+
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-bold text-slate-800 text-sm truncate pr-2">
+                                        {doc.name}
+                                    </p>
+                                    <div className="flex items-center gap-2 mt-0.5">
+                                        <span className="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-500 rounded-md">PDF</span>
+                                        <span className="text-[10px] font-medium text-slate-400">
+                                            {new Date(doc.createdAt).toLocaleDateString()}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={() => handleDownload(fullUrl, doc.name)}
+                                    disabled={isDownloading}
+                                    className="shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:bg-indigo-600 hover:text-white transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {isDownloading ? (
+                                        <Loader2 size={18} className="animate-spin" />
+                                    ) : (
+                                        <Download size={18} />
+                                    )}
+                                </button>
+                            </motion.div>
+                        );
+                    })}
                 </div>
             )}
         </div>

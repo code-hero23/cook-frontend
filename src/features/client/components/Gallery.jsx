@@ -104,7 +104,7 @@ const Gallery = () => {
                 />
 
                 {/* Overlay - Always visible on mobile, hover on desktop */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-4">
+                <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-4">
                   {img.caption && (
                     <p className="text-white text-xs font-bold line-clamp-2 mb-2">{img.caption}</p>
                   )}
@@ -115,7 +115,7 @@ const Gallery = () => {
                       handleDownload(fullUrl, img.caption || `image-${img.id}.jpg`);
                     }}
                     disabled={isDownloading}
-                    className="w-full py-2.5 bg-white text-slate-900 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-indigo-50 transition-colors active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+                    className="relative z-20 w-full py-2.5 bg-white text-slate-900 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-indigo-50 transition-colors active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer shadow-lg"
                   >
                     {isDownloading ? (
                       <Loader2 size={12} className="animate-spin" />
