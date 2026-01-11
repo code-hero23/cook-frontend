@@ -12,7 +12,7 @@ const Gallery = () => {
 
   const project = JSON.parse(localStorage.getItem("clientProject") || "{}");
   const projectId = project.id;
-  const apiUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+  const apiUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || (import.meta.env.PROD ? '' : 'http://localhost:5000');
 
   useEffect(() => {
     if (projectId) {
