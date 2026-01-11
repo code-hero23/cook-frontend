@@ -91,16 +91,18 @@ const Gallery = () => {
 
                   <a
                     href={fullUrl}
+                    style={{ position: 'relative', zIndex: 9999 }}
+                    onTouchStart={() => alert("DEBUG: Touch Start! Element is reachable.")}
                     onClick={(e) => {
                       e.stopPropagation();
                       e.preventDefault();
-                      alert("Debug: " + fullUrl);
+                      alert("DEBUG: Click! Navigating to: " + fullUrl);
                       window.location.href = fullUrl;
                     }}
-                    className="relative z-20 w-full py-3 bg-white text-slate-900 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 md:hover:bg-indigo-50 active:bg-indigo-100 transition-colors cursor-pointer shadow-lg touch-manipulation"
+                    className="w-full py-3 bg-white text-slate-900 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 active:bg-indigo-100 transition-colors cursor-pointer shadow-lg touch-manipulation"
                   >
                     <Download size={14} />
-                    Save Now
+                    Debug Save
                   </a>
                 </div>
               </div>
