@@ -11,6 +11,7 @@ import Chat from "./pages/Chat";
 // Notifications removed
 import Email from "./pages/Email";
 import Issues from "./pages/Issues";
+import Profile from "./pages/Profile";
 
 import { TaskProvider } from "./context/TaskContext";
 
@@ -39,6 +40,7 @@ function App() {
           {/* Notifications Removed */}
           <Route path="email" element={<Email />} />
           <Route path="issues" element={<Issues />} />
+          <Route path="profile" element={<Profile />} />
 
         </Route>
       </Routes>

@@ -5,7 +5,7 @@ const Navbar = ({ setSidebarOpen, searchTerm, setSearchTerm }) => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
 
     return (
-        <header className="fixed top-0 right-0 left-0 md:left-72 h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 z-30 px-4 sm:px-8 flex items-center justify-between transition-all duration-300">
+        <header className="sticky top-0 w-full h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 z-30 px-4 sm:px-8 flex items-center justify-between transition-all duration-300">
             <div className="flex items-center gap-4">
                 <button
                     onClick={() => setSidebarOpen(true)}

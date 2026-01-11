@@ -45,7 +45,7 @@ const Tasks = () => {
         switch (status?.toUpperCase()) {
             case 'COMPLETED': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
             case 'IN_PROGRESS': return 'bg-blue-50 text-blue-600 border-blue-100';
-            case 'PENDING': return 'bg-orange-50 text-orange-600 border-orange-100';
+            case 'PENDING': return 'bg-slate-50 text-slate-600 border-slate-100';
             default: return 'bg-slate-50 text-slate-600 border-slate-100';
         }
     };

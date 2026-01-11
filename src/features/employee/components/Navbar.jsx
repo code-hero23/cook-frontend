@@ -66,7 +66,7 @@ const Navbar = ({ setSidebarOpen }) => {
   }, [location.search]);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50
+    <nav className="sticky top-0 w-full z-40
             bg-[#0D152A] text-white 
             border-b border-[#1E263A]
             h-[60px] sm:h-[70px] flex items-center

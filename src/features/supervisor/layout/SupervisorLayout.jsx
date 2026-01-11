@@ -19,24 +19,26 @@ const SupervisorLayout = () => {
     const [searchTerm, setSearchTerm] = useState('');
 
     return (
-        <div className="min-h-screen bg-[#F8FAFC]">
+        <div className="flex h-screen bg-[#F8FAFC] overflow-hidden">
             <Sidebar
                 isOpen={sidebarOpen}
                 setIsOpen={setSidebarOpen}
                 isMobile={!isDesktop}
             />
 
-            <Navbar
-                setSidebarOpen={setSidebarOpen}
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-            />
+            <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+                <Navbar
+                    setSidebarOpen={setSidebarOpen}
+                    searchTerm={searchTerm}
+                    setSearchTerm={setSearchTerm}
+                />
 
-            <main className="transition-all duration-300 md:ml-72 pt-24 px-4 sm:px-8 pb-8 min-h-screen">
-                <div className="max-w-7xl mx-auto">
-                    <Outlet context={{ searchTerm, setSearchTerm }} />
-                </div>
-            </main>
+                <main className="flex-1 transition-all duration-300 py-8 px-4 sm:px-8 overflow-y-auto">
+                    <div className="max-w-7xl mx-auto">
+                        <Outlet context={{ searchTerm, setSearchTerm }} />
+                    </div>
+                </main>
+            </div>
         </div>
     );
 };

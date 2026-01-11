@@ -42,7 +42,8 @@ exports.login = async (req, res) => {
                 email: user.email,
                 name: user.name,
                 role: user.role,
-                department: user.department
+                department: user.department,
+                phone: user.phone
             }
         });
 
@@ -94,6 +95,8 @@ exports.googleLogin = async (req, res) => {
                 email: user.email,
                 name: user.name,
                 role: user.role,
+                department: user.department,
+                phone: user.phone,
                 picture: picture // Send back google pic if we want to use it
             }
         });
