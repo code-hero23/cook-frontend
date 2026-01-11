@@ -178,22 +178,16 @@ const App = () => {
 
         {/* Main Content Area - Window Scroll */}
         <div className="flex-1 bg-slate-50/30 min-w-0">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={selected}
-              {...slideVars}
-              className="p-4 md:p-6 lg:p-8 pb-32 md:pb-12"
-            >
-              {selected === "overview" && <ProjectProgress tasks={tasks} />}
-              {selected === "profile" && <Profile />}
-              {selected === "tasks" && <TaskList tasks={tasks} toggleStatus={toggleStatus} />}
-              {selected === "activity" && <ActivityFeed activity={activity} dummyActivity={[]} />}
-              {selected === "gallery" && <Gallery />}
-              {selected === "documents" && <Documents />}
-              {selected === "timeline" && <Timeline tasks={tasks} />}
-              {selected === "feedback" && <RaiseTicket />}
-            </motion.div>
-          </AnimatePresence>
+          <div className="p-4 md:p-6 lg:p-8 pb-32 md:pb-12">
+            {selected === "overview" && <ProjectProgress tasks={tasks} />}
+            {selected === "profile" && <Profile />}
+            {selected === "tasks" && <TaskList tasks={tasks} toggleStatus={toggleStatus} />}
+            {selected === "activity" && <ActivityFeed activity={activity} dummyActivity={[]} />}
+            {selected === "gallery" && <Gallery />}
+            {selected === "documents" && <Documents />}
+            {selected === "timeline" && <Timeline tasks={tasks} />}
+            {selected === "feedback" && <RaiseTicket />}
+          </div>
         </div>
       </div>
 

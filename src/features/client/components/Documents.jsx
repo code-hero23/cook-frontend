@@ -78,11 +78,8 @@ const Documents = () => {
                         const fullUrl = `${apiUrl}${doc.url}`;
 
                         return (
-                            <motion.div
+                            <div
                                 key={doc.id}
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: idx * 0.05 }}
                                 className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm md:hover:shadow-md transition-all group"
                             >
                                 <div className="shrink-0 w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 font-bold">
@@ -111,7 +108,7 @@ const Documents = () => {
                                 >
                                     <Download size={20} className="pointer-events-none" />
                                 </a>
-                            </motion.div>
+                            </div>
                         );
                     })}
                 </div>
