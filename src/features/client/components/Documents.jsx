@@ -7,7 +7,6 @@ import useHaptics from "../../../shared/hooks/useHaptics";
 const Documents = () => {
     const [docs, setDocs] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [downloadingId, setDownloadingId] = useState(null);
     const { trigger } = useHaptics();
 
     const project = JSON.parse(localStorage.getItem("clientProject") || "{}");
@@ -30,29 +29,12 @@ const Documents = () => {
         }
     }, [projectId]);
 
-    const handleDownload = async (docUrl, fileName) => {
-        try {
-            trigger('medium');
-            setDownloadingId(fileName);
-
-            const response = await fetch(docUrl);
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = fileName || "document.pdf";
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
-
-            trigger('success');
-        } catch (error) {
-            console.error("Download failed:", error);
-            trigger('error');
-        } finally {
-            setDownloadingId(null);
-        }
+    const handleDownload = (docUrl) => {
+        trigger('medium');
+        // Direct navigation is most reliable for mobile
+        // The server sets Content-Disposition: attachment
+        window.open(docUrl, '_blank');
+        trigger('success');
     };
 
     if (!projectId) return null;
@@ -86,7 +68,6 @@ const Documents = () => {
                 <div className="space-y-3">
                     {docs.map((doc, idx) => {
                         const fullUrl = `${apiUrl}${doc.url}`;
-                        const isDownloading = downloadingId === doc.name;
 
                         return (
                             <motion.div
@@ -113,15 +94,10 @@ const Documents = () => {
                                 </div>
 
                                 <button
-                                    onClick={() => handleDownload(fullUrl, doc.name)}
-                                    disabled={isDownloading}
-                                    className="shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:bg-indigo-600 hover:text-white transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    onClick={() => handleDownload(fullUrl)}
+                                    className="shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:bg-indigo-600 hover:text-white transition-all active:scale-95"
                                 >
-                                    {isDownloading ? (
-                                        <Loader2 size={18} className="animate-spin" />
-                                    ) : (
-                                        <Download size={18} />
-                                    )}
+                                    <Download size={18} />
                                 </button>
                             </motion.div>
                         );

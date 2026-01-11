@@ -30,29 +30,12 @@ const Gallery = () => {
     }
   }, [projectId]);
 
-  const handleDownload = async (imgUrl, fileName) => {
-    try {
-      trigger('medium');
-      setDownloadingId(fileName); // Use fileName or ID as loading state
-
-      const response = await fetch(imgUrl);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = fileName || "site-image.jpg";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-      trigger('success');
-    } catch (error) {
-      console.error("Download failed:", error);
-      trigger('error');
-    } finally {
-      setDownloadingId(null);
-    }
+  const handleDownload = (imgUrl) => {
+    trigger('medium');
+    // Direct navigation is most reliable for mobile
+    // Server sends 'Content-Disposition: attachment', so browser will download it.
+    window.open(imgUrl, '_blank');
+    trigger('success');
   };
 
   if (!projectId) return null;
