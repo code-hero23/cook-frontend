@@ -26,8 +26,8 @@ const Layout = ({ children }) => {
           {isChatPage ? (
             <div className="h-full w-full">{children}</div>
           ) : (
-            <div className="p-4 sm:p-8 max-w-[1600px] mx-auto w-full">
-              <div className="bg-white rounded-[32px] p-1 border border-slate-200 shadow-sm">
+            <div className="p-4 sm:p-8 max-w-[1920px] mx-auto w-full">
+              <div className="bg-white rounded-[32px] p-6 sm:p-8 border border-slate-200 shadow-sm min-h-[calc(100vh-8rem)]">
                 {children}
               </div>
             </div>
