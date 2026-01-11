@@ -97,9 +97,9 @@ const Documents = () => {
                                     href={fullUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:bg-indigo-600 hover:text-white transition-all active:scale-95"
+                                    className="shrink-0 w-12 h-12 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 md:hover:bg-indigo-600 md:hover:text-white active:bg-indigo-100 transition-all active:scale-95 touch-manipulation"
                                 >
-                                    <Download size={18} />
+                                    <Download size={20} />
                                 </a>
                             </motion.div>
                         );
