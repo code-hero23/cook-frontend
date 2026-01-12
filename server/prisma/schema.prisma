@@ -123,7 +123,7 @@ model Task {
   project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
   
   employeeId  String?
-  employee    User?        @relation(fields: [employeeId], references: [id])
+  employee    User?        @relation(fields: [employeeId], references: [id], onDelete: SetNull)
   
   // Dates
   startDate   DateTime?
@@ -173,10 +173,10 @@ model Email {
   content     String
   
   senderId    String
-  sender      User     @relation("SentEmails", fields: [senderId], references: [id])
+  sender      User     @relation("SentEmails", fields: [senderId], references: [id], onDelete: Cascade)
   
   receiverId  String?
-  receiver    User?    @relation("ReceivedEmails", fields: [receiverId], references: [id])
+  receiver    User?    @relation("ReceivedEmails", fields: [receiverId], references: [id], onDelete: SetNull)
   
   isRead      Boolean  @default(false)
   isDraft     Boolean  @default(false)
