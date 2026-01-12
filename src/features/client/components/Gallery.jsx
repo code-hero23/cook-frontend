@@ -160,17 +160,16 @@ const Gallery = () => {
               <p className="text-white text-sm font-medium text-center max-w-md leading-relaxed">{selectedImage.caption}</p>
             )}
 
-            <button
-              onClick={() => handleDownload(`${apiUrl}${selectedImage.url}`, selectedImage.id)}
+            <a
+              href={`${apiUrl}${selectedImage.url}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              download
               className="w-full max-w-sm bg-white text-slate-900 py-4 rounded-xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 active:scale-95 transition-transform shadow-xl"
             >
-              {downloadingId === selectedImage.id ? (
-                <Loader2 className="w-5 h-5 animate-spin text-indigo-600" />
-              ) : (
-                <Download size={20} />
-              )}
-              {downloadingId === selectedImage.id ? "Saving..." : "Save to Gallery"}
-            </button>
+              <Download size={20} />
+              Save to Gallery
+            </a>
           </div>
         </div>
       )}
