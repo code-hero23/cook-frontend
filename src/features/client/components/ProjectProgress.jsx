@@ -73,12 +73,29 @@ const ProjectProgress = ({ tasks = [] }) => {
     }
   }
 
+  // Helper: Count Working Days (Excluding Sundays)
+  const countWorkingDays = (start, end) => {
+    let count = 0;
+    let current = new Date(start);
+    // Reset time to ensure clean day comparison
+    current.setHours(0, 0, 0, 0);
+    const endDate = new Date(end);
+    endDate.setHours(0, 0, 0, 0);
+
+    while (current < endDate) {
+      // 0 = Sunday, 6 = Saturday
+      if (current.getDay() !== 0) {
+        count++;
+      }
+      current.setDate(current.getDate() + 1);
+    }
+    return count;
+  };
+
   let daysPassed = 0;
   if (startDate) {
-    const diffTime = today - startDate;
-    if (diffTime > 0) {
-      daysPassed = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    }
+    // Use the new helper instead of simple diff
+    daysPassed = countWorkingDays(startDate, today);
   }
 
   const effectiveDaysPassed = Math.min(Math.max(0, daysPassed), timelineDuration);
