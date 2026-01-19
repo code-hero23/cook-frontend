@@ -125,6 +125,18 @@ const Gallery = () => {
                   draggable="false"
                 />
 
+                {/* Download Button (Overlay) */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDownload(fullUrl, img.id);
+                  }}
+                  className="absolute top-2 right-2 p-2 bg-white/90 backdrop-blur rounded-full text-slate-700 shadow-sm opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-10 hover:bg-white hover:text-indigo-600 active:scale-95"
+                  title="Download Image"
+                >
+                  {downloadingId === img.id ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+                </button>
+
                 {img.caption && (
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4 pt-12 pointer-events-none text-left">
                     <p className="text-white text-[10px] font-bold line-clamp-2 uppercase tracking-wide">
@@ -160,16 +172,16 @@ const Gallery = () => {
               <p className="text-white text-sm font-medium text-center max-w-md leading-relaxed">{selectedImage.caption}</p>
             )}
 
-            <a
-              href={`${apiUrl}${selectedImage.url}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              download
-              className="w-full max-w-sm bg-white text-slate-900 py-4 rounded-xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 active:scale-95 transition-transform shadow-xl"
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDownload(`${apiUrl}${selectedImage.url}`, selectedImage.id);
+              }}
+              className="w-full max-w-sm bg-white text-slate-900 py-4 rounded-xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 active:scale-95 transition-transform shadow-xl hover:bg-slate-50"
             >
-              <Download size={20} />
+              {downloadingId === selectedImage.id ? <Loader2 size={20} className="animate-spin" /> : <Download size={20} />}
               Save to Gallery
-            </a>
+            </button>
           </div>
         </div>
       )}
