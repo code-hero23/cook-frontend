@@ -136,7 +136,27 @@ exports.updateTask = async (req, res) => {
             allowedUpdates.status = allowedUpdates.status.toUpperCase();
         }
 
-        // 1. Update the task
+        // 1. Fetch current task to validate status transition
+        const currentTask = await prisma.task.findUnique({ where: { id: req.params.id } });
+        if (!currentTask) {
+            return res.status(404).json({ error: "Task not found" });
+        }
+
+        // RULE: Strict Forward Progression Only
+        // PENDING (0) -> IN_PROGRESS (1) -> COMPLETED (2)
+        const statusValues = { 'PENDING': 0, 'IN_PROGRESS': 1, 'COMPLETED': 2 };
+
+        const currentVal = statusValues[currentTask.status] || 0;
+        const newVal = statusValues[allowedUpdates.status] || 0;
+
+        // If trying to change status AND new status is "lower" (backward), block it
+        if (allowedUpdates.status && allowedUpdates.status !== currentTask.status) {
+            if (newVal < currentVal) {
+                return res.status(400).json({ error: `Action Forbidden: Cannot move task backward from ${currentTask.status} to ${allowedUpdates.status}.` });
+            }
+        }
+
+        // 2. Update the task
         const task = await prisma.task.update({
             where: { id: req.params.id },
             data: {
