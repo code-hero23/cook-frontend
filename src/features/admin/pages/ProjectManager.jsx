@@ -383,27 +383,44 @@ const TimelineManager = ({ projectId }) => {
 
 const SettingsManager = ({ projectId }) => {
     const [percentage, setPercentage] = useState(0);
+    const [form, setForm] = useState({
+        percentage: 0,
+        amount: '',
+        date: new Date().toISOString().split('T')[0],
+        time: '10:00',
+        mode: 'UPI',
+        verifiedBy: ''
+    });
     const [loading, setLoading] = useState(false);
 
     // Fetch latest project specific data
     useEffect(() => {
         const fetchProject = async () => {
             try {
-                // Admin can use the generic getProjectById endpoint
                 const res = await axios.get(`/projects/${projectId}`);
                 setPercentage(res.data.paymentPercentage || 0);
+                setForm(prev => ({ ...prev, percentage: res.data.paymentPercentage || 0 }));
             } catch (err) { console.error(err); }
         };
         fetchProject();
     }, [projectId]);
 
-    const handleSave = async () => {
+    const handleUpdatePayment = async (e) => {
+        e.preventDefault();
         setLoading(true);
         try {
-            await axios.put(`/projects/${projectId}`, { paymentPercentage: parseInt(percentage) });
-            alert("Project Phase Updated!");
+            await axios.put(`/projects/${projectId}/payment`, {
+                percentage: form.percentage,
+                amount: form.amount,
+                date: form.date,
+                time: form.time,
+                mode: form.mode,
+                verifiedBy: form.verifiedBy
+            });
+            alert("Payment Recorded & Phase Unlocked Successfully!");
+            setPercentage(form.percentage); // Update local display
         } catch (err) {
-            alert("Failed to update");
+            alert(err.response?.data?.error || "Failed to update payment");
         } finally {
             setLoading(false);
         }
@@ -415,71 +432,113 @@ const SettingsManager = ({ projectId }) => {
         <div className="bg-white p-6 rounded-2xl border border-slate-200 max-w-2xl">
             <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
                 <Calendar className="text-indigo-600" />
-                Phase Control
+                Phase Control (Secure)
             </h3>
 
-            <div className="bg-gradient-to-br from-indigo-50 to-purple-50 p-6 rounded-2xl border border-indigo-100 mb-8">
-                <div className="flex justify-between items-end mb-4">
-                    <label className="text-sm font-bold text-indigo-900 uppercase tracking-widest">
-                        Phase Unlocking Progress
-                    </label>
-                    <span className="text-4xl font-black text-indigo-600 tabular-nums">
-                        {percentage}%
-                    </span>
+            {/* Current Status Banner */}
+            <div className="bg-indigo-50 p-6 rounded-2xl border border-indigo-100 mb-8 flex justify-between items-center">
+                <div>
+                    <p className="text-xs font-bold text-indigo-400 uppercase tracking-widest">Current Unlocked Level</p>
+                    <p className="text-4xl font-black text-indigo-900">{percentage}%</p>
                 </div>
-
-                <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={percentage}
-                    onChange={(e) => setPercentage(e.target.value)}
-                    disabled={user.role === 'VIEW_ONLY_ADMIN'}
-                    className={`w-full h-4 bg-indigo-200 rounded-full appearance-none ${user.role !== 'VIEW_ONLY_ADMIN' ? 'cursor-pointer accent-indigo-600 hover:accent-indigo-500' : 'cursor-not-allowed accent-slate-400'} transition-all`}
-                />
-
-                <div className="flex justify-between text-[10px] font-bold text-indigo-400 mt-2 uppercase tracking-widest">
-                    <span>Locked (0%)</span>
-                    <div className="flex gap-8">
-                        <span>Phase 1 (15%)</span>
-                        <span>Phase 2 (50%)</span>
-                        <span>Phase 3 (90%)</span>
-                    </div>
-                    <span>Done (100%)</span>
+                <div className="text-right">
+                    <p className="text-xs font-bold text-slate-500 uppercase">Next Phase</p>
+                    <p className="font-bold text-slate-700">
+                        {percentage < 15 ? 'Design' : percentage < 50 ? 'Finalization' : percentage < 90 ? 'Production' : percentage < 100 ? 'Installation' : 'All Done'}
+                    </p>
                 </div>
             </div>
 
-            {/* TIMELINE SETTING */}
-            <div className="mb-8">
-                <label className="text-sm font-bold text-slate-700 uppercase tracking-widest block mb-2">Project Timeline Duration</label>
-                <select
-                    className="w-full border border-slate-200 rounded-xl p-3 bg-slate-50"
-                    value={percentage.timelineDuration || 45} // This assumes percentage is the form state object, but above it is just 'percentage' number
-                    // Need to refactor state to hold full form data
-                    onChange={(e) => alert("To change timeline duration, please use the Edit Project form in the main Projects list.")}
-                    disabled
-                >
-                    <option value={45}>45 Days (Standard)</option>
-                    <option value={30}>30 Days (Fast Track)</option>
-                </select>
-                <p className="text-xs text-slate-400 mt-1">To change this, go back to Projects list and click "Edit".</p>
-            </div>
+            <form onSubmit={handleUpdatePayment} className="space-y-6">
 
-            {user.role !== 'VIEW_ONLY_ADMIN' && (
-                <div className="flex justify-end">
-                    <button
-                        onClick={handleSave}
-                        disabled={loading}
-                        className={`px-8 py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                {/* 1. Select Phase Level */}
+                <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">Unlock Phase Level <span className="text-red-500">*</span></label>
+                    <select
+                        className="w-full border border-slate-200 rounded-xl px-4 py-3 font-bold text-indigo-900 bg-white focus:ring-2 focus:ring-indigo-500"
+                        value={form.percentage}
+                        onChange={(e) => setForm({ ...form, percentage: parseInt(e.target.value) })}
+                        disabled={user.role === 'VIEW_ONLY_ADMIN'}
                     >
-                        {loading ? 'Saving...' : 'Update Phase Status'}
-                    </button>
+                        <option value={0}>Locked (0%)</option>
+                        <option value={15}>Unlock Design (15%)</option>
+                        <option value={50}>Unlock Finalization (50%)</option>
+                        <option value={90}>Unlock Production (90%)</option>
+                        <option value={100}>Unlock Installation (100%)</option>
+                    </select>
                 </div>
-            )}
 
-            <p className="mt-4 text-xs text-slate-400 text-center">
-                Moving this slider updates the "Physical Completion" and unlocks phases on the Client Dashboard.
-            </p>
+                {/* 2. Transaction Details */}
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-xs font-bold text-slate-500 mb-1">Payment Date <span className="text-red-500">*</span></label>
+                        <input
+                            type="date"
+                            required
+                            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
+                            value={form.date}
+                            onChange={(e) => setForm({ ...form, date: e.target.value })}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-slate-500 mb-1">Time <span className="text-red-500">*</span></label>
+                        <input
+                            type="time"
+                            required
+                            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
+                            value={form.time}
+                            onChange={(e) => setForm({ ...form, time: e.target.value })}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-slate-500 mb-1">Payment Mode <span className="text-red-500">*</span></label>
+                        <select
+                            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white"
+                            value={form.mode}
+                            onChange={(e) => setForm({ ...form, mode: e.target.value })}
+                        >
+                            <option value="UPI">UPI</option>
+                            <option value="CASH">Cash</option>
+                            <option value="BANK_TRANSFER">Bank Transfer (NEFT/IMPS)</option>
+                            <option value="CHEQUE">Cheque</option>
+                            <option value="OTHER">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-slate-500 mb-1">Amount (Optional)</label>
+                        <input
+                            type="number"
+                            placeholder="₹"
+                            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
+                            value={form.amount}
+                            onChange={(e) => setForm({ ...form, amount: e.target.value })}
+                        />
+                    </div>
+                </div>
+
+                {/* 3. Verification */}
+                <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">Verified By (Admin Name) <span className="text-red-500">*</span></label>
+                    <input
+                        required
+                        placeholder="Enter your name to sign off"
+                        className="w-full border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500"
+                        value={form.verifiedBy}
+                        onChange={(e) => setForm({ ...form, verifiedBy: e.target.value })}
+                    />
+                    <p className="text-xs text-slate-400 mt-2">This action will be permanently logged in the Payment Transaction history.</p>
+                </div>
+
+                {user.role !== 'VIEW_ONLY_ADMIN' && (
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className={`w-full py-4 bg-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                    >
+                        {loading ? 'Processing Transaction...' : 'Record Payment & Update Phase'}
+                    </button>
+                )}
+            </form>
         </div>
     );
 };

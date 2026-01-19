@@ -200,7 +200,47 @@ exports.updateProject = async (req, res) => {
     }
 };
 
-// Delete project
+
+
+// Update Project Payment & Log Transaction
+exports.updateProjectPayment = async (req, res) => {
+    try {
+        const { percentage, amount, date, time, mode, verifiedBy } = req.body;
+        const projectId = req.params.id;
+
+        // Validation
+        if (!percentage || !date || !mode || !verifiedBy) {
+            return res.status(400).json({ error: "Missing required payment details (Percentage, Date, Mode, Verified By)" });
+        }
+
+        // Transaction: Update Project + Create Log
+        const result = await prisma.$transaction([
+            prisma.project.update({
+                where: { id: projectId },
+                data: { paymentPercentage: parseInt(percentage) }
+            }),
+            prisma.paymentTransaction.create({
+                data: {
+                    projectId,
+                    percentage: parseInt(percentage),
+                    amount: amount ? parseFloat(amount) : null,
+                    date: new Date(date),
+                    time,
+                    mode,
+                    verifiedBy
+                }
+            })
+        ]);
+
+        res.json({ message: "Payment recorded and project phase updated", project: result[0] });
+
+    } catch (error) {
+        console.error("Payment Update Error:", error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Start of DELETE
 exports.deleteProject = async (req, res) => {
     try {
         const projectId = req.params.id;
