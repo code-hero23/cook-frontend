@@ -86,16 +86,7 @@ const Sidebar = ({ selected, setSelected, onLogout }) => {
         </motion.button>
 
         {/* Info Card */}
-        <div className="p-5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-[2rem] text-white shadow-lg shadow-indigo-100 hidden md:block">
-          <p className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-2">Need Help?</p>
-          <p className="text-xs font-bold leading-relaxed mb-4">Our project managers are available to assist you.</p>
-          <button
-            onClick={() => handleSelect("feedback")}
-            className="w-full py-2 bg-white/20 backdrop-blur-md rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white/30 transition-colors"
-          >
-            Contact Support
-          </button>
-        </div>
+
       </div>
     </div>
   );

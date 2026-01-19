@@ -159,34 +159,34 @@ const RaiseTicket = () => {
         animate={{ opacity: 1, x: 0 }}
         className="lg:w-1/3 bg-white/60 backdrop-blur-xl rounded-3xl md:rounded-[2.5rem] border border-white/50 shadow-2xl shadow-slate-200/50 flex flex-col overflow-hidden shrink-0"
       >
-        <div className="p-6 md:p-8 border-b border-white/50 bg-indigo-600/5">
-          <div className="flex items-center gap-4 mb-2">
-            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-100">
-              <MessageSquare size={20} />
-            </div>
-            <h2 className="text-xl font-black text-slate-800 tracking-tight">Support Desk</h2>
+        <div className="p-3 border-b border-white/50 bg-indigo-600/5 flex items-center gap-3">
+          <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-lg shadow-indigo-100 shrink-0">
+            <MessageSquare size={16} />
           </div>
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-relaxed">Submit your queries directly to our operations team.</p>
+          <div>
+            <h2 className="text-sm font-black text-slate-800 tracking-tight">Support Desk</h2>
+            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Create Ticket</p>
+          </div>
         </div>
 
-        <div className="p-6 md:p-8 space-y-6 overflow-y-auto flex-1 custom-scrollbar">
+        <div className="p-3 space-y-2 overflow-y-auto flex-1 custom-scrollbar">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Urgency</label>
+              <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider ml-1">Urgency</label>
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value)}
-                className="w-full bg-white/80 border border-slate-100 rounded-2xl px-4 py-3 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none transition-all shadow-sm"
+                className="w-full bg-white/80 border border-slate-100 rounded-xl px-2 py-1.5 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none transition-all shadow-sm"
               >
                 {["Low", "Medium", "High", "Urgent"].map(p => <option key={p} value={p}>{p}</option>)}
               </select>
             </div>
             <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Type</label>
+              <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider ml-1">Type</label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full bg-white/80 border border-slate-100 rounded-2xl px-4 py-3 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none transition-all shadow-sm"
+                className="w-full bg-white/80 border border-slate-100 rounded-xl px-2 py-1.5 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none transition-all shadow-sm"
               >
                 {["Support", "Bug", "Feature", "Question"].map(c => <option key={c} value={c}>{c}</option>)}
               </select>
@@ -194,12 +194,12 @@ const RaiseTicket = () => {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Description</label>
+            <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider ml-1">Description</label>
             <textarea
               value={issue}
               onChange={(e) => setIssue(e.target.value)}
-              placeholder="How can we help you today?"
-              className="w-full bg-white/80 border border-slate-100 rounded-[1.5rem] px-5 py-4 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none transition-all shadow-sm h-40 resize-none placeholder:text-slate-300"
+              placeholder="Describe your issue..."
+              className="w-full bg-white/80 border border-slate-100 rounded-xl px-3 py-2 text-xs font-medium text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none transition-all shadow-sm h-16 resize-none placeholder:text-slate-300"
             />
             <div className="flex justify-between px-1">
               <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Min 20 characters</p>
@@ -210,11 +210,11 @@ const RaiseTicket = () => {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Supporting Media</label>
+            <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider ml-1">Supporting Media</label>
             {!file ? (
-              <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-slate-200 rounded-[1.5rem] bg-slate-50/50 cursor-pointer hover:bg-indigo-50/30 hover:border-indigo-200 transition-all group">
-                <Upload className="w-5 h-5 text-slate-300 group-hover:text-indigo-500 mb-1" />
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-indigo-600">Attach Evidence</span>
+              <label className="flex items-center justify-center gap-2 w-full py-2 border border-dashed border-slate-300 rounded-xl bg-slate-50/50 cursor-pointer hover:bg-indigo-50 hover:border-indigo-300 transition-all group">
+                <Upload className="w-3.5 h-3.5 text-slate-400 group-hover:text-indigo-600" />
+                <span className="text-[10px] font-bold text-slate-500 group-hover:text-indigo-600">Attach File</span>
                 <input type="file" onChange={handleFileChange} className="hidden" />
               </label>
             ) : (
@@ -236,7 +236,7 @@ const RaiseTicket = () => {
             whileTap={{ scale: 0.95 }}
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-indigo-200 hover:bg-indigo-700 disabled:bg-slate-300 disabled:shadow-none transition-all flex items-center justify-center gap-3"
+            className="w-full bg-indigo-600 text-white py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider shadow-lg shadow-indigo-200 hover:bg-indigo-700 disabled:bg-slate-300 disabled:shadow-none transition-all flex items-center justify-center gap-2"
           >
             {isSubmitting ? "Processing..." : <><Send size={16} /> Dispatch Ticket</>}
           </motion.button>
