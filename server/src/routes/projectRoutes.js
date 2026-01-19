@@ -7,6 +7,7 @@ router.post('/', projectController.createProject);
 router.get('/:id', projectController.getProjectById);
 router.put('/:id', projectController.updateProject);
 router.put('/:id/payment', projectController.updateProjectPayment);
+router.get('/:id/payments', projectController.getProjectPayments);
 router.delete('/:id', projectController.deleteProject);
 router.post('/parse-location', projectController.parseLocation);
 // Magic Link

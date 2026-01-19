@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import axios from "../../../shared/utils/axios";
-import { ArrowLeft, Upload, Trash2, FileText, Image as ImageIcon, Calendar } from 'lucide-react';
+import { ArrowLeft, Upload, Trash2, FileText, Image as ImageIcon, Calendar, Eye, X } from 'lucide-react';
 
 const ProjectManager = () => {
     const { id } = useParams();
@@ -287,6 +287,7 @@ const DocumentManager = ({ projectId }) => {
 
 const TimelineManager = ({ projectId }) => {
     const [tasks, setTasks] = useState([]);
+    const [selectedEvidence, setSelectedEvidence] = useState(null);
     const [loading, setLoading] = useState(true);
     const stages = ["Freezing Mail", "Approval of finalized designs", "Production", "Installation"];
 
@@ -329,7 +330,19 @@ const TimelineManager = ({ projectId }) => {
                         <div className="space-y-2 flex-1">
                             {tasks.filter(t => t.stage === stage).map(t => (
                                 <div key={t.id} className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-sm flex justify-between items-center group">
-                                    <span className={t.status === 'COMPLETED' ? 'line-through text-slate-400' : 'text-slate-700'}>{t.title}</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className={t.status === 'COMPLETED' ? 'line-through text-slate-400' : 'text-slate-700'}>{t.title}</span>
+                                        {/* Show Proof Eye Icon if evidence exists */}
+                                        {t.evidence && t.evidence.length > 0 && (
+                                            <button
+                                                onClick={() => setSelectedEvidence(t)}
+                                                className="text-indigo-600 hover:text-indigo-800 p-1 hover:bg-indigo-50 rounded-full transition"
+                                                title="View Task Proof"
+                                            >
+                                                <Eye size={14} />
+                                            </button>
+                                        )}
+                                    </div>
                                     {user.role !== 'VIEW_ONLY_ADMIN' && (
                                         <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                                             <button
@@ -347,6 +360,31 @@ const TimelineManager = ({ projectId }) => {
                     </div>
                 ))}
             </div>
+
+            {/* Proof Modal */}
+            {selectedEvidence && (
+                <div className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setSelectedEvidence(null)}>
+                    <div className="bg-white rounded-2xl overflow-hidden max-w-4xl w-full max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
+                        <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                            <h3 className="font-bold text-slate-800">Proof: {selectedEvidence.title}</h3>
+                            <button onClick={() => setSelectedEvidence(null)} className="p-2 hover:bg-slate-200 rounded-full transition"><X size={20} /></button>
+                        </div>
+                        <div className="p-6 overflow-y-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {selectedEvidence.evidence.map(ev => (
+                                <div key={ev.id} className="group relative">
+                                    <div className="aspect-square bg-slate-100 rounded-xl overflow-hidden border border-slate-200">
+                                        <img src={`${apiUrl}${ev.url}`} alt="Proof" className="w-full h-full object-cover transition duration-300 group-hover:scale-105" />
+                                    </div>
+                                    <div className="mt-2 text-[10px] text-slate-500 font-mono bg-slate-50 p-2 rounded-lg border border-slate-100">
+                                        <p>📅 {new Date(ev.capturedAt).toLocaleString()}</p>
+                                        {ev.latitude && <p>📍 {ev.latitude}, {ev.longitude}</p>}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                 <h3 className="font-bold text-lg mb-4">Unassigned Tasks</h3>
@@ -539,6 +577,58 @@ const SettingsManager = ({ projectId }) => {
                     </button>
                 )}
             </form>
+
+            <div className="mt-12 pt-8 border-t border-slate-100">
+                <h4 className="font-bold text-slate-800 mb-4 text-sm uppercase tracking-wide">Transaction History (Admin Proof)</h4>
+                <PaymentHistoryTable projectId={projectId} reloadTrigger={percentage} />
+            </div>
+        </div>
+    );
+};
+
+const PaymentHistoryTable = ({ projectId, reloadTrigger }) => {
+    const [history, setHistory] = useState([]);
+
+    useEffect(() => {
+        const fetchHistory = async () => {
+            try {
+                const res = await axios.get(`/projects/${projectId}/payments`);
+                setHistory(res.data);
+            } catch (err) { console.error(err); }
+        };
+        fetchHistory();
+    }, [projectId, reloadTrigger]);
+
+    if (history.length === 0) return <p className="text-xs text-slate-400 italic">No payments recorded yet.</p>;
+
+    return (
+        <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+                <thead className="text-slate-500 border-b border-slate-200">
+                    <tr>
+                        <th className="py-2 pl-2">Level</th>
+                        <th className="py-2">Date</th>
+                        <th className="py-2">Mode</th>
+                        <th className="py-2">Verified By</th>
+                    </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                    {history.map(tx => (
+                        <tr key={tx.id}>
+                            <td className="py-2 pl-2 font-bold text-indigo-600">{tx.percentage}%</td>
+                            <td className="py-2 text-slate-600">
+                                {new Date(tx.date).toLocaleDateString()}
+                                <span className="block text-[10px] text-slate-400">{tx.time}</span>
+                            </td>
+                            <td className="py-2 text-slate-600">
+                                <span className="px-2 py-0.5 bg-slate-100 rounded text-[10px] font-bold">{tx.mode}</span>
+                                {tx.amount && <span className="block mt-0.5 font-mono">₹{tx.amount}</span>}
+                            </td>
+                            <td className="py-2 text-slate-600 font-medium">{tx.verifiedBy}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
         </div>
     );
 };

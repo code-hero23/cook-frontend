@@ -240,6 +240,21 @@ exports.updateProjectPayment = async (req, res) => {
     }
 };
 
+
+
+// Get Project Payment History
+exports.getProjectPayments = async (req, res) => {
+    try {
+        const payments = await prisma.paymentTransaction.findMany({
+            where: { projectId: req.params.id },
+            orderBy: { createdAt: 'desc' }
+        });
+        res.json(payments);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 // Start of DELETE
 exports.deleteProject = async (req, res) => {
     try {
