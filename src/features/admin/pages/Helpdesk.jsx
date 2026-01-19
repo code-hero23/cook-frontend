@@ -141,75 +141,128 @@ const Helpdesk = () => {
                         <p className="text-slate-500 font-medium">No tickets found.</p>
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left">
-                            <thead className="bg-slate-50 text-xs text-slate-500 uppercase font-bold tracking-wider">
-                                <tr>
-                                    <th className="px-6 py-4 border-b">ID</th>
-                                    <th className="px-6 py-4 border-b">Subject</th>
-                                    <th className="px-6 py-4 border-b">Project</th>
-                                    <th className="px-6 py-4 border-b">Priority</th>
-                                    <th className="px-6 py-4 border-b">Status</th>
-                                    <th className="px-6 py-4 border-b text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                                {filteredTickets.map((ticket) => (
-                                    <tr key={ticket.id} className="hover:bg-slate-50 transition-colors group">
-                                        <td className="px-6 py-4 font-mono font-medium text-slate-600">
-                                            {ticket.ticketId}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="font-medium text-slate-800 flex items-center gap-2">
-                                                {ticket.subject}
-                                                {ticket.taskId && <CheckCircle size={14} className="text-green-500" title="Converted to Issue" />}
-                                            </div>
-                                            <div className="text-slate-500 text-xs mt-0.5 line-clamp-1">{ticket.description}</div>
-                                            {ticket.attachmentUrl && (
-                                                <a href={`${apiUrl}${ticket.attachmentUrl}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-indigo-600 mt-1 hover:underline">
-                                                    <Download size={12} /> Attachment
-                                                </a>
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="font-medium text-slate-700">{ticket.project?.name}</div>
-                                            <div className="text-xs text-slate-400">{ticket.project?.projectCode}</div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-2 py-1 rounded-md text-xs font-bold ${priorityColors[ticket.priority] || priorityColors.Medium}`}>
-                                                {ticket.priority}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${statusColors[ticket.status] || statusColors.Open}`}>
-                                                {ticket.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="flex justify-end gap-2">
-                                                <button
-                                                    onClick={() => setSelectedTicket(ticket)}
-                                                    className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition"
-                                                    title="View Details"
-                                                >
-                                                    <Eye size={16} />
-                                                </button>
-
-                                                {ticket.status !== 'Resolved' && (
-                                                    <button
-                                                        onClick={() => handleStatusUpdate(ticket.id, 'Resolved')}
-                                                        className="text-xs bg-green-50 text-green-600 px-3 py-1.5 rounded-lg hover:bg-green-100 font-bold transition"
-                                                    >
-                                                        Resolve
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </td>
+                    <>
+                        {/* Desktop Table View */}
+                        <div className="hidden md:block overflow-hidden">
+                            <table className="w-full text-sm text-left table-fixed">
+                                <thead className="bg-slate-50 text-xs text-slate-500 uppercase font-bold tracking-wider">
+                                    <tr>
+                                        <th className="px-6 py-4 border-b w-24">ID</th>
+                                        <th className="px-6 py-4 border-b w-auto">Subject</th>
+                                        <th className="px-6 py-4 border-b w-48">Project</th>
+                                        <th className="px-6 py-4 border-b w-32">Priority</th>
+                                        <th className="px-6 py-4 border-b w-32">Status</th>
+                                        <th className="px-6 py-4 border-b text-right w-36">Actions</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {filteredTickets.map((ticket) => (
+                                        <tr key={ticket.id} className="hover:bg-slate-50 transition-colors group">
+                                            <td className="px-6 py-4 font-mono font-medium text-slate-600 truncate">
+                                                {ticket.ticketId}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="font-medium text-slate-800 flex items-center gap-2 truncate">
+                                                    <span className="truncate" title={ticket.subject}>{ticket.subject}</span>
+                                                    {ticket.taskId && <CheckCircle size={14} className="text-green-500 shrink-0" title="Converted to Issue" />}
+                                                </div>
+                                                <div className="text-slate-500 text-xs mt-0.5 truncate">{ticket.description}</div>
+                                                {ticket.attachmentUrl && (
+                                                    <a href={`${apiUrl}${ticket.attachmentUrl}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-indigo-600 mt-1 hover:underline">
+                                                        <Download size={12} /> Attachment
+                                                    </a>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="font-medium text-slate-700 truncate" title={ticket.project?.name}>{ticket.project?.name}</div>
+                                                <div className="text-xs text-slate-400 truncate">{ticket.project?.projectCode}</div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className={`px-2 py-1 rounded-md text-xs font-bold ${priorityColors[ticket.priority] || priorityColors.Medium}`}>
+                                                    {ticket.priority}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className={`px-2 py-1 rounded-full text-xs font-bold ${statusColors[ticket.status] || statusColors.Open}`}>
+                                                    {ticket.status}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <div className="flex justify-end gap-2">
+                                                    <button
+                                                        onClick={() => setSelectedTicket(ticket)}
+                                                        className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition"
+                                                        title="View Details"
+                                                    >
+                                                        <Eye size={16} />
+                                                    </button>
+
+                                                    {ticket.status !== 'Resolved' && (
+                                                        <button
+                                                            onClick={() => handleStatusUpdate(ticket.id, 'Resolved')}
+                                                            className="text-xs bg-green-50 text-green-600 px-3 py-1.5 rounded-lg hover:bg-green-100 font-bold transition"
+                                                        >
+                                                            Resolve
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Mobile Card View */}
+                        <div className="md:hidden divide-y divide-slate-100">
+                            {filteredTickets.map((ticket) => (
+                                <div key={ticket.id} className="p-4 space-y-3">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-mono text-xs font-bold text-slate-500">{ticket.ticketId}</span>
+                                                <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${statusColors[ticket.status] || statusColors.Open}`}>
+                                                    {ticket.status}
+                                                </span>
+                                            </div>
+                                            <h3 className="font-bold text-slate-800 mt-1 text-sm">{ticket.subject}</h3>
+                                        </div>
+                                        <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${priorityColors[ticket.priority] || priorityColors.Medium}`}>
+                                            {ticket.priority}
+                                        </span>
+                                    </div>
+
+                                    <div className="p-3 bg-slate-50 rounded-lg space-y-2">
+                                        <div>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Project</p>
+                                            <p className="text-xs font-bold text-slate-700">{ticket.project?.name || 'N/A'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Description</p>
+                                            <p className="text-xs text-slate-600 line-clamp-2">{ticket.description}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center justify-end gap-3 pt-2">
+                                        <button
+                                            onClick={() => setSelectedTicket(ticket)}
+                                            className="px-3 py-2 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg flex items-center gap-2 transition"
+                                        >
+                                            <Eye size={14} /> View Details
+                                        </button>
+                                        {ticket.status !== 'Resolved' && (
+                                            <button
+                                                onClick={() => handleStatusUpdate(ticket.id, 'Resolved')}
+                                                className="px-3 py-2 text-xs font-bold text-green-600 bg-green-50 hover:bg-green-100 rounded-lg flex items-center gap-2 transition"
+                                            >
+                                                <CheckCircle size={14} /> Mark Resolved
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </>
                 )}
             </div>
 
