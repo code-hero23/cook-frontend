@@ -35,16 +35,16 @@
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     -webkit-tap-highlight-color: transparent;
     -webkit-font-smoothing: antialiased;
-    overscroll-behavior-y: contain;
+    /* overscroll-behavior-y: contain; */
 }
 
-a,
+/* a,
 button,
 input,
 div[role="button"],
 .cursor-pointer {
     touch-action: manipulation;
-}
+} */
 
 /* Glassmorphism Utilities */
 .glass-sidebar {

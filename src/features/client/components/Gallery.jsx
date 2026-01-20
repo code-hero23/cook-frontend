@@ -108,7 +108,7 @@ const Gallery = () => {
                 key={img.id}
                 role="button"
                 tabIndex={0}
-                className="group relative aspect-[4/5] overflow-hidden rounded-2xl bg-slate-100 border border-slate-200 shadow-sm transition-transform duration-200 cursor-pointer active:scale-[0.98] outline-none"
+                className="group relative aspect-[4/5] overflow-hidden rounded-2xl bg-slate-100 border border-slate-200 shadow-sm transition-transform duration-200 cursor-pointer active:scale-[0.98] outline-none z-[10] relative"
                 onClick={() => setSelectedImage(img)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
