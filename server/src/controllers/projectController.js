@@ -204,27 +204,45 @@ exports.updateProject = async (req, res) => {
 
 // Update Project Payment & Log Transaction
 exports.updateProjectPayment = async (req, res) => {
+    console.log("updateProjectPayment called with body:", req.body);
     try {
         const { percentage, amount, date, time, mode, verifiedBy } = req.body;
         const projectId = req.params.id;
 
         // Validation
-        if (!percentage || !date || !mode || !verifiedBy) {
+        if (!projectId) {
+            return res.status(400).json({ error: "Project ID is required" });
+        }
+        if (percentage === undefined || percentage === null || !date || !mode || !verifiedBy) {
+            console.error("Missing required fields:", { percentage, date, mode, verifiedBy });
             return res.status(400).json({ error: "Missing required payment details (Percentage, Date, Mode, Verified By)" });
         }
+
+        const parsedPercentage = parseInt(percentage);
+        if (isNaN(parsedPercentage)) {
+            return res.status(400).json({ error: "Invalid percentage value" });
+        }
+
+        const parsedAmount = amount ? parseFloat(amount) : null;
+        const parsedDate = new Date(date);
+        if (isNaN(parsedDate.getTime())) {
+            return res.status(400).json({ error: "Invalid date format" });
+        }
+
+        console.log(`Processing payment for Project ${projectId}: ${parsedPercentage}%`);
 
         // Transaction: Update Project + Create Log
         const result = await prisma.$transaction([
             prisma.project.update({
                 where: { id: projectId },
-                data: { paymentPercentage: parseInt(percentage) }
+                data: { paymentPercentage: parsedPercentage }
             }),
             prisma.paymentTransaction.create({
                 data: {
                     projectId,
-                    percentage: parseInt(percentage),
-                    amount: amount ? parseFloat(amount) : null,
-                    date: new Date(date),
+                    percentage: parsedPercentage,
+                    amount: parsedAmount,
+                    date: parsedDate,
                     time,
                     mode,
                     verifiedBy
@@ -232,11 +250,16 @@ exports.updateProjectPayment = async (req, res) => {
             })
         ]);
 
+        console.log("Payment updated successfully:", result);
         res.json({ message: "Payment recorded and project phase updated", project: result[0] });
 
     } catch (error) {
-        console.error("Payment Update Error:", error);
-        res.status(500).json({ error: error.message });
+        console.error("Payment Update Error (Detailed):", error);
+        // Check for specific Prisma errors
+        if (error.code === 'P2025') {
+            return res.status(404).json({ error: "Project not found" });
+        }
+        res.status(500).json({ error: error.message, stack: error.stack });
     }
 };
 
@@ -245,13 +268,19 @@ exports.updateProjectPayment = async (req, res) => {
 // Get Project Payment History
 exports.getProjectPayments = async (req, res) => {
     try {
+        const projectId = req.params.id;
+        if (!projectId) {
+            return res.status(400).json({ error: "Project ID is required" });
+        }
+
         const payments = await prisma.paymentTransaction.findMany({
-            where: { projectId: req.params.id },
+            where: { projectId: projectId },
             orderBy: { createdAt: 'desc' }
         });
         res.json(payments);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error("Get Payment History Error:", error);
+        res.status(500).json({ error: error.message, stack: error.stack });
     }
 };
 
