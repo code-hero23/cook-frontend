@@ -203,18 +203,19 @@ const App = () => {
         </div>
       </div>
 
-      <AnimatePresence>
+      {/* TEMPORARILY DISABLED FOR DEBUGGING */}
+      {/* <AnimatePresence>
         {!hasAcceptedTerms && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="z-[200]" // Simplified wrapper
+            className="z-[200]"
           >
             <TermsPopup onAccept={handleAcceptTerms} />
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence> */}
 
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
