@@ -20,7 +20,7 @@ const Timeline = ({ tasks, projectStartDate }) => {
     });
 
   const getStatusIcon = (status) => {
-    const isCompleted = status && status.toLowerCase() === "completed";
+    const isCompleted = status && status.toUpperCase() === "COMPLETED";
     if (isCompleted) {
       return (
         <div className="tick-wrapper">
@@ -120,7 +120,7 @@ const Timeline = ({ tasks, projectStartDate }) => {
             const stageTasks = tasks.filter((t) => t.stage === stageName);
             if (stageTasks.length === 0) return null;
 
-            const isCompleted = stageTasks.every(t => t.status && t.status.toLowerCase() === "completed");
+            const isCompleted = stageTasks.every(t => t.status && t.status.toUpperCase() === "COMPLETED");
 
             return (
               <div key={stageName} className="flex flex-col">

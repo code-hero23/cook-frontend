@@ -66,7 +66,9 @@ const App = () => {
     if (!task) return;
 
     trigger('medium');
-    const newStatus = task.status === "Completed" ? "Pending" : "Completed";
+    // FIX: Normalize Check to Uppercase to match Backend
+    const isCompleted = task.status && task.status.toUpperCase() === "COMPLETED";
+    const newStatus = isCompleted ? "PENDING" : "COMPLETED";
 
     try {
       await axios.put(`/tasks/${id}`, { status: newStatus });
@@ -74,7 +76,7 @@ const App = () => {
         prev.map((t) => {
           if (t.id === id) {
             const timestamp = new Date().toISOString();
-            if (newStatus === "Completed") {
+            if (newStatus === "COMPLETED") {
               setActivity((oldLogs) => [
                 {
                   id: `${id}-${timestamp}`,
@@ -89,7 +91,7 @@ const App = () => {
                 oldLogs.filter((log) => log.taskId !== id)
               );
             }
-            return { ...t, status: newStatus, completedAt: newStatus === "Completed" ? timestamp : null };
+            return { ...t, status: newStatus, completedAt: newStatus === "COMPLETED" ? timestamp : null };
           }
           return t;
         })

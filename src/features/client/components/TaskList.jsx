@@ -37,7 +37,7 @@ const TaskList = ({ tasks = [] }) => {
     "Installation",
   ];
 
-  const unclassifiedTasks = tasks.filter(t => !stages.includes(t.stage) && t.status !== "Completed");
+  const unclassifiedTasks = tasks.filter(t => !stages.includes(t.stage) && t.status?.toUpperCase() !== "COMPLETED");
 
   return (
     <div className="bg-white/40 backdrop-blur-xl p-4 md:p-10 rounded-[3rem] shadow-2xl shadow-slate-200/50 border border-white/50">
@@ -57,7 +57,7 @@ const TaskList = ({ tasks = [] }) => {
           if (stageTasks.length === 0) return null;
 
           const isExpanded = expandedStages[stageName];
-          const completedCount = stageTasks.filter(t => t.status === "Completed").length;
+          const completedCount = stageTasks.filter(t => t.status?.toUpperCase() === "COMPLETED").length;
           const progress = (completedCount / stageTasks.length) * 100;
 
           return (
@@ -114,13 +114,13 @@ const TaskList = ({ tasks = [] }) => {
                           className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-white/60 rounded-2xl border border-white/50 hover:shadow-lg hover:shadow-indigo-50/50 transition-all gap-4 group"
                         >
                           <div className="flex items-center gap-4">
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm ${task.status === "Completed" ? "bg-green-50 text-green-600" : "bg-amber-50 text-amber-600"}`}>
-                              {task.status === "Completed" ? <CheckCircle2 size={20} /> : <Clock size={20} />}
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm ${task.status?.toUpperCase() === "COMPLETED" ? "bg-green-50 text-green-600" : "bg-amber-50 text-amber-600"}`}>
+                              {task.status?.toUpperCase() === "COMPLETED" ? <CheckCircle2 size={20} /> : <Clock size={20} />}
                             </div>
                             <div>
                               <p className="text-sm font-black text-slate-800 leading-tight">{task.title}</p>
                               <div className="flex items-center gap-3 mt-1.5">
-                                <span className={`text-[9px] font-black uppercase tracking-widest ${task.status === 'Completed' ? 'text-green-500' : 'text-amber-500'}`}>
+                                <span className={`text-[9px] font-black uppercase tracking-widest ${task.status?.toUpperCase() === 'COMPLETED' ? 'text-green-500' : 'text-amber-500'}`}>
                                   {task.status}
                                 </span>
                                 {task.dueDate && (

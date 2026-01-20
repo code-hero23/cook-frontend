@@ -30,7 +30,7 @@ const ProjectProgress = ({ tasks = [] }) => {
   const stageWeights = [15, 35, 40, 10];
   const stageData = stages.map((s, index) => {
     const stageTasks = tasks.filter(t => t.stage === s);
-    const completed = stageTasks.filter(t => t.status === "Completed").length;
+    const completed = stageTasks.filter(t => t.status?.toUpperCase() === "COMPLETED").length;
     return {
       name: s,
       total: stageTasks.length,
@@ -43,7 +43,7 @@ const ProjectProgress = ({ tasks = [] }) => {
   const totalStages = stageData.length;
   const completedStages = stageData.filter(s => s.isDone).length;
   const totalTasks = tasks.length;
-  const completedTasks = tasks.filter((t) => t.status === "Completed").length;
+  const completedTasks = tasks.filter((t) => t.status?.toUpperCase() === "COMPLETED").length;
 
   let weightedProgress = 0;
   stageData.forEach((stage) => {
