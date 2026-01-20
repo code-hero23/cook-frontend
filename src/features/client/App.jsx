@@ -206,10 +206,10 @@ const App = () => {
       <AnimatePresence>
         {!hasAcceptedTerms && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-lg"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="z-[200]" // Simplified wrapper
           >
             <TermsPopup onAccept={handleAcceptTerms} />
           </motion.div>
