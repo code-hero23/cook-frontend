@@ -56,8 +56,8 @@ const Profile = () => {
                 {/* Personal Details */}
                 <Section title="Lead Contact" icon={User} colorClass="bg-indigo-600 text-white" delay={0.1}>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-                        <DetailItem label="First Name" value={project.firstName} />
-                        <DetailItem label="Last Name" value={project.lastName} />
+                        <DetailItem label="First Name" value={project.clientFirstName || project.firstName} />
+                        <DetailItem label="Last Name" value={project.clientLastName || project.lastName} />
                     </div>
                     <DetailItem label="Email Identity" value={project.clientEmail} icon={Mail} />
                     <DetailItem label="Direct Line" value={project.clientPhone} icon={Phone} />
@@ -92,7 +92,7 @@ const Profile = () => {
 
                 {/* Billing Details */}
                 <Section title="Financial Records" icon={CreditCard} colorClass="bg-slate-800 text-white" delay={0.5}>
-                    <DetailItem label="Billing Name" value={project.billingName || `${project.firstName} ${project.lastName}`} />
+                    <DetailItem label="Billing Name" value={project.billingName || `${project.clientFirstName || project.firstName} ${project.clientLastName || project.lastName}`} />
                     <DetailItem label="Registered address" value={project.location} icon={MapPin} />
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                         <DetailItem label="Contact Link" value={project.billingPhone || project.clientPhone} icon={Phone} />

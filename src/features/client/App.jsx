@@ -35,12 +35,22 @@ const App = () => {
     const fetchProjectData = async () => {
       try {
         setLoading(true);
-        const [taskRes, activityRes] = await Promise.all([
+        // FETCH FRESH PROJECT DATA TOO
+        const [taskRes, activityRes, projectRes] = await Promise.all([
           axios.get("/tasks", { params: { projectId: project.id } }),
-          axios.get(`/activities/${project.id}`)
+          axios.get(`/activities/${project.id}`),
+          axios.get(`/projects/${project.id}`)
         ]);
 
         setTasks(taskRes.data);
+
+        // Update LocalStorage with FRESH Project Data
+        if (projectRes.data) {
+          localStorage.setItem("clientProject", JSON.stringify(projectRes.data));
+          // Dispatch a custom event or force update if needed, but for now app reload handles it mostly.
+          // Ideally, we should use a Context, but this is a quick fix.
+        }
+
         const formattedActivity = activityRes.data.map(log => ({
           id: log.id,
           message: log.message,
