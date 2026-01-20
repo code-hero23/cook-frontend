@@ -131,7 +131,7 @@ const Gallery = () => {
                     e.stopPropagation();
                     handleDownload(fullUrl, img.id);
                   }}
-                  className="absolute top-2 right-2 p-2 bg-white/90 backdrop-blur rounded-full text-slate-700 shadow-sm opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-10 hover:bg-white hover:text-indigo-600 active:scale-95"
+                  className="absolute top-2 right-2 p-2 bg-white/90 backdrop-blur rounded-full text-slate-700 shadow-sm opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-10 hover:bg-white hover:text-indigo-600 active:scale-95 pointer-events-auto cursor-pointer"
                   title="Download Image"
                 >
                   {downloadingId === img.id ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}

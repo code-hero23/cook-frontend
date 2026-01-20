@@ -50,9 +50,6 @@ function App() {
         <>
             <Toaster position="top-center" />
             <LoadingBar />
-            <ReloadPrompt />
-            <InstallPrompt />
-            <IOSInstallPrompt />
 
             <AnimatePresence mode="wait">
                 {isLoading ? (
@@ -77,6 +74,10 @@ function App() {
                     </BrowserRouter>
                 )}
             </AnimatePresence>
+
+            <ReloadPrompt />
+            <InstallPrompt />
+            <IOSInstallPrompt />
         </>
     );
 }

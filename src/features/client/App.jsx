@@ -150,46 +150,49 @@ const App = () => {
         {/* Mobile Sidebar Overlay */}
         <AnimatePresence>
           {menuOpen && (
-            <>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setMenuOpen(false)}
-                className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[990] md:hidden"
-              />
-              <motion.div
-                initial={{ x: "-100%" }}
-                animate={{ x: 0 }}
-                exit={{ x: "-100%" }}
-                transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                className="fixed inset-y-0 left-0 w-72 bg-white z-[1000] md:hidden shadow-2xl rounded-r-3xl overflow-hidden border-r border-white/50"
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMenuOpen(false)}
+              className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[990] md:hidden pointer-events-auto"
+            />
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {menuOpen && (
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed inset-y-0 left-0 w-72 bg-white z-[1000] md:hidden shadow-2xl rounded-r-3xl overflow-hidden border-r border-white/50 pointer-events-auto"
+            >
+              <div
+                className="h-full"
+                onTouchStart={(e) => { window._touchStartX = e.touches[0].clientX; }}
+                onTouchMove={(e) => {
+                  const touchEndX = e.touches[0].clientX;
+                  const diff = window._touchStartX - touchEndX;
+                  if (diff > 50) { trigger('light'); setMenuOpen(false); }
+                }}
               >
-                <div
-                  className="h-full"
-                  onTouchStart={(e) => { window._touchStartX = e.touches[0].clientX; }}
-                  onTouchMove={(e) => {
-                    const touchEndX = e.touches[0].clientX;
-                    const diff = window._touchStartX - touchEndX;
-                    if (diff > 50) { trigger('light'); setMenuOpen(false); }
+                <Sidebar
+                  selected={selected}
+                  setSelected={(val) => {
+                    setSelected(val);
+                    setMenuOpen(false);
                   }}
-                >
-                  <Sidebar
-                    selected={selected}
-                    setSelected={(val) => {
-                      setSelected(val);
-                      setMenuOpen(false);
-                    }}
-                    onLogout={handleLogout}
-                  />
-                </div>
-              </motion.div>
-            </>
+                  onLogout={handleLogout}
+                />
+              </div>
+            </motion.div>
           )}
         </AnimatePresence>
 
         {/* Main Content Area - Window Scroll */}
-        <div className="flex-1 bg-slate-50/30 min-w-0">
+        <div className="flex-1 bg-slate-50/30 min-w-0 relative z-[10]">
           <div className="p-4 md:p-6 lg:p-8 pb-32 md:pb-12">
             {selected === "overview" && <ProjectProgress tasks={tasks} />}
             {selected === "profile" && <Profile />}
@@ -203,19 +206,7 @@ const App = () => {
         </div>
       </div>
 
-      {/* TEMPORARILY DISABLED FOR DEBUGGING */}
-      {/* <AnimatePresence>
-        {!hasAcceptedTerms && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="z-[200]"
-          >
-            <TermsPopup onAccept={handleAcceptTerms} />
-          </motion.div>
-        )}
-      </AnimatePresence> */}
+
 
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
