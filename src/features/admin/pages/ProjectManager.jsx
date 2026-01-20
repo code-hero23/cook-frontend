@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import axios from "../../../shared/utils/axios";
-import { ArrowLeft, Upload, Trash2, FileText, Image as ImageIcon, Calendar, Eye, X } from 'lucide-react';
+import { ArrowLeft, Upload, Trash2, FileText, Image as ImageIcon, Calendar, Eye, X, CheckCircle, MapPin, Clock, Folder, Download } from 'lucide-react';
 
 const ProjectManager = () => {
     const { id } = useParams();
@@ -361,26 +361,123 @@ const TimelineManager = ({ projectId }) => {
                 ))}
             </div>
 
-            {/* Proof Modal */}
+            {/* Verified Proof Modal - Polished UI */}
             {selectedEvidence && (
-                <div className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setSelectedEvidence(null)}>
-                    <div className="bg-white rounded-2xl overflow-hidden max-w-4xl w-full max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
-                        <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                            <h3 className="font-bold text-slate-800">Proof: {selectedEvidence.title}</h3>
-                            <button onClick={() => setSelectedEvidence(null)} className="p-2 hover:bg-slate-200 rounded-full transition"><X size={20} /></button>
+                <div className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in" onClick={() => setSelectedEvidence(null)}>
+                    <div className="bg-white rounded-2xl overflow-hidden max-w-3xl w-full shadow-2xl flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
+
+                        {/* Header */}
+                        <div className="p-4 bg-white border-b border-slate-100 flex justify-between items-start">
+                            <div>
+                                <h3 className="text-xl font-bold text-slate-800">{selectedEvidence.title}</h3>
+                                <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">
+                                    <Folder size={12} />
+                                    <span>{project.name} • WEB PROOF v2.0</span>
+                                </div>
+                            </div>
+                            <button onClick={() => setSelectedEvidence(null)} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition">
+                                <X size={24} />
+                            </button>
                         </div>
-                        <div className="p-6 overflow-y-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {selectedEvidence.evidence.map(ev => (
-                                <div key={ev.id} className="group relative">
-                                    <div className="aspect-square bg-slate-100 rounded-xl overflow-hidden border border-slate-200">
-                                        <img src={`${apiUrl}${ev.url}`} alt="Proof" className="w-full h-full object-cover transition duration-300 group-hover:scale-105" />
+
+                        <div className="overflow-y-auto">
+                            {/* Main Banner Image (First Evidence) */}
+                            {selectedEvidence.evidence.length > 0 && (
+                                <div className="bg-slate-900 border-b border-slate-100">
+                                    <img
+                                        src={`${apiUrl}${selectedEvidence.evidence[0].url}`}
+                                        alt="Proof Evidence"
+                                        className="w-full h-80 object-contain mx-auto"
+                                    />
+                                    {selectedEvidence.evidence.length > 1 && (
+                                        <div className="p-2 bg-slate-900 text-center text-xs text-slate-400 border-t border-slate-800">
+                                            + {selectedEvidence.evidence.length - 1} more photo(s) available in gallery
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Details Grid */}
+                            <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50/50">
+                                {/* Status Card */}
+                                <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center">
+                                        <CheckCircle size={24} />
                                     </div>
-                                    <div className="mt-2 text-[10px] text-slate-500 font-mono bg-slate-50 p-2 rounded-lg border border-slate-100">
-                                        <p>📅 {new Date(ev.capturedAt).toLocaleString()}</p>
-                                        {ev.latitude && <p>📍 {ev.latitude}, {ev.longitude}</p>}
+                                    <div>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</p>
+                                        <p className="font-bold text-slate-800">Completed</p>
                                     </div>
                                 </div>
-                            ))}
+
+                                {/* Time Card */}
+                                <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                                        <Clock size={24} />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Time</p>
+                                        <p className="font-bold text-slate-800">
+                                            {selectedEvidence.evidence[0]
+                                                ? new Date(selectedEvidence.evidence[0].capturedAt).toLocaleDateString()
+                                                : new Date().toLocaleDateString()}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* GPS Card */}
+                                <div className="col-span-1 md:col-span-2 bg-white p-6 rounded-xl border border-slate-100 shadow-sm flex items-center justify-center text-center">
+                                    {selectedEvidence.evidence[0]?.latitude ? (
+                                        <div className="w-full">
+                                            <div className="w-12 h-12 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center mx-auto mb-2">
+                                                <MapPin size={24} />
+                                            </div>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">GPS Location</p>
+                                            <p className="font-mono text-sm font-bold text-slate-700 mt-1">
+                                                {selectedEvidence.evidence[0].latitude}, {selectedEvidence.evidence[0].longitude}
+                                            </p>
+                                            <a
+                                                href={`https://maps.google.com/?q=${selectedEvidence.evidence[0].latitude},${selectedEvidence.evidence[0].longitude}`}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="text-xs text-indigo-600 hover:underline mt-2 inline-block"
+                                            >
+                                                View on Maps
+                                            </a>
+                                        </div>
+                                    ) : (
+                                        <div className="opacity-50">
+                                            <MapPin size={32} className="mx-auto text-slate-400 mb-2" />
+                                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">No GPS Data Captured</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="p-4 bg-white border-t border-slate-100 flex gap-4">
+                            <button
+                                onClick={() => {
+                                    const link = document.createElement("a");
+                                    link.href = `${apiUrl}${selectedEvidence.evidence[0].url}`;
+                                    link.download = `Proof-${selectedEvidence.title}-${Date.now()}`;
+                                    link.target = "_blank";
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    document.body.removeChild(link);
+                                }}
+                                className="flex-1 py-4 bg-white border-2 border-slate-200 text-slate-700 font-bold rounded-xl shadow-sm hover:bg-slate-50 hover:border-slate-300 transition-all flex items-center justify-center gap-2"
+                            >
+                                <Download size={20} />
+                                Download Original Image
+                            </button>
+                            <button
+                                onClick={() => setSelectedEvidence(null)}
+                                className="flex-1 py-4 bg-slate-900 text-white font-bold rounded-xl shadow-lg hover:bg-slate-800 transition-all active:scale-[0.99]"
+                            >
+                                Close Verification
+                            </button>
                         </div>
                     </div>
                 </div>
