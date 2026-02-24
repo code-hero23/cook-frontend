@@ -29,7 +29,11 @@ const RefreshButton = ({ onRefresh, isLoading, className = "", label = "" }) => 
         >
             <RefreshCw
                 size={16}
-                className={`${isLoading ? 'animate-spin text-indigo-600' : 'group-hover:rotate-180 transition-transform duration-500'}`}
+                className={
+                    isLoading
+                        ? "animate-spin text-indigo-600"
+                        : "group-hover:rotate-180 transition-transform duration-500"
+                }
             />
             {label && <span className="text-xs font-black uppercase tracking-widest">{label}</span>}
         </motion.button>

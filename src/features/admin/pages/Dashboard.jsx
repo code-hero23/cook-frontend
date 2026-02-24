@@ -67,19 +67,21 @@ const Dashboard = () => {
     >
 
       {/* HEADER */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
+      <div className="flex flex-wrap justify-between items-start sm:items-center gap-4 w-full">
+        <div className="flex-1 min-w-[200px]">
           <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Dashboard</h1>
           <p className="text-sm text-gray-500 font-medium">
             Overview of Cookscape projects, tasks, and issues.
           </p>
         </div>
-        <RefreshButton
-          onRefresh={refreshData}
-          isLoading={loading}
-          label="Sync All"
-          className="bg-white/80 backdrop-blur-sm border-slate-200/60 shadow-sm"
-        />
+        <div className="flex-shrink-0">
+          <RefreshButton
+            onRefresh={refreshData}
+            isLoading={loading}
+            label="Sync All"
+            className="bg-white/80 backdrop-blur-sm border-slate-200/60 shadow-sm"
+          />
+        </div>
       </div>
 
       {/* ================= STAT CARDS ================= */}
