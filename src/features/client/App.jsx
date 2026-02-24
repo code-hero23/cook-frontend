@@ -15,6 +15,8 @@ import Profile from "./components/Profile";
 import TermsPopup from "./components/TermsPopup";
 import useHaptics from "../../shared/hooks/useHaptics";
 import { useNavigate } from "react-router-dom";
+import RefreshButton from "../../shared/components/RefreshButton";
+
 
 const App = () => {
   const navigate = useNavigate();
@@ -140,6 +142,19 @@ const App = () => {
         setMenuOpen={setMenuOpen}
         handleLogout={handleLogout}
       />
+
+      <div className="bg-white/40 backdrop-blur-md px-4 py-2 border-b border-white/20 flex items-center justify-between md:hidden">
+        <RefreshButton
+          onRefresh={() => window.location.reload()}
+          isLoading={loading}
+          label="Sync"
+          className="border-none bg-transparent shadow-none p-0 h-auto"
+        />
+        <span className="text-[10px] font-black text-slate-400 tracking-widest uppercase">
+          Portal Status: Online
+        </span>
+      </div>
+
 
       <div className="flex-1 flex relative overflow-hidden">
         {/* Desktop Sidebar - Sticky! */}

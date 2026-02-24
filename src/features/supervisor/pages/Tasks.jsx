@@ -12,6 +12,8 @@ import {
     Calendar,
     MapPin
 } from 'lucide-react';
+import RefreshButton from '../../../shared/components/RefreshButton';
+
 
 const Tasks = () => {
     const navigate = useNavigate();
@@ -69,7 +71,8 @@ const Tasks = () => {
                     <h1 className="text-2xl font-black text-slate-800">My Tasks</h1>
                     <p className="text-slate-500 font-medium text-sm">Manage and update your assigned tasks</p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2">
+                    <RefreshButton onRefresh={fetchTasks} isLoading={loading} label="Sync" />
                     <button className="px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold text-sm shadow-md shadow-indigo-200">
                         + New Issue
                     </button>

@@ -3,6 +3,8 @@ import { TaskContext } from "../context/TaskContext";
 import { useSearchParams } from "react-router-dom";
 import { Bug, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Calendar } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import RefreshButton from "../../../shared/components/RefreshButton";
+
 
 const Issues = () => {
     // Pagination state: page per project
@@ -63,7 +65,7 @@ const Issues = () => {
         setIssueContext("");
         setIsConfirmed(false);
     };
-    const { issues, projects, updateIssueStatus } = useContext(TaskContext);
+    const { projects, issues, updateIssueStatus, refreshData, loading } = useContext(TaskContext);
     const [searchParams] = useSearchParams();
     const [expandedProjects, setExpandedProjects] = useState(() => {
         try {
@@ -238,16 +240,18 @@ const Issues = () => {
                     </div>
                 </div>
             )}
-            <div className="flex justify-between items-center mb-6">
-                <div className="flex items-center gap-3">
-                    <Bug className="text-orange-600" size={28} />
-                    <h1 className="text-2xl font-bold text-gray-800">Project Issues</h1>
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6 md:mb-8">
+                <div className="flex items-center gap-4">
+                    <h1 className="text-xl md:text-2xl font-black text-slate-800 tracking-tight">Reported Issues</h1>
+                    <RefreshButton onRefresh={refreshData} isLoading={loading} label="Sync" />
                 </div>
-                {filter && (
-                    <span className="text-xs font-semibold px-3 py-1 bg-orange-100 text-orange-700 rounded-full uppercase tracking-wider">
-                        Filter: {filter}
-                    </span>
-                )}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+                    {filter && (
+                        <span className="text-xs font-semibold px-3 py-1 bg-orange-100 text-orange-700 rounded-full uppercase tracking-wider">
+                            Filter: {filter}
+                        </span>
+                    )}
+                </div>
             </div>
 
             <div className="space-y-6">

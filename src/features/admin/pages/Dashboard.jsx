@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useApp } from "../context/AppContext.jsx";
 import StatCard from "../components/common/StatCard.jsx";
 import StatusBadge from "../components/common/StatusBadge.jsx";
+import RefreshButton from "../../../shared/components/RefreshButton.jsx";
 
 
 
@@ -25,7 +26,7 @@ import { isProjectOverdue } from "../utils/dateUtils.js";
 // ====================== Dashboard Component ======================
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { metrics, projects } = useApp();
+  const { metrics, projects, refreshData, loading } = useApp();
 
   const safeMetrics = {
     openProjects: metrics?.openProjects ?? 0,
@@ -66,11 +67,19 @@ const Dashboard = () => {
     >
 
       {/* HEADER */}
-      <div>
-        <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
-        <p className="text-sm text-gray-500">
-          Overview of Cookscape projects, tasks, and issues.
-        </p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Dashboard</h1>
+          <p className="text-sm text-gray-500 font-medium">
+            Overview of Cookscape projects, tasks, and issues.
+          </p>
+        </div>
+        <RefreshButton
+          onRefresh={refreshData}
+          isLoading={loading}
+          label="Sync All"
+          className="bg-white/80 backdrop-blur-sm border-slate-200/60 shadow-sm"
+        />
       </div>
 
       {/* ================= STAT CARDS ================= */}

@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { useApp } from "../context/AppContext.jsx";
 import StatusBadge from "../components/common/StatusBadge.jsx";
 import { Plus, Pencil, Mail, Eye, X, MapPin, Folder, ChevronRight, ChevronLeft, ArrowLeft, CheckCircle2, Clock, AlertCircle, Download } from "lucide-react";
+import RefreshButton from "../../../shared/components/RefreshButton.jsx";
 import { isTaskOverdue } from "../utils/dateUtils.js";
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -48,7 +49,7 @@ const emptyTask = {
 };
 
 const Tasks = () => {
-  const { tasks, projects, employees, addTask, updateTask } = useApp();
+  const { tasks, projects, employees, addTask, updateTask, refreshData, loading } = useApp();
   const [searchParams] = useSearchParams();
   const [search, setSearch] = useState(searchParams.get("q") || "");
   const [modalOpen, setModalOpen] = useState(false);
@@ -221,15 +222,22 @@ const Tasks = () => {
           <h1 className="text-xl font-bold text-slate-800">Projects Overview</h1>
           <p className="text-sm text-slate-500">Select a project to view and manage its tasks.</p>
         </div>
-        {!isManager && user.role !== 'VIEW_ONLY_ADMIN' && (
-          <button
-            onClick={openCreate}
-            className="inline-flex items-center gap-2 rounded-xl bg-slate-900 text-white px-4 py-2 text-sm font-bold shadow-lg hover:bg-slate-800 transition"
-          >
-            <Plus size={16} />
-            Global Task
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+          {!isManager && user.role !== 'VIEW_ONLY_ADMIN' && (
+            <button
+              onClick={openCreate}
+              className="inline-flex items-center gap-2 rounded-xl bg-slate-900 text-white px-4 py-2 text-sm font-bold shadow-lg hover:bg-slate-800 transition"
+            >
+              <Plus size={16} />
+              Global Task
+            </button>
+          )}
+          <RefreshButton
+            onRefresh={refreshData}
+            isLoading={loading}
+            className="border-slate-200 shadow-sm"
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -300,15 +308,22 @@ const Tasks = () => {
           </div>
         </div>
 
-        {!isManager && user.role !== 'VIEW_ONLY_ADMIN' && (
-          <button
-            onClick={openCreate}
-            className="inline-flex items-center gap-2 rounded-xl bg-orange-600 text-white px-5 py-2.5 text-sm font-bold hover:bg-orange-700 shadow-lg shadow-orange-100 transition-all active:scale-95"
-          >
-            <Plus size={18} />
-            New Project Task
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+          {!isManager && user.role !== 'VIEW_ONLY_ADMIN' && (
+            <button
+              onClick={openCreate}
+              className="inline-flex items-center gap-2 rounded-xl bg-orange-600 text-white px-5 py-2.5 text-sm font-bold hover:bg-orange-700 shadow-lg shadow-orange-100 transition-all active:scale-95"
+            >
+              <Plus size={18} />
+              New Project Task
+            </button>
+          )}
+          <RefreshButton
+            onRefresh={refreshData}
+            isLoading={loading}
+            className="border-slate-200 shadow-sm"
+          />
+        </div>
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 space-y-4">

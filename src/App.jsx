@@ -29,9 +29,12 @@ const RootRedirect = () => {
     return <Navigate to="/login" replace />;
 };
 
+import ReloadPrompt from './components/pwa/ReloadPrompt';
+
 function App() {
     return (
         <>
+            <ReloadPrompt />
             <Toaster position="top-center" />
             <BrowserRouter>
                 <Routes>

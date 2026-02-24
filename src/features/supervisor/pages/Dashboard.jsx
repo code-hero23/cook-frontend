@@ -12,6 +12,8 @@ import {
     Filter
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import RefreshButton from '../../../shared/components/RefreshButton';
+
 
 const Dashboard = () => {
     // Safely consume context or default to empty
@@ -127,10 +129,14 @@ const Dashboard = () => {
                     <h2 className="text-xl font-bold text-slate-800">Priority Tasks</h2>
                     <p className="text-slate-400 text-sm font-medium mt-1">Focus on these items today</p>
                 </div>
-                <button className="flex items-center gap-2 text-slate-500 hover:text-indigo-600 transition-colors text-sm font-bold px-4 py-2 bg-white border border-slate-200 rounded-xl shadow-sm">
-                    <Filter className="w-4 h-4" />
-                    Filter
-                </button>
+                <div className="flex items-center gap-3">
+                    <RefreshButton onRefresh={fetchTasks} isLoading={loading} label="Sync" />
+                    <button className="flex items-center gap-2 text-slate-500 hover:text-indigo-600 transition-colors text-sm font-bold px-4 py-2 bg-white border border-slate-200 rounded-xl shadow-sm">
+                        <Filter className="w-4 h-4" />
+                        Filter
+                    </button>
+                </div>
+
             </div>
 
             {/* Task List */}

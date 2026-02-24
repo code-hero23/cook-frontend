@@ -5,10 +5,13 @@ import { TaskContext } from "../context/TaskContext";
 import { useSearchParams } from "react-router-dom";
 import { ChevronDown, ChevronUp, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import RefreshButton from "../../../shared/components/RefreshButton";
+
 
 const AllTasks = () => {
 
-  const { tasks, projects, users, updateTaskStatus } = useContext(TaskContext);
+  const { tasks, projects, users, updateTaskStatus, refreshData, loading } = useContext(TaskContext);
+
   // useToast hook removed
   const [searchParams] = useSearchParams();
 
@@ -152,8 +155,12 @@ const AllTasks = () => {
 
 
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-2">
-        <h1 className="text-lg sm:text-xl font-bold">Tasks</h1>
+        <div className="flex items-center gap-4">
+          <h1 className="text-lg sm:text-xl font-bold">Tasks</h1>
+          <RefreshButton onRefresh={refreshData} isLoading={loading} label="Refresh" className="sm:scale-90" />
+        </div>
         {filter && (
+
           <span className="text-xs font-semibold px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full uppercase tracking-wider">
             Filter: {filter}
           </span>

@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { useApp } from "../context/AppContext.jsx";
 import StatusBadge from "../components/common/StatusBadge.jsx";
 import { Plus, Pencil, Upload } from "lucide-react";
+import RefreshButton from "../../../shared/components/RefreshButton.jsx";
 import BulkEmployeeImport from "../components/BulkEmployeeImport.jsx";
 
 const emptyForm = {
@@ -16,7 +17,7 @@ const emptyForm = {
 };
 
 const Employees = () => {
-  const { employees, addEmployee, updateEmployee } = useApp();
+  const { employees, addEmployee, updateEmployee, refreshData, loading } = useApp();
   const [searchParams] = useSearchParams();
   const [search, setSearch] = useState(searchParams.get("q") || "");
   const [modalOpen, setModalOpen] = useState(false);
@@ -95,6 +96,11 @@ const Employees = () => {
               <Plus size={16} />
               Add Employee
             </button>
+            <RefreshButton
+              onRefresh={refreshData}
+              isLoading={loading}
+              className="border-slate-200 shadow-sm"
+            />
           </div>
         )}
       </div>

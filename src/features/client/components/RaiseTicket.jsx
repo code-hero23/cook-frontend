@@ -18,6 +18,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import TicketDetailModal from "./TicketDetailModal";
 import useHaptics from "../../../shared/hooks/useHaptics";
+import RefreshButton from "../../../shared/components/RefreshButton";
 
 const RaiseTicket = () => {
   const { trigger } = useHaptics();
@@ -27,6 +28,7 @@ const RaiseTicket = () => {
   const [file, setFile] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tickets, setTickets] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [filterStatus, setFilterStatus] = useState("All");
   const [sortBy, setSortBy] = useState("Newest First");
   const [selectedTicket, setSelectedTicket] = useState(null);
@@ -34,20 +36,24 @@ const RaiseTicket = () => {
   const project = JSON.parse(localStorage.getItem("clientProject") || "{}");
   const projectId = project.id;
 
-  useEffect(() => {
-    if (projectId) {
-      const fetchTickets = async () => {
-        try {
-          const res = await axios.get(`/tickets?projectId=${projectId}`);
-          setTickets(res.data);
-        } catch (err) {
-          console.error("Failed to fetch tickets", err);
-          toast.error("Could not load your tickets");
-        }
-      };
-      fetchTickets();
+  const fetchTickets = async () => {
+    if (!projectId) return;
+    try {
+      setLoading(true);
+      const res = await axios.get(`/tickets?projectId=${projectId}`);
+      setTickets(res.data);
+    } catch (err) {
+      console.error("Failed to fetch tickets", err);
+      toast.error("Could not load your tickets");
+    } finally {
+      setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    fetchTickets();
   }, [projectId]);
+
 
   const priorityColors = {
     Low: "bg-green-50 text-green-600 border-green-100",
@@ -250,12 +256,17 @@ const RaiseTicket = () => {
         className="flex-1 bg-white/40 backdrop-blur-xl rounded-3xl md:rounded-[2.5rem] border border-white/50 shadow-2xl shadow-slate-200/50 flex flex-col overflow-hidden"
       >
         <div className="p-6 md:p-8 border-b border-white/50 bg-slate-50/50 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div>
-            <h2 className="text-xl font-black text-slate-800 tracking-tight">Active Inquiries</h2>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Track your open & historical requests</p>
+          <div className="flex items-center justify-between w-full md:w-auto">
+            <div>
+              <h2 className="text-xl font-black text-slate-800 tracking-tight">Active Inquiries</h2>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Track your open & historical requests</p>
+            </div>
+            <RefreshButton onRefresh={fetchTickets} isLoading={loading} className="md:hidden" />
           </div>
 
           <div className="flex items-center gap-3">
+            <RefreshButton onRefresh={fetchTickets} isLoading={loading} className="hidden md:flex" label="Sync" />
+
             <div className="bg-white/80 p-1 rounded-xl border border-slate-100 flex items-center shadow-sm">
               <select
                 value={filterStatus}

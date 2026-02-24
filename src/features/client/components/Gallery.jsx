@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "../../../shared/utils/axios";
 import { Image as ImageIcon, Download, Loader2, X } from "lucide-react";
 import useHaptics from "../../../shared/hooks/useHaptics";
+import RefreshButton from "../../../shared/components/RefreshButton";
 
 const Gallery = () => {
   const [images, setImages] = useState([]);
@@ -17,21 +18,22 @@ const Gallery = () => {
     import.meta.env.VITE_API_URL?.replace("/api", "") ||
     (import.meta.env.PROD ? "" : "http://localhost:5000");
 
+  const fetchImages = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(`/project-data/${projectId}/images`);
+      setImages(res.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    if (!projectId) return;
-
-    const fetchImages = async () => {
-      try {
-        const res = await axios.get(`/project-data/${projectId}/images`);
-        setImages(res.data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchImages();
+    if (projectId) {
+      fetchImages();
+    }
   }, [projectId]);
 
   // ✅ Mobile-safe download handler
@@ -62,19 +64,23 @@ const Gallery = () => {
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-20">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
-        <div className="w-12 h-12 bg-purple-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-purple-100">
-          <ImageIcon size={24} />
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-purple-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-purple-100">
+            <ImageIcon size={24} />
+          </div>
+          <div>
+            <h2 className="text-2xl font-black text-slate-800 tracking-tight">
+              Site Gallery
+            </h2>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">
+              Visual Progress Documentation
+            </p>
+          </div>
         </div>
-        <div>
-          <h2 className="text-2xl font-black text-slate-800 tracking-tight">
-            Site Gallery
-          </h2>
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">
-            Visual Progress Documentation
-          </p>
-        </div>
+        <RefreshButton onRefresh={fetchImages} isLoading={loading} label="Refresh" />
       </div>
+
 
       {/* Loading */}
       {loading ? (

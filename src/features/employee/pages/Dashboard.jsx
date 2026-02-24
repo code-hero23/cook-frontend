@@ -11,9 +11,12 @@ import {
 } from "lucide-react";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import CountUp from "react-countup";
+import RefreshButton from "../../../shared/components/RefreshButton";
+
 
 const Dashboard = () => {
-  const { tasks, projects, issues } = useContext(TaskContext);
+  const { tasks, projects, issues, refreshData, loading } = useContext(TaskContext);
+
   const navigate = useNavigate();
 
   const today = new Date();
@@ -74,7 +77,9 @@ const Dashboard = () => {
           <p className="text-slate-500 text-sm font-medium mt-1">Welcome back! Here's what's happening today.</p>
         </div>
         <div className="flex items-center gap-3">
+          <RefreshButton onRefresh={refreshData} isLoading={loading} label="Sync" />
           <div className="bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm flex items-center gap-2">
+
             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
             <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</span>
           </div>

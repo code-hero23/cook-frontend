@@ -3,6 +3,8 @@ import axios from '../../../shared/utils/axios';
 import { Briefcase, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProjectCard from '../components/ProjectCard';
+import RefreshButton from '../../../shared/components/RefreshButton';
+
 
 const Projects = () => {
     const [projects, setProjects] = useState([]);
@@ -63,7 +65,9 @@ const Projects = () => {
                         <p className="text-slate-500 font-medium text-sm">Overview of projects you are overseeing</p>
                     </div>
                 </div>
+                <RefreshButton onRefresh={fetchProjects} isLoading={loading} label="Refresh" />
             </div>
+
 
             <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-4 justify-between sticky top-0 z-20">
                 <div className="relative flex-1">

@@ -3,6 +3,7 @@ import { useSearchParams, Link } from "react-router-dom";
 import { useApp } from "../context/AppContext.jsx";
 import StatusBadge from "../components/common/StatusBadge.jsx";
 import { Plus, Pencil, LayoutGrid, List, Search as SearchIcon, Filter } from "lucide-react";
+import RefreshButton from "../../../shared/components/RefreshButton.jsx";
 import { isProjectOverdue } from "../utils/dateUtils.js";
 
 import ProjectStats from "../components/ProjectStats.jsx";
@@ -34,7 +35,7 @@ const emptyProject = {
 };
 
 const Projects = () => {
-  const { projects, addProject, updateProject } = useApp();
+  const { projects, addProject, updateProject, refreshData, loading } = useApp();
   const [searchParams] = useSearchParams();
   const [search, setSearch] = useState(searchParams.get("q") || "");
   const [viewMode, setViewMode] = useState("grid"); // grid | list
@@ -178,6 +179,12 @@ const Projects = () => {
               New Project
             </button>
           )}
+
+          <RefreshButton
+            onRefresh={refreshData}
+            isLoading={loading}
+            className="border-slate-200 shadow-sm"
+          />
         </div>
       </div>
 

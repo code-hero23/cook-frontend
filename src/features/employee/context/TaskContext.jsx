@@ -56,7 +56,7 @@ export const TaskProvider = ({ children }) => {
       }
       await axios.put(`/tasks/${taskId}`, payload);
       const upperStatus = newStatus.toUpperCase();
-      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: upperStatus, ...payload, status: upperStatus } : t));
+      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, ...payload, status: upperStatus } : t));
     } catch (err) {
       console.error("Error updating task status:", err);
     }

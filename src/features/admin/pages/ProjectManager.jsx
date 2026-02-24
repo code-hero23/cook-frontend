@@ -3,10 +3,11 @@ import { useParams, Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import axios from "../../../shared/utils/axios";
 import { ArrowLeft, Upload, Trash2, FileText, Image as ImageIcon, Calendar, Eye, X, CheckCircle, MapPin, Clock, Folder, Download } from 'lucide-react';
+import RefreshButton from "../../../shared/components/RefreshButton.jsx";
 
 const ProjectManager = () => {
     const { id } = useParams();
-    const { projects } = useApp();
+    const { projects, refreshData, loading } = useApp();
     const project = projects.find(p => p.id === id);
     const [activeTab, setActiveTab] = useState('gallery');
 
@@ -22,6 +23,14 @@ const ProjectManager = () => {
                 <div>
                     <h1 className="text-2xl font-bold text-slate-900">{project.name}</h1>
                     <p className="text-sm text-slate-500">Manage Project Assets & Timeline</p>
+                </div>
+                <div className="ml-auto">
+                    <RefreshButton
+                        onRefresh={refreshData}
+                        isLoading={loading}
+                        label="Sync App"
+                        className="bg-white/80 backdrop-blur-sm border-slate-200 shadow-sm"
+                    />
                 </div>
             </div>
 
@@ -109,7 +118,14 @@ const GalleryManager = ({ projectId }) => {
     return (
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <h3 className="font-bold text-lg">Site Images</h3>
+                <div className="flex items-center gap-3">
+                    <h3 className="font-bold text-lg">Site Images</h3>
+                    <RefreshButton
+                        onRefresh={fetchImages}
+                        isLoading={uploading}
+                        className="p-1.5 border-none shadow-none bg-transparent hover:bg-slate-100"
+                    />
+                </div>
 
                 <div className="flex gap-2 w-full sm:w-auto">
                     <input
@@ -216,7 +232,14 @@ const DocumentManager = ({ projectId }) => {
     return (
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <h3 className="font-bold text-lg">Project Documents</h3>
+                <div className="flex items-center gap-3">
+                    <h3 className="font-bold text-lg">Project Documents</h3>
+                    <RefreshButton
+                        onRefresh={() => { fetchDocs(); fetchTasks(); }}
+                        isLoading={uploading}
+                        className="p-1.5 border-none shadow-none bg-transparent hover:bg-slate-100"
+                    />
+                </div>
 
                 <div className="flex gap-2 w-full sm:w-auto items-center">
                     {/* Task Selector Dropdown (Optional) */}
@@ -315,8 +338,15 @@ const TimelineManager = ({ projectId }) => {
 
     return (
         <div className="space-y-8">
-            <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-100 text-yellow-800 text-sm">
-                <strong>How this works:</strong> Assign tasks to specific stages here. Updates will reflect on the Client's Timeline immediately.
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-100 text-yellow-800 text-sm flex-1">
+                    <strong>How this works:</strong> Assign tasks to specific stages here. Updates will reflect on the Client's Timeline immediately.
+                </div>
+                <RefreshButton
+                    onRefresh={fetchTasks}
+                    isLoading={loading}
+                    className="bg-white border-slate-200 shadow-sm"
+                />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

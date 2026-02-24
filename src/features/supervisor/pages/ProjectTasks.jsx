@@ -14,6 +14,8 @@ import {
     ChevronDown
 } from "lucide-react";
 import { motion } from "framer-motion";
+import RefreshButton from "../../../shared/components/RefreshButton";
+
 
 const ProjectTasks = () => {
     const { projectId } = useParams();
@@ -95,7 +97,11 @@ const ProjectTasks = () => {
                         <Hash size={10} /> {project.projectCode}
                     </p>
                 </div>
+                <div className="ml-auto">
+                    <RefreshButton onRefresh={fetchProjectData} isLoading={loading} label="Refresh Data" />
+                </div>
             </div>
+
 
             {/* Detailed Info Card */}
             <motion.div

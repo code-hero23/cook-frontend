@@ -4,7 +4,7 @@ import { clientsClaim } from 'workbox-core';
 cleanupOutdatedCaches();
 precacheAndRoute(self.__WB_MANIFEST);
 
-self.skipWaiting();
+// self.skipWaiting();
 clientsClaim();
 
 console.log('[SW] Service Worker Loaded');

@@ -2,7 +2,8 @@ import React, { useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useApp } from "../context/AppContext.jsx";
 import StatusBadge from "../components/common/StatusBadge.jsx";
-import { Plus, Pencil, Mail, Filter, Search as SearchIcon, X, Folder, MapPin, ArrowLeft, Eye, AlertTriangle } from "lucide-react";
+import { Plus, Pencil, Mail, Filter, Search as SearchIcon, X, Folder, MapPin, ArrowLeft, Eye, AlertTriangle, Upload } from "lucide-react";
+import RefreshButton from "../../../shared/components/RefreshButton.jsx";
 import { isTaskOverdue } from "../utils/dateUtils.js";
 
 import IssueStats from "../components/IssueStats.jsx";
@@ -21,7 +22,7 @@ const emptyIssue = {
 };
 
 const Issues = () => {
-  const { tasks, projects, employees, addTask, updateTask, deleteTask } = useApp();
+  const { tasks, projects, employees, addTask, updateTask, deleteTask, refreshData, loading } = useApp();
   const [searchParams] = useSearchParams();
   const [search, setSearch] = useState(searchParams.get("q") || "");
   const [activeFilter, setActiveFilter] = useState("All");
@@ -120,7 +121,7 @@ const Issues = () => {
 
     const emp = employees.find((e) => e.id === formData.employeeId);
     if (emp) {
-      // toast.success(`Email sent to ${emp.email}`);
+      // toast.success(`Email sent to ${ emp.email } `);
     }
 
     setDrawerOpen(false);
@@ -150,15 +151,22 @@ const Issues = () => {
             <p className="text-slate-500 font-medium">Monitor project health and resolving bottlenecks.</p>
           </div>
 
-          {!isManager && (
-            <button
-              onClick={openCreate}
-              className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg hover:-translate-y-0.5 transition-all flex items-center gap-2"
-            >
-              <Plus size={18} />
-              Global Issue
-            </button>
-          )}
+          <div className="flex items-center gap-3">
+            {!isManager && (
+              <button
+                onClick={openCreate}
+                className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg hover:-translate-y-0.5 transition-all flex items-center gap-2"
+              >
+                <Plus size={18} />
+                Global Issue
+              </button>
+            )}
+            <RefreshButton
+              onRefresh={refreshData}
+              isLoading={loading}
+              className="border-slate-200 shadow-sm"
+            />
+          </div>
         </div>
 
         {/* Global Stats - Kept for high-level overview */}
@@ -176,7 +184,7 @@ const Issues = () => {
                 <div className="p-3 bg-rose-50 rounded-xl group-hover:bg-rose-500 transition-colors">
                   <AlertTriangle className="w-6 h-6 text-rose-500 group-hover:text-white" />
                 </div>
-                <div className={`px-2 py-1 rounded-lg text-xs font-bold ${p.openCount > 0 ? 'bg-orange-50 text-orange-600' : 'bg-emerald-50 text-emerald-600'}`}>
+                <div className={`px - 2 py - 1 rounded - lg text - xs font - bold ${p.openCount > 0 ? 'bg-orange-50 text-orange-600' : 'bg-emerald-50 text-emerald-600'} `}>
                   {p.openCount > 0 ? `${p.openCount} Open` : 'All Clear'}
                 </div>
               </div>
@@ -204,8 +212,8 @@ const Issues = () => {
               {/* Progress Bar (Resolution Rate) */}
               <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all duration-500 ${p.progress === 100 ? 'bg-emerald-500' : 'bg-orange-500'}`}
-                  style={{ width: `${p.progress}%` }}
+                  className={`h - full rounded - full transition - all duration - 500 ${p.progress === 100 ? 'bg-emerald-500' : 'bg-orange-500'} `}
+                  style={{ width: `${p.progress}% ` }}
                 />
               </div>
             </div>
@@ -248,13 +256,20 @@ const Issues = () => {
           </div>
         </div>
 
-        <button
-          onClick={openCreate}
-          className="bg-orange-600 hover:bg-orange-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-orange-200 transition-all flex items-center gap-2 hover:-translate-y-0.5 active:translate-y-0"
-        >
-          <Plus size={18} />
-          New Issue
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={openCreate}
+            className="bg-orange-600 hover:bg-orange-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-orange-200 transition-all flex items-center gap-2 hover:-translate-y-0.5 active:translate-y-0"
+          >
+            <Plus size={18} />
+            New Issue
+          </button>
+          <RefreshButton
+            onRefresh={refreshData}
+            isLoading={loading}
+            className="border-slate-200 shadow-sm"
+          />
+        </div>
       </div>
 
       {/* Controls / Search */}
@@ -276,7 +291,7 @@ const Issues = () => {
             <button
               key={f}
               onClick={() => setActiveFilter(f)}
-              className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeFilter === f ? "bg-white text-slate-800 shadow-sm" : "text-slate-400 hover:text-slate-600"}`}
+              className={`px - 4 py - 2 rounded - lg text - sm font - bold transition - all ${activeFilter === f ? "bg-white text-slate-800 shadow-sm" : "text-slate-400 hover:text-slate-600"} `}
             >
               {f}
             </button>
@@ -357,7 +372,7 @@ const Issues = () => {
                       <button
                         onClick={() => {
                           if (!emp) return alert("No employee assigned.");
-                          alert(`Email sent to ${emp.email} for ${t.title} (simulated).`);
+                          alert(`Email sent to ${emp.email} for ${t.title}(simulated).`);
                         }}
                         className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-colors border border-transparent hover:border-slate-200"
                         title="Send Email"
