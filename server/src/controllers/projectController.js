@@ -58,9 +58,13 @@ exports.createProject = async (req, res) => {
         if (data.startDate) data.startDate = new Date(data.startDate);
         if (data.deadline) data.deadline = new Date(data.deadline);
 
-        // Clean up empty strings for optional/unique fields to avoid Prisma errors
+        // Clean up empty/whitespace strings for optional fields to avoid Unique Constraint errors
         ['cpNumber', 'gstin', 'spouseName', 'spousePhone', 'location'].forEach(field => {
-            if (data[field] === "") delete data[field];
+            if (!data[field] || (typeof data[field] === 'string' && data[field].trim() === "") || data[field] === "null" || data[field] === "undefined") {
+                data[field] = null; // Explicitly set to null to avoid Prisma unique constraint errors for empty strings
+            } else if (typeof data[field] === 'string') {
+                data[field] = data[field].trim();
+            }
         });
 
         // Auto-generate Project Code (Robust Collision Handling)
@@ -118,6 +122,10 @@ exports.createProject = async (req, res) => {
 
         res.status(201).json(project);
     } catch (error) {
+        if (error.code === 'P2002') {
+            const target = error.meta?.target || [];
+            return res.status(400).json({ error: `Unique constraint failed: A project with this ${target.join(', ')} already exists.` });
+        }
         res.status(400).json({ error: error.message });
     }
 };
@@ -168,7 +176,11 @@ exports.updateProject = async (req, res) => {
 
         // Clean empty optional fields
         ['cpNumber', 'gstin', 'spouseName', 'spousePhone', 'location'].forEach(field => {
-            if (data[field] === "") delete data[field];
+            if (data[field] === "" || (typeof data[field] === 'string' && data[field].trim() === "") || data[field] === "null" || data[field] === "undefined") {
+                data[field] = null;
+            } else if (typeof data[field] === 'string') {
+                data[field] = data[field].trim();
+            }
         });
 
         // Prevent updating projectCode to the same value (Prisma bug/quirk avoidance)
@@ -196,6 +208,10 @@ exports.updateProject = async (req, res) => {
         });
         res.json(project);
     } catch (error) {
+        if (error.code === 'P2002') {
+            const target = error.meta?.target || [];
+            return res.status(400).json({ error: `Unique constraint failed: A project with this ${target.join(', ')} already exists.` });
+        }
         res.status(400).json({ error: error.message });
     }
 };
