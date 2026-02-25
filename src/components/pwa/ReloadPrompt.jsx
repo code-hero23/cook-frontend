@@ -25,6 +25,13 @@ function ReloadPrompt() {
         updateServiceWorker: () => { }
     };
 
+    // Auto-reload instantly when an update is detected
+    useEffect(() => {
+        if (needUpdate) {
+            updateServiceWorker(true);
+        }
+    }, [needUpdate, updateServiceWorker]);
+
     const close = () => {
         setOfflineReady(false)
         setNeedUpdate(false)
