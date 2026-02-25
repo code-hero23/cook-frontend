@@ -627,6 +627,14 @@ const TimelineManager = ({ projectId }) => {
 
 
 const SettingsManager = ({ projectId, onUpdate }) => {
+    const phaseLevels = [
+        { value: 0, label: 'Locked' },
+        { value: 15, label: 'Design' },
+        { value: 50, label: 'Finalization' },
+        { value: 90, label: 'Production' },
+        { value: 100, label: 'Installation' }
+    ];
+
     const [percentage, setPercentage] = useState(0);
     const [form, setForm] = useState({
         percentage: 0,
@@ -697,21 +705,46 @@ const SettingsManager = ({ projectId, onUpdate }) => {
 
             <form onSubmit={handleUpdatePayment} className="space-y-6">
 
-                {/* 1. Select Phase Level */}
-                <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">Unlock Phase Level <span className="text-red-500">*</span></label>
-                    <select
-                        className="w-full border border-slate-200 rounded-xl px-4 py-3 font-bold text-indigo-900 bg-white focus:ring-2 focus:ring-indigo-500"
-                        value={form.percentage}
-                        onChange={(e) => setForm({ ...form, percentage: parseInt(e.target.value) })}
-                        disabled={user.role === 'VIEW_ONLY_ADMIN'}
-                    >
-                        <option value={0}>Locked (0%)</option>
-                        <option value={15}>Unlock Design (15%)</option>
-                        <option value={50}>Unlock Finalization (50%)</option>
-                        <option value={90}>Unlock Production (90%)</option>
-                        <option value={100}>Unlock Installation (100%)</option>
-                    </select>
+                {/* 1. Select Phase Level (Interactive Slider) */}
+                <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm mb-6">
+                    <div className="flex justify-between items-center mb-6">
+                        <label className="text-sm font-bold text-slate-700">
+                            Unlock Phase Level <span className="text-red-500">*</span>
+                        </label>
+                        <span className="px-3 py-1 bg-indigo-50 text-indigo-700 font-bold rounded-lg text-sm shadow-inner border border-indigo-100">
+                            {form.percentage}% Selected
+                        </span>
+                    </div>
+
+                    <div className="relative px-2">
+                        <input
+                            type="range"
+                            min="0"
+                            max="4"
+                            step="1"
+                            value={phaseLevels.findIndex(p => p.value === form.percentage)}
+                            onChange={(e) => setForm({ ...form, percentage: phaseLevels[parseInt(e.target.value)].value })}
+                            disabled={user.role === 'VIEW_ONLY_ADMIN'}
+                            className="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 disabled:opacity-50 relative z-10 transition-all hover:h-4 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+                            style={{ WebkitAppearance: 'none' }}
+                        />
+
+                        <div className="flex justify-between text-center mt-3 pointer-events-none">
+                            {phaseLevels.map((phase) => {
+                                const isActive = form.percentage >= phase.value;
+                                return (
+                                    <div key={phase.value} className="flex flex-col items-center w-0 transition-colors duration-300">
+                                        <span className={`text-[11px] font-black whitespace-nowrap transition-colors ${isActive ? 'text-indigo-600' : 'text-slate-400'}`}>
+                                            {phase.value}%
+                                        </span>
+                                        <span className={`text-[9px] uppercase tracking-wider font-bold whitespace-nowrap mt-1 transition-colors ${isActive ? 'text-slate-700' : 'text-slate-400'}`}>
+                                            {phase.label}
+                                        </span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
                 </div>
 
                 {/* 2. Transaction Details */}
