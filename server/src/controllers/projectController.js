@@ -120,7 +120,13 @@ exports.createProject = async (req, res) => {
         }
         const project = await prisma.project.create({
             data: data,
-            include: { tasks: true, assignedEmployees: true } // Include for consistency
+            include: {
+                tasks: true,
+                assignedEmployees: true,
+                businessHead: { select: { id: true, name: true, email: true } },
+                fa: { select: { id: true, name: true, email: true } },
+                la: { select: { id: true, name: true, email: true } }
+            } // Include for consistency
         });
 
         // Seed Predefined Tasks
@@ -141,7 +147,13 @@ exports.getProjectById = async (req, res) => {
     try {
         const project = await prisma.project.findUnique({
             where: { id: req.params.id },
-            include: { tasks: true }
+            include: {
+                tasks: true,
+                assignedEmployees: true,
+                businessHead: { select: { id: true, name: true, email: true } },
+                fa: { select: { id: true, name: true, email: true } },
+                la: { select: { id: true, name: true, email: true } }
+            }
         });
         if (!project) return res.status(404).json({ message: 'Project not found' });
         res.json(project);
@@ -213,7 +225,13 @@ exports.updateProject = async (req, res) => {
         const project = await prisma.project.update({
             where: { id: req.params.id },
             data: data,
-            include: { tasks: true, assignedEmployees: true } // Include for consistency
+            include: {
+                tasks: true,
+                assignedEmployees: true,
+                businessHead: { select: { id: true, name: true, email: true } },
+                fa: { select: { id: true, name: true, email: true } },
+                la: { select: { id: true, name: true, email: true } }
+            } // Include for consistency
         });
         res.json(project);
     } catch (error) {
