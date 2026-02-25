@@ -2,8 +2,10 @@ import React, { useEffect, useState } from "react";
 import { X, Check, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "../../../shared/utils/axios";
+import { useApp } from "../context/AppContext";
 
 const ProjectDrawer = ({ isOpen, onClose, onSubmit, initialData, isEditing }) => {
+    const { employees } = useApp();
     const [form, setForm] = useState(initialData);
 
     useEffect(() => {
@@ -117,6 +119,119 @@ const ProjectDrawer = ({ isOpen, onClose, onSubmit, initialData, isEditing }) =>
                                                     className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none"
                                                     placeholder="City, Area"
                                                 />
+                                            </div>
+                                            <div className="col-span-1">
+                                                <label className="block text-sm font-medium text-slate-700 mb-1">Business Head (BH)</label>
+                                                <select
+                                                    name="businessHeadId"
+                                                    value={form.businessHeadId || ""}
+                                                    onChange={handleChange}
+                                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 bg-white outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                                                >
+                                                    <option value="">-- No Business Head Assigned --</option>
+                                                    {employees.filter(emp => emp.role === 'SUPER_ADMIN').map(bh => (
+                                                        <option key={bh.id} value={bh.id}>
+                                                            {bh.name} ({bh.email})
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <p className="text-[10px] text-slate-400 mt-1">Only SUPER_ADMIN employees can be Business Heads.</p>
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    {/* Section: Project Tracking */}
+                                    <section>
+                                        <h3 className="text-xs font-bold uppercase tracking-wider text-amber-500 mb-4 flex items-center gap-2">
+                                            <span className="w-8 h-[1px] bg-amber-200"></span> Project Tracking
+                                        </h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="col-span-1">
+                                                <label className="block text-sm font-medium text-slate-700 mb-1">Property Type</label>
+                                                <select
+                                                    name="propertyType"
+                                                    value={form.propertyType || ""}
+                                                    onChange={handleChange}
+                                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 bg-white outline-none focus:ring-2 focus:ring-amber-500 transition-all"
+                                                >
+                                                    <option value="">-- Select Type --</option>
+                                                    <option value="Residential (Villa)">Residential (Villa)</option>
+                                                    <option value="Residential (Apartment)">Residential (Apartment)</option>
+                                                    <option value="Commercial">Commercial</option>
+                                                    <option value="Office Space">Office Space</option>
+                                                    <option value="Retail">Retail</option>
+                                                </select>
+                                            </div>
+                                            <div className="col-span-1">
+                                                <label className="block text-sm font-medium text-slate-700 mb-1">Scope of Work</label>
+                                                <select
+                                                    name="scopeOfWork"
+                                                    value={form.scopeOfWork || ""}
+                                                    onChange={handleChange}
+                                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 bg-white outline-none focus:ring-2 focus:ring-amber-500 transition-all"
+                                                >
+                                                    <option value="">-- Select Scope --</option>
+                                                    <option value="Full Interior">Full Interior</option>
+                                                    <option value="Partial Interior">Partial Interior</option>
+                                                    <option value="Renovation">Renovation</option>
+                                                </select>
+                                            </div>
+                                            <div className="col-span-1">
+                                                <label className="block text-sm font-medium text-slate-700 mb-1">Lead Source</label>
+                                                <input
+                                                    name="leadSource"
+                                                    list="leadSourceOptions"
+                                                    value={form.leadSource || ""}
+                                                    onChange={handleChange}
+                                                    placeholder="Walk-in, Referral, etc."
+                                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-amber-500 transition-all"
+                                                />
+                                                <datalist id="leadSourceOptions">
+                                                    <option value="Walk-in" />
+                                                    <option value="Referral" />
+                                                </datalist>
+                                            </div>
+                                            <div className="col-span-1">
+                                                <label className="block text-sm font-medium text-slate-700 mb-1">Client Relationship Executive (CRE)</label>
+                                                <input
+                                                    name="salesRep"
+                                                    value={form.salesRep || ""}
+                                                    onChange={handleChange}
+                                                    placeholder="e.g. John Doe"
+                                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-amber-500 transition-all"
+                                                />
+                                            </div>
+                                            <div className="col-span-1">
+                                                <label className="block text-sm font-medium text-slate-700 mb-1">Feasibility Architect (FA)</label>
+                                                <select
+                                                    name="faId"
+                                                    value={form.faId || ""}
+                                                    onChange={handleChange}
+                                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 bg-white outline-none focus:ring-2 focus:ring-amber-500 transition-all"
+                                                >
+                                                    <option value="">-- No FA Assigned --</option>
+                                                    {employees.filter(emp => emp.role === 'EMPLOYEE' && emp.department === 'FA').map(fa => (
+                                                        <option key={fa.id} value={fa.id}>
+                                                            {fa.name} ({fa.email})
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <div className="col-span-1">
+                                                <label className="block text-sm font-medium text-slate-700 mb-1">Loading Architect (LA)</label>
+                                                <select
+                                                    name="laId"
+                                                    value={form.laId || ""}
+                                                    onChange={handleChange}
+                                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 bg-white outline-none focus:ring-2 focus:ring-amber-500 transition-all"
+                                                >
+                                                    <option value="">-- No LA Assigned --</option>
+                                                    {employees.filter(emp => emp.role === 'EMPLOYEE' && emp.department === 'LA').map(la => (
+                                                        <option key={la.id} value={la.id}>
+                                                            {la.name} ({la.email})
+                                                        </option>
+                                                    ))}
+                                                </select>
                                             </div>
                                         </div>
                                     </section>

@@ -31,7 +31,14 @@ const emptyProject = {
   deadline: "",
   cpNumber: "",
   clientPassword: "",
-  timelineDuration: 45
+  timelineDuration: 45,
+  businessHeadId: "",
+  propertyType: "",
+  scopeOfWork: "",
+  leadSource: "",
+  salesRep: "",
+  faId: "",
+  laId: ""
 };
 
 const Projects = () => {
@@ -118,6 +125,9 @@ const Projects = () => {
     if (!secureForm.gstin) delete secureForm.gstin;
     if (!secureForm.spouseName) delete secureForm.spouseName;
     if (!secureForm.spousePhone) delete secureForm.spousePhone;
+    if (!secureForm.businessHeadId) delete secureForm.businessHeadId;
+    if (!secureForm.faId) delete secureForm.faId;
+    if (!secureForm.laId) delete secureForm.laId;
 
     // Cleanup other optional strings to be safe
     if (!secureForm.billingName) delete secureForm.billingName;
@@ -125,6 +135,10 @@ const Projects = () => {
     if (!secureForm.billingPhone) delete secureForm.billingPhone;
     if (!secureForm.location) delete secureForm.location; // Though strictly required in validation
     if (!secureForm.projectCode) delete secureForm.projectCode; // Backend generates it
+    if (!secureForm.propertyType) delete secureForm.propertyType;
+    if (!secureForm.scopeOfWork) delete secureForm.scopeOfWork;
+    if (!secureForm.leadSource) delete secureForm.leadSource;
+    if (!secureForm.salesRep) delete secureForm.salesRep;
 
     // Remove empty password on update
     if (editingId && !secureForm.clientPassword) {

@@ -9,7 +9,7 @@ const ProjectManager = () => {
     const { id } = useParams();
     const { projects, refreshData, loading } = useApp();
     const project = projects.find(p => p.id === id);
-    const [activeTab, setActiveTab] = useState('gallery');
+    const [activeTab, setActiveTab] = useState('details');
 
     if (!project) return <div className="p-8">Loading Project or Not Found...</div>;
 
@@ -36,7 +36,7 @@ const ProjectManager = () => {
 
             {/* Tabs */}
             <div className="flex gap-2 border-b border-slate-200">
-                {['gallery', 'documents', 'timeline', 'settings'].map(tab => (
+                {['details', 'gallery', 'documents', 'timeline', 'settings'].map(tab => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
@@ -51,16 +51,96 @@ const ProjectManager = () => {
 
             {/* Content */}
             <div className="min-h-[400px]">
+                {activeTab === 'details' && <ProjectDetails project={project} />}
                 {activeTab === 'gallery' && <GalleryManager projectId={id} />}
                 {activeTab === 'documents' && <DocumentManager projectId={id} />}
                 {activeTab === 'timeline' && <TimelineManager projectId={id} />}
-                {activeTab === 'settings' && <SettingsManager projectId={id} />}
+                {activeTab === 'settings' && <SettingsManager projectId={id} onUpdate={refreshData} />}
             </div>
         </div>
     );
 };
 
 // --- SUB COMPONENTS ---
+
+const DetailCard = ({ title, children }) => (
+    <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col gap-3">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-2">{title}</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6">
+            {children}
+        </div>
+    </div>
+);
+
+const DetailField = ({ label, value }) => (
+    <div>
+        <dt className="text-[10px] text-slate-400 font-bold uppercase mb-1">{label}</dt>
+        <dd className="text-sm font-medium text-slate-800 break-words">{value || <span className="text-slate-300 italic">Not provided</span>}</dd>
+    </div>
+);
+
+const ProjectDetails = ({ project }) => {
+    return (
+        <div className="space-y-6 animate-in fade-in duration-500">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                {/* Core Info & Tracking */}
+                <div className="space-y-6">
+                    <DetailCard title="Core Information">
+                        <DetailField label="Project Code" value={project.projectCode} />
+                        <DetailField label="Project Name" value={project.name} />
+                        <DetailField label="CP/Contract No" value={project.cpNumber} />
+                        <DetailField label="Location" value={project.location} />
+                        {project.latitude && project.longitude && (
+                            <DetailField label="GPS Coordinates" value={`${project.latitude}, ${project.longitude}`} />
+                        )}
+                        <DetailField label="Status" value={project.status} />
+                    </DetailCard>
+
+                    <DetailCard title="Project Tracking & Team">
+                        <DetailField label="Property Type" value={project.propertyType} />
+                        <DetailField label="Scope of Work" value={project.scopeOfWork} />
+                        <DetailField label="Lead Source" value={project.leadSource} />
+                        <DetailField label="Client Relationship Executive (CRE)" value={project.salesRep} />
+                        <DetailField label="Business Head" value={project.businessHead?.name || project.businessHeadId} />
+                        <DetailField label="Feasibility Architect (FA)" value={project.fa?.name || project.faId} />
+                        <DetailField label="Loading Architect (LA)" value={project.la?.name || project.laId} />
+                    </DetailCard>
+
+                    <DetailCard title="Timeline & Financials">
+                        <DetailField label="Start Date" value={project.startDate ? new Date(project.startDate).toLocaleDateString() : null} />
+                        <DetailField label="Deadline" value={project.deadline ? new Date(project.deadline).toLocaleDateString() : null} />
+                        <DetailField label="Timeline Duration" value={`${project.timelineDuration} Days`} />
+                        <DetailField label="Budget" value={project.budget ? `₹${project.budget.toLocaleString()}` : null} />
+                        <DetailField label="Payment Earned" value={`${project.paymentPercentage || 0}%`} />
+                    </DetailCard>
+                </div>
+
+                {/* People Info */}
+                <div className="space-y-6">
+                    <DetailCard title="Client Details">
+                        <DetailField label="Full Name" value={`${project.clientFirstName} ${project.clientLastName}`} />
+                        <DetailField label="Email Address" value={project.clientEmail} />
+                        <DetailField label="Phone Number" value={project.clientPhone} />
+                    </DetailCard>
+
+                    <DetailCard title="Spouse Details">
+                        <DetailField label="Spouse Name" value={project.spouseName} />
+                        <DetailField label="Spouse Phone" value={project.spousePhone} />
+                    </DetailCard>
+
+                    <DetailCard title="Billing Details">
+                        <DetailField label="Billing Name" value={project.billingName} />
+                        <DetailField label="GSTIN" value={project.gstin} />
+                        <DetailField label="Billing Phone" value={project.billingPhone} />
+                        <DetailField label="Billing Address" value={project.billingAddress} />
+                    </DetailCard>
+                </div>
+
+            </div>
+        </div>
+    );
+};
 
 const GalleryManager = ({ projectId }) => {
     const [images, setImages] = useState([]);
@@ -546,7 +626,7 @@ const TimelineManager = ({ projectId }) => {
 
 
 
-const SettingsManager = ({ projectId }) => {
+const SettingsManager = ({ projectId, onUpdate }) => {
     const [percentage, setPercentage] = useState(0);
     const [form, setForm] = useState({
         percentage: 0,
@@ -584,6 +664,7 @@ const SettingsManager = ({ projectId }) => {
             });
             alert("Payment Recorded & Phase Unlocked Successfully!");
             setPercentage(form.percentage); // Update local display
+            if (onUpdate) await onUpdate(); // Sync with global AppContext so 'Details' tab updates instantly
         } catch (err) {
             alert(err.response?.data?.error || "Failed to update payment");
         } finally {

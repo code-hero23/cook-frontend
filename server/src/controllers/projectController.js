@@ -29,7 +29,13 @@ exports.getProjects = async (req, res) => {
 
         const projects = await prisma.project.findMany({
             where: filter,
-            include: { tasks: true, assignedEmployees: true } // Include tasks for stats
+            include: {
+                tasks: true,
+                assignedEmployees: true,
+                businessHead: { select: { id: true, name: true, email: true } },
+                fa: { select: { id: true, name: true, email: true } },
+                la: { select: { id: true, name: true, email: true } }
+            } // Include tasks for stats and related users
         });
         res.json(projects);
     } catch (error) {
@@ -59,7 +65,7 @@ exports.createProject = async (req, res) => {
         if (data.deadline) data.deadline = new Date(data.deadline);
 
         // Clean up empty/whitespace strings for optional fields to avoid Unique Constraint errors
-        ['cpNumber', 'gstin', 'spouseName', 'spousePhone', 'location'].forEach(field => {
+        ['cpNumber', 'gstin', 'spouseName', 'spousePhone', 'location', 'businessHeadId', 'propertyType', 'scopeOfWork', 'leadSource', 'salesRep', 'faId', 'laId'].forEach(field => {
             if (!data[field] || (typeof data[field] === 'string' && data[field].trim() === "") || data[field] === "null" || data[field] === "undefined") {
                 data[field] = null; // Explicitly set to null to avoid Prisma unique constraint errors for empty strings
             } else if (typeof data[field] === 'string') {
@@ -175,7 +181,7 @@ exports.updateProject = async (req, res) => {
         }
 
         // Clean empty optional fields
-        ['cpNumber', 'gstin', 'spouseName', 'spousePhone', 'location'].forEach(field => {
+        ['cpNumber', 'gstin', 'spouseName', 'spousePhone', 'location', 'businessHeadId', 'propertyType', 'scopeOfWork', 'leadSource', 'salesRep', 'faId', 'laId'].forEach(field => {
             if (data[field] === "" || (typeof data[field] === 'string' && data[field].trim() === "") || data[field] === "null" || data[field] === "undefined") {
                 data[field] = null;
             } else if (typeof data[field] === 'string') {

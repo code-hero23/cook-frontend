@@ -31,6 +31,9 @@ model User {
   resetOTPExpires DateTime?
   
   pushSubscriptions PushSubscription[]
+  bhProjects Project[] @relation("ProjectBH")
+  faProjects Project[] @relation("ProjectFA")
+  laProjects Project[] @relation("ProjectLA")
 }
 
 model Project {
@@ -60,6 +63,21 @@ model Project {
   billingAddress   String?
   billingPhone     String?
   gstin            String?
+
+  // Business Head
+  businessHeadId   String?
+  businessHead     User?    @relation("ProjectBH", fields: [businessHeadId], references: [id])
+
+  // Project Tracking
+  propertyType     String?  // Residential (Villa), Residential (Apartment), Commercial, Office Space, Retail
+  scopeOfWork      String?  // Full Interior, Partial Interior, Renovation
+  leadSource       String?  // Walk-in, Referral, Custom String
+  salesRep         String?  // Custom String Name
+  
+  faId             String?
+  fa               User?    @relation("ProjectFA", fields: [faId], references: [id])
+  laId             String?
+  la               User?    @relation("ProjectLA", fields: [laId], references: [id])
 
   // GPS Location
   latitude         Float?
