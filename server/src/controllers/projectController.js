@@ -159,6 +159,9 @@ exports.updateProject = async (req, res) => {
         const {
             tasks,
             assignedEmployees,
+            businessHead,
+            fa,
+            la,
             id,
             createdAt,
             updatedAt,
