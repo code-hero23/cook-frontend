@@ -9,7 +9,10 @@ import {
     ListChecks,
     AlertTriangle,
     X,
-    Check
+    Check,
+    Lock,
+    Unlock,
+    ShieldAlert
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -38,6 +41,25 @@ const DevPanel = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [confirmDelete, setConfirmDelete] = useState(null); // { type, id, name }
 
+    // PASSWORD SECURITY STATE
+    const [isUnlocked, setIsUnlocked] = useState(sessionStorage.getItem("dev_panel_unlocked") === "true");
+    const [passwordInput, setPasswordInput] = useState("");
+    const [error, setError] = useState("");
+
+    const handleUnlock = (e) => {
+        if (e) e.preventDefault();
+        const securePassword = import.meta.env.VITE_DEV_PANEL_PASSWORD || "admin123";
+
+        if (passwordInput === securePassword) {
+            setIsUnlocked(true);
+            sessionStorage.setItem("dev_panel_unlocked", "true");
+            setError("");
+        } else {
+            setError("Incorrect security password. Please try again.");
+            setPasswordInput("");
+        }
+    };
+
     const filteredData = () => {
         const q = searchQuery.toLowerCase().trim();
         if (activeTab === "projects") {
@@ -57,6 +79,73 @@ const DevPanel = () => {
         else if (type === "employee") await deleteEmployee(id);
         setConfirmDelete(null);
     };
+
+    // PASSWORD PROTECTION UI
+    if (!isUnlocked) {
+        return (
+            <div className="flex flex-col items-center justify-center h-[70vh] p-6 bg-slate-50/50 rounded-[32px] border border-slate-200/60 backdrop-blur-sm">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="max-w-md w-full text-center space-y-8"
+                >
+                    <div className="relative inline-block">
+                        <div className="w-24 h-24 bg-orange-100 text-orange-600 rounded-3xl flex items-center justify-center mx-auto rotate-3 shadow-lg shadow-orange-100/50 transition-transform hover:rotate-0">
+                            <Lock size={48} />
+                        </div>
+                        <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-white border-4 border-slate-50 rounded-2xl flex items-center justify-center text-slate-800 shadow-sm">
+                            <ShieldAlert size={20} />
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <h2 className="text-3xl font-black text-slate-900 tracking-tight">System Locked</h2>
+                        <p className="text-slate-500 font-medium leading-relaxed">
+                            This panel contains sensitive system controls. Please enter the master password to proceed.
+                        </p>
+                    </div>
+
+                    <form onSubmit={handleUnlock} className="space-y-4">
+                        <div className="relative group">
+                            <input
+                                autoFocus
+                                type="password"
+                                placeholder="Master Password"
+                                value={passwordInput}
+                                onChange={(e) => setPasswordInput(e.target.value)}
+                                className={`w-full bg-white border-2 rounded-2xl px-6 py-4 text-center font-bold text-lg tracking-widest transition-all outline-none
+                                ${error ? 'border-red-200 ring-4 ring-red-50 text-red-600' : 'border-slate-100 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10'}`}
+                            />
+                            <AnimatePresence>
+                                {error && (
+                                    <motion.p
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        className="text-red-500 text-sm font-bold mt-3"
+                                    >
+                                        {error}
+                                    </motion.p>
+                                )}
+                            </AnimatePresence>
+                        </div>
+
+                        <button
+                            type="submit"
+                            className="w-full bg-slate-900 text-white font-black py-4 rounded-2xl hover:bg-black transition-all shadow-xl shadow-slate-200 active:scale-95 flex items-center justify-center gap-3"
+                        >
+                            <Unlock size={20} />
+                            Unlock Dashboard
+                        </button>
+                    </form>
+
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest pt-4">
+                        Enterprise Security Verified
+                    </p>
+                </motion.div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 pb-20">
