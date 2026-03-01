@@ -4,12 +4,15 @@ import { Briefcase, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProjectCard from '../components/ProjectCard';
 import RefreshButton from '../../../shared/components/RefreshButton';
+import { Plus, Upload } from 'lucide-react';
+import BulkProjectImport from '../../admin/components/BulkProjectImport.jsx';
 
 
 const Projects = () => {
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [bulkImportOpen, setBulkImportOpen] = useState(false);
 
     useEffect(() => {
         fetchProjects();
@@ -65,7 +68,16 @@ const Projects = () => {
                         <p className="text-slate-500 font-medium text-sm">Overview of projects you are overseeing</p>
                     </div>
                 </div>
-                <RefreshButton onRefresh={fetchProjects} isLoading={loading} label="Refresh" />
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => setBulkImportOpen(true)}
+                        className="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-50 transition-all flex items-center gap-2"
+                    >
+                        <Upload size={16} />
+                        Bulk Import
+                    </button>
+                    <RefreshButton onRefresh={fetchProjects} isLoading={loading} label="Refresh" />
+                </div>
             </div>
 
 
@@ -106,6 +118,16 @@ const Projects = () => {
                     )}
                 </AnimatePresence>
             </div>
+
+            {bulkImportOpen && (
+                <BulkProjectImport
+                    onClose={() => setBulkImportOpen(false)}
+                    onSuccess={() => {
+                        fetchProjects();
+                        setBulkImportOpen(false);
+                    }}
+                />
+            )}
         </div>
     );
 };

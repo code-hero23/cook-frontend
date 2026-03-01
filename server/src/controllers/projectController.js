@@ -531,6 +531,24 @@ exports.bulkCreateProjects = async (req, res) => {
 
         const stats = { added: 0, skipped: 0, errors: [] };
 
+        // 1. Fetch all users to create a lookup map for name/email to ID
+        const allUsers = await prisma.user.findMany({
+            select: { id: true, email: true, name: true }
+        });
+
+        const userLookup = {};
+        allUsers.forEach(u => {
+            if (u.email) userLookup[u.email.toLowerCase()] = u.id;
+            if (u.name) userLookup[u.name.toLowerCase()] = u.id;
+            userLookup[u.id.toLowerCase()] = u.id; // Also allow raw ID if provided
+        });
+
+        const resolveUserId = (input) => {
+            if (!input) return null;
+            const key = String(input).trim().toLowerCase();
+            return userLookup[key] || null;
+        };
+
         // 1. Get latest project code to start incrementing
         const lastProject = await prisma.project.findFirst({
             orderBy: { projectCode: 'desc' },
@@ -545,24 +563,44 @@ exports.bulkCreateProjects = async (req, res) => {
             }
         }
 
-        // 2. Process projects one by one (to handle unique constraints and auto-inc codes safely)
+        // 2. Process projects one by one
         for (const data of projectsData) {
             try {
-                // Validation (Frontend already does most, but secondary check here)
+                // Validation
                 if (!data.name || !data.clientFirstName || !data.clientLastName || !data.clientEmail || !data.clientPhone) {
                     stats.errors.push(`Row missing required fields: ${data.name || 'Unnamed'}`);
                     continue;
+                }
+
+                // Check for existing CP Number to avoid crash
+                if (data.cpNumber) {
+                    const existing = await prisma.project.findUnique({ where: { cpNumber: data.cpNumber } });
+                    if (existing) {
+                        stats.errors.push(`Duplicate CP Number ${data.cpNumber} for project: ${data.name}`);
+                        continue;
+                    }
                 }
 
                 // Auto-generate Code
                 lastCodeNum++;
                 const projectCode = `PRJ-${String(lastCodeNum).padStart(3, '0')}`;
 
-                // Sanitize and handle relation IDs (BH, FA, LA)
                 const sanitizedData = { ...data };
 
-                // Cleanup empty optional fields
-                ['cpNumber', 'gstin', 'spouseName', 'spousePhone', 'location', 'businessHeadId', 'propertyType', 'scopeOfWork', 'leadSource', 'salesRep', 'faId', 'laId'].forEach(field => {
+                // Resolve Foreign Keys (BH, FA, LA)
+                sanitizedData.businessHeadId = resolveUserId(sanitizedData.businessHeadId);
+                sanitizedData.faId = resolveUserId(sanitizedData.faId);
+                sanitizedData.laId = resolveUserId(sanitizedData.laId);
+
+                // Cleanup empty optional strings
+                const optionalFields = [
+                    'cpNumber', 'gstin', 'spouseName', 'spousePhone', 'location',
+                    'businessHeadId', 'propertyType', 'scopeOfWork', 'leadSource',
+                    'salesRep', 'faId', 'laId', 'billingName', 'billingAddress',
+                    'billingPhone', 'handingOverMonth', 'handingOverYear', 'status'
+                ];
+
+                optionalFields.forEach(field => {
                     if (!sanitizedData[field] || (typeof sanitizedData[field] === 'string' && sanitizedData[field].trim() === "") || sanitizedData[field] === "null" || sanitizedData[field] === "undefined") {
                         sanitizedData[field] = null;
                     } else if (typeof sanitizedData[field] === 'string') {
@@ -570,13 +608,23 @@ exports.bulkCreateProjects = async (req, res) => {
                     }
                 });
 
-                // Types
-                if (sanitizedData.budget) sanitizedData.budget = parseFloat(sanitizedData.budget);
-                if (sanitizedData.timelineDuration) sanitizedData.timelineDuration = parseInt(sanitizedData.timelineDuration, 10);
-                if (sanitizedData.latitude) sanitizedData.latitude = parseFloat(sanitizedData.latitude);
-                if (sanitizedData.longitude) sanitizedData.longitude = parseFloat(sanitizedData.longitude);
-                if (sanitizedData.startDate) sanitizedData.startDate = new Date(sanitizedData.startDate);
-                if (sanitizedData.deadline) sanitizedData.deadline = new Date(sanitizedData.deadline);
+                // Numeric Types
+                if (sanitizedData.budget) sanitizedData.budget = parseFloat(sanitizedData.budget) || null;
+                if (sanitizedData.timelineDuration) sanitizedData.timelineDuration = parseInt(sanitizedData.timelineDuration, 10) || 45;
+                if (sanitizedData.latitude) sanitizedData.latitude = parseFloat(sanitizedData.latitude) || null;
+                if (sanitizedData.longitude) sanitizedData.longitude = parseFloat(sanitizedData.longitude) || null;
+                if (sanitizedData.paymentPercentage) sanitizedData.paymentPercentage = parseInt(sanitizedData.paymentPercentage, 10) || 0;
+
+                // Date Types
+                const dateFields = ['startDate', 'deadline', 'handoverDate'];
+                dateFields.forEach(field => {
+                    if (sanitizedData[field]) {
+                        const d = new Date(sanitizedData[field]);
+                        sanitizedData[field] = !isNaN(d.getTime()) ? d : null;
+                    } else {
+                        sanitizedData[field] = null;
+                    }
+                });
 
                 // Password
                 const passwordHash = await bcrypt.hash(data.clientPassword || 'cookscape123', 10);
@@ -594,7 +642,9 @@ exports.bulkCreateProjects = async (req, res) => {
             } catch (error) {
                 console.error("Bulk Item Error:", error);
                 if (error.code === 'P2002') {
-                    stats.errors.push(`Row duplicate error: ${data.name} (Check CP Number or Project Code)`);
+                    stats.errors.push(`Duplicate value error (Project Code or CP Number) for: ${data.name}`);
+                } else if (error.code === 'P2003') {
+                    stats.errors.push(`Invalid User Reference (BH, FA, or LA not found) for: ${data.name}`);
                 } else {
                     stats.errors.push(`Row error: ${data.name} - ${error.message}`);
                 }

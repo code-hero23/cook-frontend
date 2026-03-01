@@ -186,7 +186,7 @@ const Projects = () => {
             </button>
           </div>
 
-          {!isManager && user.role !== 'VIEW_ONLY_ADMIN' && (
+          {user.role !== 'VIEW_ONLY_ADMIN' && (
             <>
               <button
                 onClick={() => setBulkImportOpen(true)}
