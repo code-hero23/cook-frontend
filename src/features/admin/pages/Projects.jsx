@@ -9,6 +9,7 @@ import { isProjectOverdue } from "../utils/dateUtils.js";
 import ProjectStats from "../components/ProjectStats.jsx";
 import ProjectGrid from "../components/ProjectGrid.jsx";
 import ProjectDrawer from "../components/ProjectDrawer.jsx";
+import BulkProjectImport from "../components/BulkProjectImport.jsx";
 
 const emptyProject = {
   name: "",
@@ -49,6 +50,7 @@ const Projects = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyProject);
+  const [bulkImportOpen, setBulkImportOpen] = useState(false);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const isManager = (user.role || "").toUpperCase() === "MANAGER";
@@ -185,13 +187,22 @@ const Projects = () => {
           </div>
 
           {!isManager && user.role !== 'VIEW_ONLY_ADMIN' && (
-            <button
-              onClick={openCreate}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all flex items-center gap-2 hover:-translate-y-0.5 active:translate-y-0"
-            >
-              <Plus size={18} />
-              New Project
-            </button>
+            <>
+              <button
+                onClick={() => setBulkImportOpen(true)}
+                className="px-4 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-50 transition-all flex items-center gap-2"
+              >
+                <Plus size={18} />
+                Bulk Import
+              </button>
+              <button
+                onClick={openCreate}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all flex items-center gap-2 hover:-translate-y-0.5 active:translate-y-0"
+              >
+                <Plus size={18} />
+                New Project
+              </button>
+            </>
           )}
 
           <RefreshButton
@@ -304,6 +315,15 @@ const Projects = () => {
         onSubmit={handleSubmit}
       />
 
+      {bulkImportOpen && (
+        <BulkProjectImport
+          onClose={() => setBulkImportOpen(false)}
+          onSuccess={() => {
+            refreshData();
+            setBulkImportOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 };

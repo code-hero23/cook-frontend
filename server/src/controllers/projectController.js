@@ -520,3 +520,91 @@ exports.parseLocation = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+// Bulk Create Projects
+exports.bulkCreateProjects = async (req, res) => {
+    try {
+        const projectsData = req.body;
+        if (!Array.isArray(projectsData) || projectsData.length === 0) {
+            return res.status(400).json({ error: "Invalid data format. Expected an array of projects." });
+        }
+
+        const stats = { added: 0, skipped: 0, errors: [] };
+
+        // 1. Get latest project code to start incrementing
+        const lastProject = await prisma.project.findFirst({
+            orderBy: { projectCode: 'desc' },
+            select: { projectCode: true }
+        });
+
+        let lastCodeNum = 0;
+        if (lastProject && lastProject.projectCode) {
+            const matches = lastProject.projectCode.match(/PRJ-(\d+)/);
+            if (matches && matches[1]) {
+                lastCodeNum = parseInt(matches[1], 10);
+            }
+        }
+
+        // 2. Process projects one by one (to handle unique constraints and auto-inc codes safely)
+        for (const data of projectsData) {
+            try {
+                // Validation (Frontend already does most, but secondary check here)
+                if (!data.name || !data.clientFirstName || !data.clientLastName || !data.clientEmail || !data.clientPhone) {
+                    stats.errors.push(`Row missing required fields: ${data.name || 'Unnamed'}`);
+                    continue;
+                }
+
+                // Auto-generate Code
+                lastCodeNum++;
+                const projectCode = `PRJ-${String(lastCodeNum).padStart(3, '0')}`;
+
+                // Sanitize and handle relation IDs (BH, FA, LA)
+                const sanitizedData = { ...data };
+
+                // Cleanup empty optional fields
+                ['cpNumber', 'gstin', 'spouseName', 'spousePhone', 'location', 'businessHeadId', 'propertyType', 'scopeOfWork', 'leadSource', 'salesRep', 'faId', 'laId'].forEach(field => {
+                    if (!sanitizedData[field] || (typeof sanitizedData[field] === 'string' && sanitizedData[field].trim() === "") || sanitizedData[field] === "null" || sanitizedData[field] === "undefined") {
+                        sanitizedData[field] = null;
+                    } else if (typeof sanitizedData[field] === 'string') {
+                        sanitizedData[field] = sanitizedData[field].trim();
+                    }
+                });
+
+                // Types
+                if (sanitizedData.budget) sanitizedData.budget = parseFloat(sanitizedData.budget);
+                if (sanitizedData.timelineDuration) sanitizedData.timelineDuration = parseInt(sanitizedData.timelineDuration, 10);
+                if (sanitizedData.latitude) sanitizedData.latitude = parseFloat(sanitizedData.latitude);
+                if (sanitizedData.longitude) sanitizedData.longitude = parseFloat(sanitizedData.longitude);
+                if (sanitizedData.startDate) sanitizedData.startDate = new Date(sanitizedData.startDate);
+                if (sanitizedData.deadline) sanitizedData.deadline = new Date(sanitizedData.deadline);
+
+                // Password
+                const passwordHash = await bcrypt.hash(data.clientPassword || 'cookscape123', 10);
+
+                await prisma.project.create({
+                    data: {
+                        ...sanitizedData,
+                        projectCode,
+                        clientPassword: passwordHash
+                    }
+                });
+
+                stats.added++;
+
+            } catch (error) {
+                console.error("Bulk Item Error:", error);
+                if (error.code === 'P2002') {
+                    stats.errors.push(`Row duplicate error: ${data.name} (Check CP Number or Project Code)`);
+                } else {
+                    stats.errors.push(`Row error: ${data.name} - ${error.message}`);
+                }
+            }
+        }
+
+        res.json({ success: true, ...stats });
+
+    } catch (error) {
+        console.error("Bulk Import Error:", error);
+        res.status(500).json({ error: "Bulk import failed: " + error.message });
+    }
+};

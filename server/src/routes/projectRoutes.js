@@ -4,6 +4,7 @@ const projectController = require('../controllers/projectController');
 
 router.get('/', projectController.getProjects);
 router.post('/', projectController.createProject);
+router.post('/bulk', projectController.bulkCreateProjects);
 router.get('/:id', projectController.getProjectById);
 router.put('/:id', projectController.updateProject);
 router.put('/:id/payment', projectController.updateProjectPayment);
