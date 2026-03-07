@@ -302,7 +302,11 @@ const ClientLogin = () => {
                                 className="space-y-4 md:space-y-5"
                             >
                                 {error && (
-                                    <motion.div ...error styling... >
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        className="bg-rose-50 border border-rose-100 text-rose-600 px-4 py-3 rounded-2xl text-xs md:text-sm font-bold flex items-center gap-2"
+                                    >
                                         <AlertTriangle size={16} />
                                         {error}
                                     </motion.div>
@@ -368,7 +372,11 @@ const ClientLogin = () => {
                                 className="space-y-4 md:space-y-5"
                             >
                                 {error && (
-                                    <motion.div ...error styling... >
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        className="bg-rose-50 border border-rose-100 text-rose-600 px-4 py-3 rounded-2xl text-xs md:text-sm font-bold flex items-center gap-2"
+                                    >
                                         <AlertTriangle size={16} />
                                         {error}
                                     </motion.div>
