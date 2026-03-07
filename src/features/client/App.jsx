@@ -31,7 +31,14 @@ const App = () => {
     return localStorage.getItem("termsAccepted") === "true";
   });
 
+  const clientToken = localStorage.getItem("clientToken");
   const project = JSON.parse(localStorage.getItem("clientProject") || "{}");
+
+  useEffect(() => {
+    if (!clientToken) {
+      navigate("/client/login", { replace: true });
+    }
+  }, [clientToken, navigate]);
 
   useEffect(() => {
     const fetchProjectData = async () => {
@@ -126,6 +133,10 @@ const App = () => {
     localStorage.removeItem("welcomeShown");
     navigate("/client/login");
   };
+
+  if (!clientToken) {
+    return null; // Don't render dashboard while redirecting
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F1F5F9] font-sans selection:bg-indigo-100 selection:text-indigo-900">
