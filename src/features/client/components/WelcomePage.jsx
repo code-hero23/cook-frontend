@@ -101,10 +101,10 @@ const WelcomePage = ({ onClose }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[3000] bg-slate-50 flex flex-col items-center justify-center p-4 md:p-8 overflow-y-auto"
+            className="fixed inset-0 z-[3000] bg-slate-50 overflow-y-auto"
         >
             {/* Animated Background Elements */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="fixed inset-0 overflow-hidden pointer-events-none">
                 <motion.div
                     animate={{
                         scale: [1, 1.2, 1],
@@ -128,29 +128,30 @@ const WelcomePage = ({ onClose }) => {
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-repeat"></div>
             </div>
 
-            <div className="max-w-6xl w-full relative z-10 flex flex-col items-center">
-                {/* Header Section */}
-                <motion.div
-                    initial={{ y: -30, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ duration: 0.8, ease: "circOut" }}
-                    className="text-center mb-12 md:mb-16"
-                >
+            <div className="min-h-[100dvh] w-full flex flex-col items-center py-20 px-4 md:px-8 relative z-10">
+                <div className="max-w-6xl w-full flex flex-col items-center my-auto">
+                    {/* Header Section */}
                     <motion.div
-                        initial={{ scale: 0.8, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ delay: 0.2, type: "spring" }}
-                        className="inline-block mb-6"
+                        initial={{ y: -30, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ duration: 0.8, ease: "circOut" }}
+                        className="text-center mb-8 md:mb-12"
                     >
-                        <img src="/FINAL_LOGO.png" alt="Cookscape" className="h-16 md:h-20 drop-shadow-2xl" />
+                        <motion.div
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ delay: 0.2, type: "spring" }}
+                            className="inline-block mb-4 md:mb-6"
+                        >
+                            <img src="/FINAL_LOGO.png" alt="Cookscape" className="h-12 md:h-16 drop-shadow-2xl" />
+                        </motion.div>
+                        <h1 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter mb-3 md:mb-4">
+                            Welcome to <span className="text-indigo-600">Cookscape</span>
+                        </h1>
+                        <p className="text-base md:text-lg font-bold text-slate-500 max-w-2xl mx-auto leading-relaxed px-4">
+                            Your journey to a beautiful home begins here. Explore the core pillars of our project lifecycle.
+                        </p>
                     </motion.div>
-                    <h1 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tighter mb-4">
-                        Welcome to <span className="text-indigo-600">Cookscape</span>
-                    </h1>
-                    <p className="text-lg md:text-xl font-bold text-slate-500 max-w-2xl mx-auto leading-relaxed">
-                        Your journey to a beautiful home begins here. Explore the core pillars of our project lifecycle.
-                    </p>
-                </motion.div>
 
                 {/* 8 Cards Grid */}
                 <motion.div
@@ -160,35 +161,35 @@ const WelcomePage = ({ onClose }) => {
                     className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 w-full"
                 >
                     {cards.map((card, idx) => (
-                        <motion.div
-                            key={card.title}
-                            variants={cardVars}
-                            whileHover={{
-                                y: -8,
-                                transition: { type: "spring", stiffness: 400, damping: 10 }
-                            }}
-                            whileTap={{ scale: 0.98 }}
-                            className={`bg-white rounded-[2rem] p-6 shadow-xl ${card.shadow} border border-white/50 relative overflow-hidden group cursor-pointer`}
-                            onClick={() => trigger('light')}
-                        >
-                            {/* Background Glow */}
-                            <div className={`absolute -right-4 -bottom-4 w-24 h-24 bg-gradient-to-br ${card.color} opacity-0 group-hover:opacity-10 transition-opacity blur-2xl rounded-full`} />
+                            <motion.div
+                                key={card.title}
+                                variants={cardVars}
+                                whileHover={{
+                                    y: -8,
+                                    transition: { type: "spring", stiffness: 400, damping: 10 }
+                                }}
+                                whileTap={{ scale: 0.98 }}
+                                className={`bg-white rounded-3xl md:rounded-[2rem] p-5 md:p-6 shadow-xl ${card.shadow} border border-white/50 relative overflow-hidden group cursor-pointer`}
+                                onClick={() => trigger('light')}
+                            >
+                                {/* Background Glow */}
+                                <div className={`absolute -right-4 -bottom-4 w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br ${card.color} opacity-0 group-hover:opacity-10 transition-opacity blur-2xl rounded-full`} />
 
-                            <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${card.color} flex items-center justify-center text-white mb-6 shadow-lg transform group-hover:rotate-6 transition-transform`}>
-                                <card.icon size={28} strokeWidth={2.5} />
-                            </div>
+                                <div className={`w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br ${card.color} flex items-center justify-center text-white mb-4 md:mb-6 shadow-lg transform group-hover:rotate-6 transition-transform`}>
+                                    <card.icon size={24} strokeWidth={2.5} className="md:w-[28px] md:h-[28px]" />
+                                </div>
 
-                            <h3 className="text-xl font-black text-slate-800 tracking-tight mb-2 group-hover:text-indigo-600 transition-colors">
-                                {card.title}
-                            </h3>
-                            <p className="text-sm font-bold text-slate-400 leading-relaxed">
-                                {card.desc}
-                            </p>
+                                <h3 className="text-lg md:text-xl font-black text-slate-800 tracking-tight mb-1.5 md:mb-2 group-hover:text-indigo-600 transition-colors">
+                                    {card.title}
+                                </h3>
+                                <p className="text-xs md:text-sm font-bold text-slate-400 leading-relaxed">
+                                    {card.desc}
+                                </p>
 
-                            <div className="mt-8 flex items-center gap-2 text-indigo-600 font-black text-[10px] uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all transform translate-x-[-10px] group-hover:translate-x-0">
-                                Explore <ArrowRight size={14} />
-                            </div>
-                        </motion.div>
+                                <div className="mt-4 md:mt-8 flex items-center gap-2 text-indigo-600 font-black text-[10px] uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all transform translate-x-[-10px] group-hover:translate-x-0">
+                                    Explore <ArrowRight size={14} />
+                                </div>
+                            </motion.div>
                     ))}
                 </motion.div>
 
@@ -213,10 +214,11 @@ const WelcomePage = ({ onClose }) => {
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
                     </motion.button>
 
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">
-                        Cookscape Internal Portal v2.0
-                    </p>
-                </motion.div>
+                        <p className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">
+                            Cookscape Internal Portal v2.0
+                        </p>
+                    </motion.div>
+                </div>
             </div>
 
             {/* Close Button Top Right */}
