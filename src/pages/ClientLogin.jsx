@@ -209,21 +209,25 @@ const ClientLogin = () => {
                             transition={{ delay: 0.2, type: "spring" }}
                             className="flex items-center justify-center gap-3 sm:gap-6 md:gap-10 mb-4 md:mb-6"
                         >
-                            <button
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
                                 onClick={() => { setActiveTab('signup'); formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }); trigger('light'); }}
-                                className={`px-4 md:px-6 py-2 md:py-3 rounded-full text-[9px] md:text-xs font-black uppercase tracking-widest transition-all bg-white/80 backdrop-blur-md shadow-xl border border-white hover:-translate-y-1 ${activeTab === 'signup' ? 'text-pink-600 ring-2 ring-pink-500/20' : 'text-slate-500 hover:text-pink-600 hover:shadow-pink-100'}`}
+                                className={`px-4 md:px-8 py-2 md:py-3.5 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest shadow-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-pink-200/50 border border-white/20 ${activeTab === 'signup' ? 'ring-4 ring-pink-500/30' : 'opacity-80 hover:opacity-100'}`}
                             >
                                 Sign Up
-                            </button>
+                            </motion.button>
                             
                             <img src="/FINAL_LOGO.png" alt="Cookscape" className="h-10 sm:h-12 md:h-16 drop-shadow-2xl" />
 
-                            <button
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
                                 onClick={() => { setActiveTab('signin'); formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }); trigger('light'); }}
-                                className={`px-4 md:px-6 py-2 md:py-3 rounded-full text-[9px] md:text-xs font-black uppercase tracking-widest transition-all bg-white/80 backdrop-blur-md shadow-xl border border-white hover:-translate-y-1 ${activeTab === 'signin' ? 'text-indigo-600 ring-2 ring-indigo-500/20' : 'text-slate-500 hover:text-indigo-600 hover:shadow-indigo-100'}`}
+                                className={`px-4 md:px-8 py-2 md:py-3.5 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest shadow-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-indigo-200/50 border border-white/20 ${activeTab === 'signin' ? 'ring-4 ring-indigo-500/30' : 'opacity-80 hover:opacity-100'}`}
                             >
                                 Sign In
-                            </button>
+                            </motion.button>
                         </motion.div>
                         <h1 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter mb-3 md:mb-4">
                             Welcome to <span className="text-indigo-600">Cookscape</span>
