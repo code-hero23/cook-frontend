@@ -27,7 +27,7 @@ const App = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showWelcome, setShowWelcome] = useState(() => {
-    return sessionStorage.getItem("welcomeShown") !== "true";
+    return localStorage.getItem("welcomeShown") !== "true";
   });
   const { trigger } = useHaptics();
 
@@ -127,11 +127,12 @@ const App = () => {
     trigger('heavy');
     localStorage.removeItem("clientToken");
     localStorage.removeItem("clientProject");
+    localStorage.removeItem("welcomeShown");
     navigate("/client/login");
   };
 
   const handleCloseWelcome = () => {
-    sessionStorage.setItem("welcomeShown", "true");
+    localStorage.setItem("welcomeShown", "true");
     setShowWelcome(false);
   };
 
