@@ -21,14 +21,14 @@ const ClientLogin = () => {
     });
 
     const cards = [
-        { title: "Service", desc: "Experience our world-class interior service ecosystem.", icon: Sparkles, color: "from-blue-400 to-indigo-600", shadow: "shadow-blue-200" },
-        { title: "Completion Certificate", desc: "Official recognition of your project's successful delivery.", icon: Award, color: "from-amber-400 to-orange-600", shadow: "shadow-orange-200" },
-        { title: "Installation", desc: "Precision fit-out by our expert technical artisans.", icon: Wrench, color: "from-emerald-400 to-teal-600", shadow: "shadow-emerald-200" },
-        { title: "Production", desc: "State-of-the-art manufacturing of your custom designs.", icon: Factory, color: "from-purple-400 to-fuchsia-600", shadow: "shadow-fuchsia-200" },
-        { title: "Final set of docs", desc: "All your project technical drawings and manuals.", icon: FileCheck, color: "from-rose-400 to-pink-600", shadow: "shadow-pink-200" },
-        { title: "Revised Designs", desc: "Iterative design refinements tailored to your vision.", icon: PenTool, color: "from-cyan-400 to-blue-600", shadow: "shadow-cyan-200" },
-        { title: "Freezing Stage", desc: "Securing your final selections for production launch.", icon: Snowflake, color: "from-indigo-400 to-purple-800", shadow: "shadow-indigo-300" },
-        { title: "Client Followups", desc: "Dedicated support ensuring your complete satisfaction.", icon: Users, color: "from-lime-400 to-green-600", shadow: "shadow-green-200" }
+        { title: "1.Service", desc: "Experience our world-class interior service ecosystem.", icon: Sparkles, color: "from-blue-400 to-indigo-600", shadow: "shadow-blue-200" },
+        { title: "2.Completion Certificate", desc: "Official recognition of your project's successful delivery.", icon: Award, color: "from-amber-400 to-orange-600", shadow: "shadow-orange-200" },
+        { title: "3.Installation", desc: "Precision fit-out by our expert technical artisans.", icon: Wrench, color: "from-emerald-400 to-teal-600", shadow: "shadow-emerald-200" },
+        { title: "4.Production", desc: "State-of-the-art manufacturing of your custom designs.", icon: Factory, color: "from-purple-400 to-fuchsia-600", shadow: "shadow-fuchsia-200" },
+        { title: "5.Final set of docs", desc: "All your project technical drawings and manuals.", icon: FileCheck, color: "from-rose-400 to-pink-600", shadow: "shadow-pink-200" },
+        { title: "6.Revised Designs", desc: "Iterative design refinements tailored to your vision.", icon: PenTool, color: "from-cyan-400 to-blue-600", shadow: "shadow-cyan-200" },
+        { title: "7.Freezing Stage", desc: "Securing your final selections for production launch.", icon: Snowflake, color: "from-indigo-400 to-purple-800", shadow: "shadow-indigo-300" },
+        { title: "8.Client Followups", desc: "Dedicated support ensuring your complete satisfaction.", icon: Users, color: "from-lime-400 to-green-600", shadow: "shadow-green-200" }
     ];
 
     const containerVars = {
