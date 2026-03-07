@@ -53,7 +53,9 @@ const ProjectProgress = ({ tasks = [] }) => {
   });
 
   const taskPercentage = Math.round(weightedProgress);
-  const targetPercentage = Math.min(taskPercentage, targetPaymentVal || 0);
+  const targetPercentage = targetPaymentVal || 0;
+
+  const isPendingActivation = taskPercentage > paymentPercentage;
 
   const timelineDuration = projectData?.timelineDuration || 45;
   const today = new Date();
@@ -221,8 +223,8 @@ const ProjectProgress = ({ tasks = [] }) => {
               className="absolute top-0 left-0 h-full bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-end"
               style={{
                 boxShadow: "inset 0 0 40px rgba(0,0,0,0.1)",
-                opacity: percentage > paymentPercentage ? 0.7 : 1,
-                filter: percentage > paymentPercentage ? 'grayscale(0.4)' : 'none'
+                opacity: isPendingActivation ? 0.7 : 1,
+                filter: isPendingActivation ? 'grayscale(0.4)' : 'none'
               }}
             >
               <div className="h-full w-full absolute inset-0 shimmer-glass opacity-30"></div>
@@ -265,20 +267,20 @@ const ProjectProgress = ({ tasks = [] }) => {
         <motion.div
           whileHover={{ y: -5 }}
           className={`relative z-10 p-4 md:p-6 rounded-3xl border flex flex-col md:flex-row items-center gap-4 md:gap-6 transition-all duration-500
-            ${percentage > paymentPercentage
+            ${isPendingActivation
               ? 'bg-amber-50/80 border-amber-100 shadow-xl shadow-amber-100/50'
               : 'bg-indigo-50/80 border-indigo-100 shadow-xl shadow-indigo-100/50'}`}
         >
           <div className={`w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center shrink-0 
-            ${percentage > paymentPercentage ? 'bg-amber-100 text-amber-600' : 'bg-indigo-100 text-indigo-600'}`}>
-            {percentage > paymentPercentage ? <Clock size={24} className="animate-spin-slow" /> : <Zap size={24} />}
+            ${isPendingActivation ? 'bg-amber-100 text-amber-600' : 'bg-indigo-100 text-indigo-600'}`}>
+            {isPendingActivation ? <Clock size={24} className="animate-spin-slow" /> : <Zap size={24} />}
           </div>
           <div className="flex-1 text-center md:text-left space-y-1">
-            <h4 className={`text-xs font-black uppercase tracking-widest ${percentage > paymentPercentage ? 'text-amber-700' : 'text-indigo-700'}`}>
-              {percentage > paymentPercentage ? 'Pending Milestone Activation' : 'Lifecycle Health: Optimal'}
+            <h4 className={`text-xs font-black uppercase tracking-widest ${isPendingActivation ? 'text-amber-700' : 'text-indigo-700'}`}>
+              {isPendingActivation ? 'Pending Milestone Activation' : 'Lifecycle Health: Optimal'}
             </h4>
             <p className="text-sm font-bold text-slate-600 leading-relaxed">
-              {percentage > paymentPercentage
+              {isPendingActivation
                 ? "Your project is ahead of the official activation schedule. We'll unlock the next phase shortly."
                 : "Your project is progressing smoothly within the active lifecycle phase. Everything is on track!"}
             </p>
@@ -286,7 +288,7 @@ const ProjectProgress = ({ tasks = [] }) => {
           <button
             onClick={toggleViewTasks}
             className={`w-full md:w-auto px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg transform active:scale-95 flex items-center justify-center gap-2
-              ${percentage > paymentPercentage
+              ${isPendingActivation
                 ? 'bg-amber-600 text-white shadow-amber-200 hover:bg-amber-700'
                 : 'bg-indigo-600 text-white shadow-indigo-200 hover:bg-indigo-700'}`}
           >
