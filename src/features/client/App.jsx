@@ -13,7 +13,6 @@ import RaiseTicket from "./components/RaiseTicket";
 import TopNavbar from "./components/TopNavbar";
 import Profile from "./components/Profile";
 import TermsPopup from "./components/TermsPopup";
-import WelcomePage from "./components/WelcomePage";
 import useHaptics from "../../shared/hooks/useHaptics";
 import { useNavigate } from "react-router-dom";
 import RefreshButton from "../../shared/components/RefreshButton";
@@ -26,9 +25,6 @@ const App = () => {
   const [selected, setSelected] = useState("overview");
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [showWelcome, setShowWelcome] = useState(() => {
-    return localStorage.getItem("welcomeShown") !== "true";
-  });
   const { trigger } = useHaptics();
 
   const [hasAcceptedTerms, setHasAcceptedTerms] = useState(() => {
@@ -131,16 +127,8 @@ const App = () => {
     navigate("/client/login");
   };
 
-  const handleCloseWelcome = () => {
-    localStorage.setItem("welcomeShown", "true");
-    setShowWelcome(false);
-  };
-
   return (
     <div className="min-h-screen flex flex-col bg-[#F1F5F9] font-sans selection:bg-indigo-100 selection:text-indigo-900">
-      <AnimatePresence>
-        {showWelcome && <WelcomePage onClose={handleCloseWelcome} />}
-      </AnimatePresence>
 
       <TopNavbar
         setSelected={setSelected}
