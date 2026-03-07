@@ -154,7 +154,7 @@ const ProjectProgress = ({ tasks = [] }) => {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] p-4 md:p-8 space-y-8 max-w-7xl mx-auto">
+    <div className="min-h-screen bg-[#f8fafc] p-2 md:p-8 space-y-6 md:space-y-8 max-w-7xl mx-auto">
 
       {/* HEADER */}
       <motion.div
@@ -166,8 +166,8 @@ const ProjectProgress = ({ tasks = [] }) => {
           <h1 className="text-3xl md:text-4xl font-black tracking-tighter text-slate-900">
             Project Dashboard
           </h1>
-          <div className="flex items-center gap-2 text-slate-500 font-bold text-sm bg-white/50 backdrop-blur-sm self-start px-3 py-1 rounded-full border border-white/50">
-            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+          <div className="flex items-center gap-2 text-slate-500 font-bold text-[10px] sm:text-xs bg-white/50 backdrop-blur-sm self-start px-3 py-1 rounded-full border border-white/50">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
             Syncing updates for {clientName}
           </div>
         </div>
@@ -189,7 +189,7 @@ const ProjectProgress = ({ tasks = [] }) => {
       <motion.div
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-white/70 backdrop-blur-2xl rounded-3xl md:rounded-[3.5rem] p-5 md:p-10 shadow-2xl shadow-indigo-100/50 border border-white relative overflow-hidden group"
+        className="bg-white/70 backdrop-blur-2xl rounded-3xl md:rounded-[3.5rem] p-4 md:p-10 shadow-2xl shadow-indigo-100/50 border border-white relative overflow-hidden group"
       >
         <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-indigo-100/40 to-purple-100/40 rounded-full blur-3xl -mr-32 -mt-32"></div>
 
@@ -203,16 +203,16 @@ const ProjectProgress = ({ tasks = [] }) => {
             <p className="text-slate-500 font-semibold max-w-md leading-relaxed text-sm">Track your interior journey across four distinct phases of excellence.</p>
           </div>
           <div className="text-left md:text-right">
-            <div className="text-4xl md:text-6xl font-black text-slate-900 tracking-tighter tabular-nums flex items-baseline gap-1 md:justify-end leading-none">
-              {percentage}<span className="text-2xl md:text-3xl text-indigo-600">%</span>
+            <div className="text-3xl md:text-6xl font-black text-slate-900 tracking-tighter tabular-nums flex items-baseline gap-1 md:justify-end leading-none">
+              {percentage}<span className="text-xl md:text-3xl text-indigo-600">%</span>
             </div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mt-3">Overall Progress</p>
+            <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mt-2 md:mt-3">Overall Progress</p>
           </div>
         </div>
 
         {/* PROGRESS BAR */}
-        <div className="relative mb-12 md:mb-16 px-1 md:px-2">
-          <div className="relative h-16 sm:h-20 md:h-24 w-full bg-slate-100 rounded-2xl md:rounded-3xl border-4 md:border-8 border-white overflow-hidden shadow-inner">
+        <div className="relative mb-8 md:mb-16 px-1 md:px-2">
+          <div className="relative h-12 sm:h-20 md:h-24 w-full bg-slate-100 rounded-2xl md:rounded-3xl border-[3px] md:border-8 border-white overflow-hidden shadow-inner">
             {/* Fill */}
             <motion.div
               initial={{ width: 0 }}
@@ -264,14 +264,14 @@ const ProjectProgress = ({ tasks = [] }) => {
         {/* STATUS CARD */}
         <motion.div
           whileHover={{ y: -5 }}
-          className={`relative z-10 p-6 rounded-3xl border flex flex-col md:flex-row items-center gap-6 transition-all duration-500
+          className={`relative z-10 p-4 md:p-6 rounded-3xl border flex flex-col md:flex-row items-center gap-4 md:gap-6 transition-all duration-500
             ${percentage > paymentPercentage
               ? 'bg-amber-50/80 border-amber-100 shadow-xl shadow-amber-100/50'
               : 'bg-indigo-50/80 border-indigo-100 shadow-xl shadow-indigo-100/50'}`}
         >
-          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 
+          <div className={`w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center shrink-0 
             ${percentage > paymentPercentage ? 'bg-amber-100 text-amber-600' : 'bg-indigo-100 text-indigo-600'}`}>
-            {percentage > paymentPercentage ? <Clock size={28} className="animate-spin-slow" /> : <Zap size={28} />}
+            {percentage > paymentPercentage ? <Clock size={24} className="animate-spin-slow" /> : <Zap size={24} />}
           </div>
           <div className="flex-1 text-center md:text-left space-y-1">
             <h4 className={`text-xs font-black uppercase tracking-widest ${percentage > paymentPercentage ? 'text-amber-700' : 'text-indigo-700'}`}>
@@ -285,13 +285,13 @@ const ProjectProgress = ({ tasks = [] }) => {
           </div>
           <button
             onClick={toggleViewTasks}
-            className={`w-full md:w-auto px-8 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg transform active:scale-95 flex items-center justify-center gap-2
+            className={`w-full md:w-auto px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg transform active:scale-95 flex items-center justify-center gap-2
               ${percentage > paymentPercentage
                 ? 'bg-amber-600 text-white shadow-amber-200 hover:bg-amber-700'
                 : 'bg-indigo-600 text-white shadow-indigo-200 hover:bg-indigo-700'}`}
           >
             Explore Tasks
-            <ChevronRight size={16} />
+            <ChevronRight size={14} />
           </button>
         </motion.div>
       </motion.div>

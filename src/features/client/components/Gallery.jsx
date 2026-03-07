@@ -62,23 +62,24 @@ const Gallery = () => {
   if (!projectId) return null;
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 pb-20">
+    <div className="max-w-6xl mx-auto space-y-6 md:space-y-8 pb-20">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-purple-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-purple-100">
-            <ImageIcon size={24} />
+      <div className="flex items-center justify-between mb-6 md:mb-8 px-2 md:px-0">
+        <div className="flex items-center gap-3 md:gap-4">
+          <div className="w-10 h-10 md:w-12 md:h-12 bg-purple-600 rounded-xl md:rounded-2xl flex items-center justify-center text-white shadow-lg shadow-purple-100">
+            <ImageIcon size={20} className="md:w-6 md:h-6" />
           </div>
           <div>
-            <h2 className="text-2xl font-black text-slate-800 tracking-tight">
+            <h2 className="text-xl md:text-2xl font-black text-slate-800 tracking-tight">
               Site Gallery
             </h2>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">
+            <p className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5 md:mt-1">
               Visual Progress Documentation
             </p>
           </div>
         </div>
-        <RefreshButton onRefresh={fetchImages} isLoading={loading} label="Refresh" />
+        <RefreshButton onRefresh={fetchImages} isLoading={loading} className="md:hidden" />
+        <RefreshButton onRefresh={fetchImages} isLoading={loading} label="Refresh" className="hidden md:flex" />
       </div>
 
 
@@ -175,7 +176,7 @@ const Gallery = () => {
             onClick={(e) => e.stopPropagation()}
           >
             {selectedImage.caption && (
-              <p className="text-white text-sm font-medium text-center max-w-md leading-relaxed">{selectedImage.caption}</p>
+              <p className="text-white text-xs md:text-sm font-medium text-center max-w-md leading-relaxed">{selectedImage.caption}</p>
             )}
 
             <button
@@ -183,9 +184,9 @@ const Gallery = () => {
                 e.stopPropagation();
                 handleDownload(`${apiUrl}${selectedImage.url}`, selectedImage.id);
               }}
-              className="w-full max-w-sm bg-white text-slate-900 py-4 rounded-xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 active:scale-95 transition-transform shadow-xl hover:bg-slate-50"
+              className="w-full max-w-sm bg-white text-slate-900 py-3.5 md:py-4 rounded-xl font-black text-xs md:text-sm uppercase tracking-widest flex items-center justify-center gap-2 md:gap-3 active:scale-95 transition-transform shadow-xl hover:bg-slate-50"
             >
-              {downloadingId === selectedImage.id ? <Loader2 size={20} className="animate-spin" /> : <Download size={20} />}
+              {downloadingId === selectedImage.id ? <Loader2 size={16} className="animate-spin md:w-5 md:h-5" /> : <Download size={16} className="md:w-5 md:h-5" />}
               Save to Gallery
             </button>
           </div>

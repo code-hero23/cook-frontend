@@ -12,13 +12,14 @@ const Profile = () => {
             transition={{ delay, duration: 0.5 }}
             className="bg-white/60 backdrop-blur-xl rounded-3xl md:rounded-[2.5rem] p-6 md:p-8 shadow-xl shadow-slate-200/50 border border-white/50 hover:shadow-2xl transition-all group"
         >
-            <div className="flex items-center gap-4 mb-8">
-                <div className={`w-12 h-12 rounded-2xl ${colorClass} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
-                    <Icon size={22} />
+            <div className="flex items-center gap-3 md:gap-4 mb-6 md:mb-8">
+                <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl ${colorClass} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
+                    <Icon size={20} className="md:hidden" />
+                    <Icon size={22} className="hidden md:block" />
                 </div>
                 <div>
-                    <h3 className="text-xl font-black text-slate-800 tracking-tight">{title}</h3>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Verified Information</p>
+                    <h3 className="text-lg md:text-xl font-black text-slate-800 tracking-tight">{title}</h3>
+                    <p className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Verified Information</p>
                 </div>
             </div>
             <div className="space-y-6">
@@ -42,14 +43,14 @@ const Profile = () => {
     );
 
     return (
-        <div className="max-w-5xl mx-auto p-4 md:p-8 lg:p-10 pb-20 space-y-8 md:space-y-10">
+        <div className="max-w-5xl mx-auto p-2 md:p-8 lg:p-10 pb-20 space-y-6 md:space-y-10">
             <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 className="space-y-2"
             >
-                <h1 className="text-3xl md:text-4xl font-black text-slate-950 tracking-tighter">My Profile</h1>
-                <p className="text-slate-500 font-bold max-w-xl leading-relaxed">Personal and project data as recorded in the Cookscape Master Registry.</p>
+                <h1 className="text-2xl md:text-4xl font-black text-slate-950 tracking-tighter px-2">My Profile</h1>
+                <p className="text-xs md:text-sm text-slate-500 font-bold max-w-xl leading-relaxed px-2">Personal and project data as recorded in the Cookscape Master Registry.</p>
             </motion.div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

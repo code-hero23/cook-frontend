@@ -86,24 +86,24 @@ const Timeline = ({ tasks, projectStartDate }) => {
   return (
     <div className="space-y-8">
       {/* MOBILE TIMELINE */}
-      <div className="md:hidden space-y-10">
-        <h2 className="text-xl font-black text-slate-800 tracking-tight">Project Timeline</h2>
-        <div className="space-y-8">
+      <div className="md:hidden space-y-8">
+        <h2 className="text-lg font-black text-slate-800 tracking-tight px-2">Project Timeline</h2>
+        <div className="space-y-6">
           {stages.map((stageName, sIdx) => {
             const stageTasks = tasks.filter((t) => t.stage === stageName);
             if (stageTasks.length === 0) return null;
 
             return (
               <div key={stageName} className="relative">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-black text-xs shadow-lg shadow-indigo-100 shrink-0">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-black text-[10px] shadow-lg shadow-indigo-100 shrink-0">
                     {sIdx + 1}
                   </div>
-                  <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">
+                  <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest">
                     {stageName}
                   </h3>
                 </div>
-                <div className="ml-5 pl-8 border-l-2 border-slate-100 space-y-2 relative">
+                <div className="ml-4 pl-6 border-l-2 border-slate-100 space-y-1.5 relative">
                   {stageTasks.map((task, idx) => renderTask(task, idx))}
                 </div>
               </div>

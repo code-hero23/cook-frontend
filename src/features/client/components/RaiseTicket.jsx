@@ -157,7 +157,7 @@ const RaiseTicket = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-4 md:p-8 lg:p-10 lg:h-[calc(100vh-6rem)] flex flex-col lg:flex-row gap-6 md:gap-8">
+    <div className="max-w-7xl mx-auto p-2 md:p-8 lg:p-10 lg:h-[calc(100vh-6rem)] flex flex-col lg:flex-row gap-6 md:gap-8">
 
       {/* FORM PANEL */}
       <motion.div
@@ -242,9 +242,9 @@ const RaiseTicket = () => {
             whileTap={{ scale: 0.95 }}
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="w-full bg-indigo-600 text-white py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider shadow-lg shadow-indigo-200 hover:bg-indigo-700 disabled:bg-slate-300 disabled:shadow-none transition-all flex items-center justify-center gap-2"
+            className="w-full bg-indigo-600 text-white py-3 md:py-2.5 rounded-xl font-bold text-[11px] md:text-xs uppercase tracking-wider shadow-lg shadow-indigo-200 hover:bg-indigo-700 disabled:bg-slate-300 disabled:shadow-none transition-all flex items-center justify-center gap-2"
           >
-            {isSubmitting ? "Processing..." : <><Send size={16} /> Dispatch Ticket</>}
+            {isSubmitting ? "Processing..." : <><Send size={14} md:size={16} /> Dispatch Ticket</>}
           </motion.button>
         </div>
       </motion.div>
@@ -255,11 +255,11 @@ const RaiseTicket = () => {
         animate={{ opacity: 1, x: 0 }}
         className="flex-1 bg-white/40 backdrop-blur-xl rounded-3xl md:rounded-[2.5rem] border border-white/50 shadow-2xl shadow-slate-200/50 flex flex-col overflow-hidden"
       >
-        <div className="p-6 md:p-8 border-b border-white/50 bg-slate-50/50 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="p-4 md:p-6 md:p-8 border-b border-white/50 bg-slate-50/50 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-center justify-between w-full md:w-auto">
             <div>
-              <h2 className="text-xl font-black text-slate-800 tracking-tight">Active Inquiries</h2>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Track your open & historical requests</p>
+              <h2 className="text-lg md:text-xl font-black text-slate-800 tracking-tight">Active Inquiries</h2>
+              <p className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Track your requests</p>
             </div>
             <RefreshButton onRefresh={fetchTickets} isLoading={loading} className="md:hidden" />
           </div>
@@ -306,17 +306,17 @@ const RaiseTicket = () => {
                 whileHover={{ y: -4, scale: 1.01 }}
                 className="bg-white/70 backdrop-blur-md p-5 md:p-6 rounded-[1.5rem] md:rounded-[2rem] border border-white shadow-sm hover:shadow-xl hover:shadow-indigo-50/50 transition-all cursor-pointer group flex flex-col md:flex-row md:items-center gap-4 md:gap-6"
               >
-                <div className={`w-fit md:w-14 h-8 md:h-14 px-3 md:px-0 rounded-xl md:rounded-2xl shrink-0 flex items-center justify-center border font-black text-[9px] md:text-[10px] uppercase tracking-widest md:tracking-tighter ${statusColors[t.status] || 'bg-slate-50 text-slate-400'}`}>
+                <div className={`w-fit md:w-14 h-7 md:h-14 px-2 md:px-0 rounded-lg md:rounded-2xl shrink-0 flex items-center justify-center border font-black text-[8px] md:text-[10px] uppercase tracking-widest md:tracking-tighter ${statusColors[t.status] || 'bg-slate-50 text-slate-400'}`}>
                   {t.status}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-1">
-                    <h4 className="text-sm font-black text-slate-800 tracking-tight group-hover:text-indigo-600 transition-colors">{t.ticketId}</h4>
-                    <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border ${priorityColors[t.priority]}`}>
+                    <h4 className="text-xs md:text-sm font-black text-slate-800 tracking-tight group-hover:text-indigo-600 transition-colors">{t.ticketId}</h4>
+                    <span className={`px-2 py-0.5 rounded-full text-[7px] md:text-[8px] font-black uppercase tracking-widest border ${priorityColors[t.priority]}`}>
                       {t.priority}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500 font-bold line-clamp-1">{t.description}</p>
+                  <p className="text-[11px] md:text-xs text-slate-500 font-bold line-clamp-1">{t.description}</p>
                   <div className="flex items-center gap-4 mt-3">
                     <div className="flex items-center gap-1.5 text-slate-400">
                       <Calendar size={12} />

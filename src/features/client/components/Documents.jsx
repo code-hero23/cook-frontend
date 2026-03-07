@@ -48,14 +48,14 @@ const Documents = () => {
     if (!projectId) return null;
 
     return (
-        <div className="max-w-4xl mx-auto space-y-8 pb-20">
-            <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-100">
-                    <FileText size={24} />
+        <div className="max-w-4xl mx-auto space-y-6 md:space-y-8 pb-20">
+            <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-8">
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-600 rounded-xl md:rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-100">
+                    <FileText size={20} md:size={24} />
                 </div>
                 <div>
-                    <h2 className="text-2xl font-black text-slate-800 tracking-tight">Project Documents</h2>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Contracts & Specifications</p>
+                    <h2 className="text-xl md:text-2xl font-black text-slate-800 tracking-tight">Project Documents</h2>
+                    <p className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Contracts & Specifications</p>
                 </div>
             </div>
 
@@ -82,8 +82,8 @@ const Documents = () => {
                                 key={doc.id}
                                 className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm md:hover:shadow-md transition-all group"
                             >
-                                <div className="shrink-0 w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 font-bold">
-                                    <File size={20} />
+                                <div className="shrink-0 w-10 h-10 md:w-12 md:h-12 bg-indigo-50 rounded-xl md:rounded-2xl flex items-center justify-center text-indigo-600 font-bold">
+                                    <File size={18} md:size={20} />
                                 </div>
 
                                 <div className="flex-1 min-w-0">
@@ -103,10 +103,10 @@ const Documents = () => {
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     download
-                                    className="shrink-0 w-12 h-12 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 md:hover:bg-indigo-600 md:hover:text-white active:bg-indigo-100 transition-all touch-manipulation pointer-events-auto cursor-pointer z-10 relative"
+                                    className="shrink-0 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 md:hover:bg-indigo-600 md:hover:text-white active:bg-indigo-100 transition-all touch-manipulation pointer-events-auto cursor-pointer z-10 relative"
                                     aria-label="Download Document"
                                 >
-                                    <Download size={20} className="pointer-events-none" />
+                                    <Download size={18} md:size={20} className="pointer-events-none" />
                                 </a>
                             </div>
                         );

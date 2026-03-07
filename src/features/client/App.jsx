@@ -13,6 +13,7 @@ import RaiseTicket from "./components/RaiseTicket";
 import TopNavbar from "./components/TopNavbar";
 import Profile from "./components/Profile";
 import TermsPopup from "./components/TermsPopup";
+import WelcomePage from "./components/WelcomePage";
 import useHaptics from "../../shared/hooks/useHaptics";
 import { useNavigate } from "react-router-dom";
 import RefreshButton from "../../shared/components/RefreshButton";
@@ -25,6 +26,9 @@ const App = () => {
   const [selected, setSelected] = useState("overview");
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showWelcome, setShowWelcome] = useState(() => {
+    return sessionStorage.getItem("welcomeShown") !== "true";
+  });
   const { trigger } = useHaptics();
 
   const [hasAcceptedTerms, setHasAcceptedTerms] = useState(() => {
@@ -126,15 +130,16 @@ const App = () => {
     navigate("/client/login");
   };
 
-  const slideVars = {
-    initial: { opacity: 0, x: 20 },
-    animate: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: -20 },
-    transition: { duration: 0.4, ease: "circOut" }
+  const handleCloseWelcome = () => {
+    sessionStorage.setItem("welcomeShown", "true");
+    setShowWelcome(false);
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F1F5F9] font-sans selection:bg-indigo-100 selection:text-indigo-900">
+      <AnimatePresence>
+        {showWelcome && <WelcomePage onClose={handleCloseWelcome} />}
+      </AnimatePresence>
 
       <TopNavbar
         setSelected={setSelected}
@@ -148,9 +153,9 @@ const App = () => {
           onRefresh={() => window.location.reload()}
           isLoading={loading}
           label="Sync"
-          className="border-none bg-transparent shadow-none p-0 h-auto"
+          className="border-none bg-transparent shadow-none p-0 h-auto text-indigo-600"
         />
-        <span className="text-[10px] font-black text-slate-400 tracking-widest uppercase">
+        <span className="text-[9px] font-black text-slate-400 tracking-[0.2em] uppercase">
           Portal Status: Online
         </span>
       </div>
@@ -164,7 +169,7 @@ const App = () => {
 
         {/* Main Content Area - Window Scroll */}
         <div className="flex-1 bg-slate-50/30 min-w-0 pointer-events-auto overflow-y-auto">
-          <div className="p-4 md:p-6 lg:p-8 pb-32 md:pb-12">
+          <div className="p-3 md:p-6 lg:p-8 pb-32 md:pb-12">
             {selected === "overview" && <ProjectProgress tasks={tasks} />}
             {selected === "profile" && <Profile />}
             {selected === "tasks" && <TaskList tasks={tasks} toggleStatus={toggleStatus} />}
