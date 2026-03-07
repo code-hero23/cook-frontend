@@ -194,6 +194,29 @@ const ClientLogin = () => {
             </div>
 
             <div className="min-h-[100dvh] w-full flex flex-col items-center py-12 md:py-20 px-4 md:px-8 relative z-10">
+                {/* Floating Top Right Auth Toggle */}
+                <div className="absolute top-4 right-4 md:top-8 md:right-8 z-[5000]">
+                    <motion.div 
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5, type: 'spring' }}
+                        className="bg-white/80 backdrop-blur-md p-1.5 rounded-full shadow-lg border border-white flex items-center gap-1"
+                    >
+                        <button
+                            onClick={() => { setActiveTab('signin'); formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }); trigger('light'); }}
+                            className={`px-4 py-2 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'signin' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200' : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-50'}`}
+                        >
+                            Sign In
+                        </button>
+                        <button
+                            onClick={() => { setActiveTab('signup'); formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }); trigger('light'); }}
+                            className={`px-4 py-2 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'signup' ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md shadow-pink-200' : 'text-slate-500 hover:text-pink-600 hover:bg-slate-50'}`}
+                        >
+                            Sign Up
+                        </button>
+                    </motion.div>
+                </div>
+
                 <div className="max-w-6xl w-full flex flex-col items-center my-auto">
                     
                     {/* Header Section */}
@@ -201,7 +224,7 @@ const ClientLogin = () => {
                         initial={{ y: -30, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ duration: 0.8, ease: "circOut" }}
-                        className="text-center mb-8 md:mb-12"
+                        className="text-center mb-8 md:mb-12 mt-4"
                     >
                         <motion.div
                             initial={{ scale: 0.8, opacity: 0 }}
