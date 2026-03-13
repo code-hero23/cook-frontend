@@ -20,11 +20,24 @@ const ProjectCard = ({ project }) => {
                     {project.name}
                 </h2>
 
-                <div className="flex flex-col sm:flex-row sm:items-center sm:gap-6 gap-1 mb-4 sm:mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:gap-6 gap-1 mb-2 sm:mb-4">
                     <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-500 font-medium">
                         <MapPin size={14} className="text-indigo-400" />
-                        <span className="truncate">{project.location || 'Chennai'}</span>
+                        <span className="truncate">
+                            {project.location || 'Chennai'}
+                            {(project.block || project.unitNumber) && (
+                                <span className="ml-1 text-slate-400">
+                                    ({[project.block, project.unitNumber].filter(Boolean).join(' - ')})
+                                </span>
+                            )}
+                        </span>
                     </div>
+                    {project.floor && (
+                        <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-500 font-medium">
+                            <span className="text-indigo-400 font-bold">FL:</span>
+                            <span>{project.floor}</span>
+                        </div>
+                    )}
                     <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-500 font-medium">
                         <Calendar size={14} className="text-indigo-400" />
                         <span>Ends: {project.deadline ? new Date(project.deadline).toLocaleDateString() : 'TBD'}</span>

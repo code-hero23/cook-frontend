@@ -65,7 +65,7 @@ exports.createProject = async (req, res) => {
         if (data.deadline) data.deadline = new Date(data.deadline);
 
         // Clean up empty/whitespace strings for optional fields to avoid Unique Constraint errors
-        ['cpNumber', 'gstin', 'spouseName', 'spousePhone', 'location', 'businessHeadId', 'propertyType', 'scopeOfWork', 'leadSource', 'salesRep', 'faId', 'laId'].forEach(field => {
+        ['cpNumber', 'gstin', 'spouseName', 'spousePhone', 'location', 'businessHeadId', 'propertyType', 'scopeOfWork', 'leadSource', 'salesRep', 'faId', 'laId', 'unitNumber', 'block', 'floor', 'area'].forEach(field => {
             if (!data[field] || (typeof data[field] === 'string' && data[field].trim() === "") || data[field] === "null" || data[field] === "undefined") {
                 data[field] = null; // Explicitly set to null to avoid Prisma unique constraint errors for empty strings
             } else if (typeof data[field] === 'string') {
@@ -196,7 +196,7 @@ exports.updateProject = async (req, res) => {
         }
 
         // Clean empty optional fields
-        ['cpNumber', 'gstin', 'spouseName', 'spousePhone', 'location', 'businessHeadId', 'propertyType', 'scopeOfWork', 'leadSource', 'salesRep', 'faId', 'laId'].forEach(field => {
+        ['cpNumber', 'gstin', 'spouseName', 'spousePhone', 'location', 'businessHeadId', 'propertyType', 'scopeOfWork', 'leadSource', 'salesRep', 'faId', 'laId', 'unitNumber', 'block', 'floor', 'area'].forEach(field => {
             if (data[field] === "" || (typeof data[field] === 'string' && data[field].trim() === "") || data[field] === "null" || data[field] === "undefined") {
                 data[field] = null;
             } else if (typeof data[field] === 'string') {
@@ -597,7 +597,8 @@ exports.bulkCreateProjects = async (req, res) => {
                     'cpNumber', 'gstin', 'spouseName', 'spousePhone', 'location',
                     'businessHeadId', 'propertyType', 'scopeOfWork', 'leadSource',
                     'salesRep', 'faId', 'laId', 'billingName', 'billingAddress',
-                    'billingPhone', 'handingOverMonth', 'handingOverYear', 'status'
+                    'billingPhone', 'handingOverMonth', 'handingOverYear', 'status',
+                    'unitNumber', 'block', 'floor', 'area'
                 ];
 
                 optionalFields.forEach(field => {
@@ -614,6 +615,7 @@ exports.bulkCreateProjects = async (req, res) => {
                 if (sanitizedData.latitude) sanitizedData.latitude = parseFloat(sanitizedData.latitude) || null;
                 if (sanitizedData.longitude) sanitizedData.longitude = parseFloat(sanitizedData.longitude) || null;
                 if (sanitizedData.paymentPercentage) sanitizedData.paymentPercentage = parseInt(sanitizedData.paymentPercentage, 10) || 0;
+                if (sanitizedData.executionPercentage) sanitizedData.executionPercentage = parseInt(sanitizedData.executionPercentage, 10) || 0;
 
                 // Date Types
                 const dateFields = ['startDate', 'deadline', 'handoverDate'];

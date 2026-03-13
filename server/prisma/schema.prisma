@@ -54,8 +54,13 @@ model Project {
   
   // Project Details
   location         String?
+  unitNumber       String?
+  block            String?
+  floor            String?
+  area             String?
   budget           Float?
   paymentPercentage Int          @default(0)
+  executionPercentage Int        @default(0)
   cpNumber         String?       @unique
   
   // Billing
