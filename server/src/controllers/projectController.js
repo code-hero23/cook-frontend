@@ -668,6 +668,7 @@ exports.bulkCreateProjects = async (req, res) => {
                 } else if (error.code === 'P2003') {
                     stats.errors.push(`Invalid User Reference (BH, FA, or LA not found) for: ${data.name}`);
                 } else {
+                    console.error(`[BulkImport] Unexpected Error for ${data.name}:`, error);
                     stats.errors.push(`Row error: ${data.name} - ${error.message}`);
                 }
             }

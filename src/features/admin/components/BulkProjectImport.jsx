@@ -145,7 +145,10 @@ const BulkProjectImport = ({ onClose, onSuccess }) => {
                 return;
             }
 
+            console.log("[BulkImport] Sending Payload:", rowsToSend);
             const res = await axios.post('/projects/bulk', rowsToSend);
+            console.log("[BulkImport] Server Full Response:", res);
+            console.log("[BulkImport] Server Data:", res.data);
             setResults(res.data);
             setStep('result');
             if (onSuccess) onSuccess();
