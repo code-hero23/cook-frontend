@@ -538,9 +538,9 @@ exports.bulkCreateProjects = async (req, res) => {
 
         const userLookup = {};
         allUsers.forEach(u => {
-            if (u.email) userLookup[u.email.toLowerCase()] = u.id;
-            if (u.name) userLookup[u.name.toLowerCase()] = u.id;
-            userLookup[u.id.toLowerCase()] = u.id; // Also allow raw ID if provided
+            if (u.email) userLookup[u.email.toLowerCase().trim()] = u.id;
+            if (u.name) userLookup[u.name.toLowerCase().trim()] = u.id;
+            if (u.id) userLookup[u.id.toLowerCase().trim()] = u.id; // Also allow raw ID if provided
         });
 
         const resolveUserId = (input) => {
@@ -567,10 +567,14 @@ exports.bulkCreateProjects = async (req, res) => {
         for (const data of projectsData) {
             try {
                 // Validation
-                if (!data.name || !data.clientFirstName || !data.clientLastName || !data.clientEmail || !data.clientPhone) {
+                // Validation - Relaxed (clientLastName is optional now)
+                if (!data.name || !data.clientFirstName || !data.clientEmail || !data.clientPhone) {
                     stats.errors.push(`Row missing required fields: ${data.name || 'Unnamed'}`);
                     continue;
                 }
+                
+                // Ensure lastName has a value if missing
+                if (!data.clientLastName) data.clientLastName = ".";
 
                 // Check for existing CP Number to avoid crash
                 if (data.cpNumber) {
@@ -621,8 +625,24 @@ exports.bulkCreateProjects = async (req, res) => {
                 const dateFields = ['startDate', 'deadline', 'handoverDate'];
                 dateFields.forEach(field => {
                     if (sanitizedData[field]) {
-                        const d = new Date(sanitizedData[field]);
-                        sanitizedData[field] = !isNaN(d.getTime()) ? d : null;
+                        let val = String(sanitizedData[field]).replace(/,/g, '-').replace(/\./g, '-'); // Handle "3,4,2026" or "3.4.2026"
+                        const d = new Date(val);
+                        if (!isNaN(d.getTime())) {
+                            sanitizedData[field] = d;
+                        } else {
+                            // Try parsing "D-M-YYYY" manually if standard parser fails
+                            const parts = val.split('-');
+                            if (parts.length === 3) {
+                                // Default to D-M-YYYY or M-D-YYYY check? Usually D-M-YYYY in India
+                                const day = parseInt(parts[0], 10);
+                                const month = parseInt(parts[1], 10) - 1;
+                                const year = parseInt(parts[2], 10);
+                                const d2 = new Date(year, month, day);
+                                sanitizedData[field] = !isNaN(d2.getTime()) ? d2 : null;
+                            } else {
+                                sanitizedData[field] = null;
+                            }
+                        }
                     } else {
                         sanitizedData[field] = null;
                     }

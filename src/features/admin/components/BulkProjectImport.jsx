@@ -54,54 +54,68 @@ const BulkProjectImport = ({ onClose, onSuccess }) => {
         // Define a normalized mapping function
         const getVal = (row, ...keys) => {
             for (let k of keys) {
-                if (row[k] !== undefined && row[k] !== null) return String(row[k]).trim();
-                // Check case-insensitive
-                const lowerK = k.toLowerCase();
-                const actualKey = Object.keys(row).find(rk => rk.toLowerCase() === lowerK);
-                if (actualKey && row[actualKey] !== undefined && row[actualKey] !== null) return String(row[actualKey]).trim();
+                // Check direct match (with trim)
+                const trimmedK = k.trim();
+                if (row[trimmedK] !== undefined && row[trimmedK] !== null) return String(row[trimmedK]).trim();
+                
+                // Check case-insensitive and whitespace-insensitive (including non-breaking spaces)
+                const lowerK = trimmedK.toLowerCase();
+                const actualKey = Object.keys(row).find(rk => rk.toLowerCase().replace(/[\s\xa0]+/g, ' ').trim() === lowerK);
+                if (actualKey && row[actualKey] !== undefined && row[actualKey] !== null) return String(row[actualKey]).replace(/[\s\xa0]+/g, ' ').trim();
             }
             return "";
         };
 
         data.forEach((row, index) => {
             const mappedRow = {
-                name: getVal(row, 'name', 'Project Name', 'ProjectName', 'Project', 'Project Title', 'Title'),
-                clientFirstName: getVal(row, 'clientFirstName', 'Client First Name', 'FirstName', 'Name', 'Client', 'Customer', 'Client Name'),
-                clientLastName: getVal(row, 'clientLastName', 'Client Last Name', 'LastName', 'Surname', 'Last Name'),
-                clientEmail: getVal(row, 'clientEmail', 'Client Email', 'Email', 'Email Address', 'E-Mail'),
-                clientPhone: getVal(row, 'clientPhone', 'Client Phone', 'Phone', 'Mobile', 'Contact', 'Contact Number', 'Phone Number', 'Cell'),
-                unitNumber: getVal(row, 'unitNumber', 'Unit #', 'Unit No', 'UnitNumber'),
+                name: getVal(row, 'Project', 'Project Name', 'name', 'Title'),
+                clientFirstName: getVal(row, 'Name', 'clientFirstName', 'FirstName', 'Client', 'Customer'),
+                clientLastName: getVal(row, 'clientLastName', 'LastName', 'Surname', 'Last Name'),
+                clientEmail: getVal(row, "Mail i'd ", 'clientEmail', 'Email', 'Email Address'),
+                clientPhone: getVal(row, 'Number  ', 'Mobile', 'Phone', 'clientPhone', 'Contact'),
+                unitNumber: getVal(row, 'unitNumber', 'Unit #', 'Unit No'),
                 block: getVal(row, 'block', 'Block'),
                 floor: getVal(row, 'floor', 'Floor'),
-                area: getVal(row, 'area', 'Area', 'SqFt'),
-                executionPercentage: getVal(row, 'executionPercentage', 'Execution %', 'ExecutionProgress'),
+                area: getVal(row, 'area', 'Area', 'Sqft'),
+                executionPercentage: getVal(row, 'executionPercentage', 'Execution %', 'Progress'),
                 spouseName: getVal(row, 'spouseName', 'Spouse Name'),
                 spousePhone: getVal(row, 'spousePhone', 'Spouse Phone'),
-                location: getVal(row, 'location', 'Location', 'Address'),
-                budget: getVal(row, 'budget', 'Budget'),
+                location: getVal(row, 'Location', 'location', 'Address'),
+                budget: getVal(row, 'Project Value  ', 'budget', 'Total Value', 'Value'),
                 billingName: getVal(row, 'billingName', 'Billing Name'),
                 billingAddress: getVal(row, 'billingAddress', 'Billing Address'),
                 billingPhone: getVal(row, 'billingPhone', 'Billing Phone'),
                 gstin: getVal(row, 'gstin', 'GSTIN'),
-                businessHeadId: getVal(row, 'businessHeadId', 'BH Email/Name', 'BH ID', 'Business Head'),
                 propertyType: getVal(row, 'propertyType', 'Property Type'),
-                scopeOfWork: getVal(row, 'scopeOfWork', 'Scope of Work'),
-                leadSource: getVal(row, 'leadSource', 'Lead Source'),
-                salesRep: getVal(row, 'salesRep', 'Sales Rep'),
-                faId: getVal(row, 'faId', 'FA Email/Name', 'FA ID'),
-                laId: getVal(row, 'laId', 'LA Email/Name', 'LA ID'),
-                latitude: getVal(row, 'latitude', 'Latitude'),
-                longitude: getVal(row, 'longitude', 'Longitude'),
+                scopeOfWork: getVal(row, 'scopeOfWork', 'Scope'),
+                leadSource: getVal(row, 'Source ', 'leadSource', 'Source'),
+                salesRep: getVal(row, 'salesRep', 'Sales Person'),
+                businessHeadId: getVal(row, 'businessHeadId', 'BH', 'Business Head'),
+                faId: getVal(row, 'faId', 'FA', 'Floor Assistant'),
+                laId: getVal(row, 'laId', 'LA', 'Layout Assistant'),
+                latitude: getVal(row, 'latitude', 'Lat'),
+                longitude: getVal(row, 'longitude', 'Lng'),
                 startDate: getVal(row, 'startDate', 'Start Date'),
-                deadline: getVal(row, 'deadline', 'Deadline'),
-                handoverDate: getVal(row, 'handoverDate', 'Handover Date'),
-                handingOverMonth: getVal(row, 'handingOverMonth', 'Handover Month'),
-                handingOverYear: getVal(row, 'handingOverYear', 'Handover Year'),
+                deadline: getVal(row, 'deadline', 'End Date'),
+                handoverDate: getVal(row, 'handoverDate', 'Handover'),
+                handingOverMonth: getVal(row, 'handingOverMonth', 'Month'),
+                handingOverYear: getVal(row, 'handingOverYear', 'Year'),
                 timelineDuration: getVal(row, 'timelineDuration', 'Duration'),
-                status: getVal(row, 'status', 'Status'),
+                status: getVal(row, 'status', 'Status').replace(/\s+/g, '').toUpperCase(), // Normalize "ON GOING" to "ONGOING"
                 paymentPercentage: getVal(row, 'paymentPercentage', 'Payment %'),
-                cpNumber: getVal(row, 'cpNumber', 'CP Number'),
+                cpNumber: getVal(row, 'CP Code  ', 'cpNumber', 'CP Number'),
             };
+
+            // Smart Name Splitting: If Name has both First and Last but we only got one column
+            if (mappedRow.clientFirstName && !mappedRow.clientLastName) {
+                const parts = mappedRow.clientFirstName.split(/\s+/);
+                if (parts.length > 1) {
+                    mappedRow.clientFirstName = parts[0];
+                    mappedRow.clientLastName = parts.slice(1).join(' ');
+                } else {
+                    mappedRow.clientLastName = "."; // Fill with dummy to pass backend validation if strictly required
+                }
+            }
 
             // Basic Validation - More permissive: only require Name (of project or client)
             if (!mappedRow.name && !mappedRow.clientFirstName) {
