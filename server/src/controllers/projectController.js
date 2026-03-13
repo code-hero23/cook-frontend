@@ -648,12 +648,29 @@ exports.bulkCreateProjects = async (req, res) => {
                     }
                 });
 
+                // --- Whitelist Fields for Prisma ---
+                const validBaseFields = [
+                    'name', 'clientFirstName', 'clientLastName', 'clientEmail', 'clientPhone',
+                    'unitNumber', 'block', 'floor', 'area', 'budget',
+                    'paymentPercentage', 'executionPercentage', 'cpNumber',
+                    'billingName', 'billingAddress', 'billingPhone', 'gstin',
+                    'businessHeadId', 'faId', 'laId', 'propertyType', 'scopeOfWork',
+                    'leadSource', 'salesRep', 'latitude', 'longitude',
+                    'startDate', 'deadline', 'handoverDate', 'handingOverMonth',
+                    'handingOverYear', 'timelineDuration', 'status'
+                ];
+
+                const finalData = {};
+                validBaseFields.forEach(f => {
+                    if (sanitizedData[f] !== undefined) finalData[f] = sanitizedData[f];
+                });
+
                 // Password
                 const passwordHash = await bcrypt.hash(data.clientPassword || 'cookscape123', 10);
 
                 await prisma.project.create({
                     data: {
-                        ...sanitizedData,
+                        ...finalData,
                         projectCode,
                         clientPassword: passwordHash
                     }
