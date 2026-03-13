@@ -624,13 +624,19 @@ exports.bulkCreateProjects = async (req, res) => {
                     }
                 });
 
-                // Numeric Types
-                if (sanitizedData.budget) sanitizedData.budget = parseFloat(sanitizedData.budget) || null;
-                if (sanitizedData.timelineDuration) sanitizedData.timelineDuration = parseInt(sanitizedData.timelineDuration, 10) || 45;
-                if (sanitizedData.latitude) sanitizedData.latitude = parseFloat(sanitizedData.latitude) || null;
-                if (sanitizedData.longitude) sanitizedData.longitude = parseFloat(sanitizedData.longitude) || null;
-                if (sanitizedData.paymentPercentage) sanitizedData.paymentPercentage = parseInt(sanitizedData.paymentPercentage, 10) || 0;
-                if (sanitizedData.executionPercentage) sanitizedData.executionPercentage = parseInt(sanitizedData.executionPercentage, 10) || 0;
+                // --- Robust Numeric Parsing ---
+                const parseNum = (val, isFloat = false, defaultValue = null) => {
+                    if (val === undefined || val === null || val === "") return defaultValue;
+                    const parsed = isFloat ? parseFloat(val) : parseInt(val, 10);
+                    return isNaN(parsed) ? defaultValue : parsed;
+                };
+
+                sanitizedData.budget = parseNum(sanitizedData.budget, true, null);
+                sanitizedData.timelineDuration = parseNum(sanitizedData.timelineDuration, false, 45);
+                sanitizedData.latitude = parseNum(sanitizedData.latitude, true, null);
+                sanitizedData.longitude = parseNum(sanitizedData.longitude, true, null);
+                sanitizedData.paymentPercentage = parseNum(sanitizedData.paymentPercentage, false, 0);
+                sanitizedData.executionPercentage = parseNum(sanitizedData.executionPercentage, false, 0);
 
                 // Date Types
                 const dateFields = ['startDate', 'deadline', 'handoverDate'];
