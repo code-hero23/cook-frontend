@@ -377,10 +377,14 @@ const BulkProjectImport = ({ onClose, onSuccess }) => {
                             <h3 className="text-3xl font-black text-slate-800 tracking-tight">Import Successful</h3>
                             <p className="text-slate-500 mt-2 font-medium">Your project database has been updated</p>
 
-                            <div className="grid grid-cols-2 gap-6 mt-12 mb-12 max-w-md mx-auto">
+                            <div className="grid grid-cols-3 gap-6 mt-12 mb-12 max-w-2xl mx-auto">
                                 <div className="bg-white p-6 rounded-3xl border-2 border-green-200 shadow-xl shadow-green-50">
                                     <div className="text-4xl font-black text-green-600 mb-1">{results.added}</div>
                                     <div className="text-[10px] text-green-700 font-black uppercase tracking-widest bg-green-50 py-1 rounded-lg">Created</div>
+                                </div>
+                                <div className="bg-white p-6 rounded-3xl border-2 border-indigo-200 shadow-xl shadow-indigo-50">
+                                    <div className="text-4xl font-black text-indigo-600 mb-1">{results.updated || 0}</div>
+                                    <div className="text-[10px] text-indigo-700 font-black uppercase tracking-widest bg-indigo-50 py-1 rounded-lg">Updated</div>
                                 </div>
                                 <div className="bg-white p-6 rounded-3xl border-2 border-red-100 shadow-xl shadow-red-50">
                                     <div className="text-4xl font-black text-red-400 mb-1">{results.errors.length}</div>

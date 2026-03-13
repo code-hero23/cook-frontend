@@ -587,13 +587,10 @@ exports.bulkCreateProjects = async (req, res) => {
                     data.clientPhone = data.clientPhone.split(',')[0].trim();
                 }
 
-                // Check for existing CP Number
+                // Check for existing Project (by CP Number)
+                let existingProject = null;
                 if (data.cpNumber) {
-                    const existing = await prisma.project.findUnique({ where: { cpNumber: data.cpNumber } });
-                    if (existing) {
-                        stats.errors.push(`Duplicate CP Number ${data.cpNumber} for project: ${data.name}`);
-                        continue;
-                    }
+                    existingProject = await prisma.project.findUnique({ where: { cpNumber: data.cpNumber } });
                 }
 
                 // Auto-generate Code
@@ -679,21 +676,54 @@ exports.bulkCreateProjects = async (req, res) => {
 
                 const finalData = {};
                 validBaseFields.forEach(f => {
-                    if (sanitizedData[f] !== undefined) finalData[f] = sanitizedData[f];
-                });
-
-                // Password
-                const passwordHash = await bcrypt.hash(data.clientPassword || 'cookscape123', 10);
-
-                await prisma.project.create({
-                    data: {
-                        ...finalData,
-                        projectCode,
-                        clientPassword: passwordHash
+                    // Exclude scalar relation IDs from the base data object
+                    if (['businessHeadId', 'faId', 'laId'].includes(f)) return;
+                    if (sanitizedData[f] !== undefined && sanitizedData[f] !== null) {
+                        finalData[f] = sanitizedData[f];
                     }
                 });
 
-                stats.added++;
+                // Status Fallback (Must be a string, not null, according to schema)
+                if (!finalData.status) finalData.status = "ONGOING";
+
+                // Password
+                const passwordHash = data.clientPassword ? await bcrypt.hash(data.clientPassword, 10) : undefined;
+
+                if (existingProject) {
+                    // UPDATE EXISTING
+                    await prisma.project.update({
+                        where: { id: existingProject.id },
+                        data: {
+                            ...finalData,
+                            // Only update password if provided in Excel, or keep existing
+                            ...(passwordHash ? { clientPassword: passwordHash } : {}),
+                            // Use nested connect for foreign keys
+                            businessHead: sanitizedData.businessHeadId ? { connect: { id: sanitizedData.businessHeadId } } : { disconnect: !sanitizedData.businessHeadId && existingProject.businessHeadId ? true : false },
+                            fa: sanitizedData.faId ? { connect: { id: sanitizedData.faId } } : { disconnect: !sanitizedData.faId && existingProject.faId ? true : false },
+                            la: sanitizedData.laId ? { connect: { id: sanitizedData.laId } } : { disconnect: !sanitizedData.laId && existingProject.laId ? true : false },
+                        }
+                    });
+                    if (!stats.updated) stats.updated = 0;
+                    stats.updated++;
+                } else {
+                    // CREATE NEW
+                    // Auto-generate Code
+                    lastCodeNum++;
+                    const projectCode = `PRJ-${String(lastCodeNum).padStart(3, '0')}`;
+                    
+                    await prisma.project.create({
+                        data: {
+                            ...finalData,
+                            projectCode,
+                            clientPassword: passwordHash || await bcrypt.hash('cookscape123', 10),
+                            // Use nested connect for foreign keys
+                            businessHead: sanitizedData.businessHeadId ? { connect: { id: sanitizedData.businessHeadId } } : undefined,
+                            fa: sanitizedData.faId ? { connect: { id: sanitizedData.faId } } : undefined,
+                            la: sanitizedData.laId ? { connect: { id: sanitizedData.laId } } : undefined,
+                        }
+                    });
+                    stats.added++;
+                }
 
             } catch (error) {
                 console.error("Bulk Item Error:", error);
