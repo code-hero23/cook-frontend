@@ -63,11 +63,11 @@ const BulkProjectImport = ({ onClose, onSuccess }) => {
 
         data.forEach((row, index) => {
             const mappedRow = {
-                name: getVal(row, 'name', 'Project Name', 'ProjectName'),
-                clientFirstName: getVal(row, 'clientFirstName', 'Client First Name', 'FirstName'),
+                name: getVal(row, 'name', 'Project Name', 'ProjectName', 'Project'),
+                clientFirstName: getVal(row, 'clientFirstName', 'Client First Name', 'FirstName', 'Name'),
                 clientLastName: getVal(row, 'clientLastName', 'Client Last Name', 'LastName', 'Surname'),
                 clientEmail: getVal(row, 'clientEmail', 'Client Email', 'Email'),
-                clientPhone: getVal(row, 'clientPhone', 'Client Phone', 'Phone'),
+                clientPhone: getVal(row, 'clientPhone', 'Client Phone', 'Phone', 'Mobile', 'Contact'),
                 unitNumber: getVal(row, 'unitNumber', 'Unit #', 'Unit No', 'UnitNumber'),
                 block: getVal(row, 'block', 'Block'),
                 floor: getVal(row, 'floor', 'Floor'),
