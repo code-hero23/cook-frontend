@@ -568,15 +568,26 @@ exports.bulkCreateProjects = async (req, res) => {
             try {
                 // Validation
                 // Validation - Relaxed (clientLastName is optional now)
-                if (!data.name || !data.clientFirstName || !data.clientEmail || !data.clientPhone) {
-                    stats.errors.push(`Row missing required fields: ${data.name || 'Unnamed'}`);
+                const missing = [];
+                if (!data.name) missing.push("Project Name");
+                if (!data.clientFirstName) missing.push("Client Name/First Name");
+                if (!data.clientEmail) missing.push("Email");
+                if (!data.clientPhone) missing.push("Phone");
+                
+                if (missing.length > 0) {
+                    stats.errors.push(`Row error: ${data.name || 'Unnamed'} - Missing required fields: ${missing.join(', ')}`);
                     continue;
                 }
                 
                 // Ensure lastName has a value if missing
                 if (!data.clientLastName) data.clientLastName = ".";
 
-                // Check for existing CP Number to avoid crash
+                // Cleanup Phone (handle "9962050254, 8754503925") - Take first one
+                if (data.clientPhone && data.clientPhone.includes(',')) {
+                    data.clientPhone = data.clientPhone.split(',')[0].trim();
+                }
+
+                // Check for existing CP Number
                 if (data.cpNumber) {
                     const existing = await prisma.project.findUnique({ where: { cpNumber: data.cpNumber } });
                     if (existing) {
@@ -686,7 +697,7 @@ exports.bulkCreateProjects = async (req, res) => {
                     stats.errors.push(`Invalid User Reference (BH, FA, or LA not found) for: ${data.name}`);
                 } else {
                     console.error(`[BulkImport] Unexpected Error for ${data.name}:`, error);
-                    stats.errors.push(`Row error: ${data.name} - ${error.message}`);
+                    stats.errors.push(`Row error: ${data.name} - ${error.message}${error.meta?.cause ? ' (' + error.meta.cause + ')' : ''}`);
                 }
             }
         }

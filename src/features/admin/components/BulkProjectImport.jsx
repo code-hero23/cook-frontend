@@ -71,8 +71,8 @@ const BulkProjectImport = ({ onClose, onSuccess }) => {
                 name: getVal(row, 'Project', 'Project Name', 'name', 'Title'),
                 clientFirstName: getVal(row, 'Name', 'clientFirstName', 'FirstName', 'Client', 'Customer'),
                 clientLastName: getVal(row, 'clientLastName', 'LastName', 'Surname', 'Last Name'),
-                clientEmail: getVal(row, "Mail i'd ", 'clientEmail', 'Email', 'Email Address'),
-                clientPhone: getVal(row, 'Number  ', 'Mobile', 'Phone', 'clientPhone', 'Contact'),
+                clientEmail: getVal(row, "Mail i'd ", 'clientEmail', 'Email', 'Email Address', 'Email ID', 'Mail ID'),
+                clientPhone: getVal(row, 'Number  ', 'Mobile', 'Phone', 'clientPhone', 'Contact', 'Contact Number', 'Number'),
                 unitNumber: getVal(row, 'unitNumber', 'Unit #', 'Unit No'),
                 block: getVal(row, 'block', 'Block'),
                 floor: getVal(row, 'floor', 'Floor'),
@@ -151,7 +151,8 @@ const BulkProjectImport = ({ onClose, onSuccess }) => {
             console.log("[BulkImport] Server Data:", res.data);
             setResults(res.data);
             setStep('result');
-            if (onSuccess) onSuccess();
+            // Remove immediate onSuccess call to let user see errors
+            // if (onSuccess) onSuccess();
 
         } catch (error) {
             console.error(error);
@@ -313,7 +314,8 @@ const BulkProjectImport = ({ onClose, onSuccess }) => {
                                                 <th className="px-5 py-4 w-28">Status</th>
                                                 <th className="px-5 py-4 min-w-[200px]">Project Name</th>
                                                 <th className="px-5 py-4 min-w-[200px]">Client</th>
-                                                <th className="px-5 py-4 min-w-[250px]">Contact Info</th>
+                                                <th className="px-5 py-4 min-w-[150px]">Email</th>
+                                                <th className="px-5 py-4 min-w-[150px]">Phone</th>
                                                 <th className="px-5 py-4 min-w-[150px]">Budget</th>
                                             </tr>
                                         </thead>
