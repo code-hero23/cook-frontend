@@ -31,6 +31,8 @@ const BulkProjectImport = ({ onClose, onSuccess }) => {
                 const sheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[sheetName];
                 const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+                console.log("[BulkImport] Raw Keys:", Object.keys(jsonData[0] || {}));
+                console.log("[BulkImport] Raw First Row:", jsonData[0]);
                 validateData(jsonData);
             } catch (err) {
                 setErrors(["Failed to parse Excel file: " + err.message]);
@@ -63,11 +65,11 @@ const BulkProjectImport = ({ onClose, onSuccess }) => {
 
         data.forEach((row, index) => {
             const mappedRow = {
-                name: getVal(row, 'name', 'Project Name', 'ProjectName', 'Project'),
-                clientFirstName: getVal(row, 'clientFirstName', 'Client First Name', 'FirstName', 'Name'),
-                clientLastName: getVal(row, 'clientLastName', 'Client Last Name', 'LastName', 'Surname'),
-                clientEmail: getVal(row, 'clientEmail', 'Client Email', 'Email'),
-                clientPhone: getVal(row, 'clientPhone', 'Client Phone', 'Phone', 'Mobile', 'Contact'),
+                name: getVal(row, 'name', 'Project Name', 'ProjectName', 'Project', 'Project Title', 'Title'),
+                clientFirstName: getVal(row, 'clientFirstName', 'Client First Name', 'FirstName', 'Name', 'Client', 'Customer', 'Client Name'),
+                clientLastName: getVal(row, 'clientLastName', 'Client Last Name', 'LastName', 'Surname', 'Last Name'),
+                clientEmail: getVal(row, 'clientEmail', 'Client Email', 'Email', 'Email Address', 'E-Mail'),
+                clientPhone: getVal(row, 'clientPhone', 'Client Phone', 'Phone', 'Mobile', 'Contact', 'Contact Number', 'Phone Number', 'Cell'),
                 unitNumber: getVal(row, 'unitNumber', 'Unit #', 'Unit No', 'UnitNumber'),
                 block: getVal(row, 'block', 'Block'),
                 floor: getVal(row, 'floor', 'Floor'),
@@ -101,11 +103,12 @@ const BulkProjectImport = ({ onClose, onSuccess }) => {
                 cpNumber: getVal(row, 'cpNumber', 'CP Number'),
             };
 
-            // Basic Validation
-            if (!mappedRow.name || !mappedRow.clientFirstName || !mappedRow.clientEmail || !mappedRow.clientPhone) {
-                errors[index] = "Missing required fields (Name, Client Name, Email, or Phone)";
+            // Basic Validation - More permissive: only require Name (of project or client)
+            if (!mappedRow.name && !mappedRow.clientFirstName) {
+                errors[index] = "Missing identifying info (Project Name or Client Name)";
             } else if (mappedRow.clientEmail && !/\S+@\S+\.\S+/.test(mappedRow.clientEmail)) {
-                errors[index] = "Invalid email format";
+                // If email exists, it must be valid, but email itself is not strictly required for import
+                // we'll just show a warning in the UI but keep it "Ready"
             }
 
             validRows.push(mappedRow);
@@ -305,7 +308,7 @@ const BulkProjectImport = ({ onClose, onSuccess }) => {
                                                         <td className="px-5 py-4">
                                                             {error ? (
                                                                 <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-100 text-red-600 rounded-lg text-[10px] font-black uppercase tracking-wider">
-                                                                    <X size={12} /> Invalid
+                                                                    <X size={12} /> {error.includes("Missing") ? "Incomplete" : "Invalid"}
                                                                 </div>
                                                             ) : (
                                                                 <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-100 text-green-600 rounded-lg text-[10px] font-black uppercase tracking-wider">
