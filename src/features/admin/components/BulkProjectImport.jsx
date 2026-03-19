@@ -104,6 +104,7 @@ const BulkProjectImport = ({ onClose, onSuccess }) => {
                 status: getVal(row, 'status', 'Status').replace(/\s+/g, '').toUpperCase(), // Normalize "ON GOING" to "ONGOING"
                 paymentPercentage: getVal(row, 'paymentPercentage', 'Payment %'),
                 cpNumber: getVal(row, 'CP Code  ', 'cpNumber', 'CP Number'),
+                createdBy: getVal(row, 'createdBy', 'Created By', 'CreatedBy'),
             };
 
             // Smart Name Splitting: If Name has both First and Last but we only got one column
@@ -170,7 +171,7 @@ const BulkProjectImport = ({ onClose, onSuccess }) => {
             'scopeOfWork', 'leadSource', 'salesRep', 'faId', 'laId',
             'latitude', 'longitude', 'startDate', 'deadline', 'handoverDate',
             'handingOverMonth', 'handingOverYear', 'timelineDuration', 'status',
-            'paymentPercentage', 'cpNumber'
+            'paymentPercentage', 'cpNumber', 'createdBy'
         ];
 
         const sampleData = [
@@ -205,7 +206,8 @@ const BulkProjectImport = ({ onClose, onSuccess }) => {
                 timelineDuration: "180",
                 status: "ONGOING",
                 paymentPercentage: "50",
-                cpNumber: "CP1001"
+                cpNumber: "CP1001",
+                createdBy: "Admin User"
             }
         ];
 

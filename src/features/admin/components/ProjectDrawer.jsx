@@ -67,7 +67,7 @@ const ProjectDrawer = ({ isOpen, onClose, onSubmit, initialData, isEditing }) =>
                         {/* Scrollable Form Content */}
                         <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50">
                             <form id="project-form" onSubmit={handleSubmit} className="space-y-8">
-                                <fieldset disabled={isViewOnly} className="space-y-8 disabled:opacity-80">
+                                <fieldset disabled={isViewOnly && isEditing} className="space-y-8 disabled:opacity-80">
 
                                     {/* Section: Core Info */}
                                     <section>
@@ -136,6 +136,16 @@ const ProjectDrawer = ({ isOpen, onClose, onSubmit, initialData, isEditing }) =>
                                                     ))}
                                                 </select>
                                                 <p className="text-[10px] text-slate-400 mt-1">Only SUPER_ADMIN employees can be Business Heads.</p>
+                                            </div>
+                                            <div className="col-span-1">
+                                                <label className="block text-sm font-medium text-slate-700 mb-1">Created By</label>
+                                                <input
+                                                    name="createdBy"
+                                                    value={form.createdBy || ""}
+                                                    onChange={handleChange}
+                                                    className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                                                    placeholder="e.g. Sales Team / Admin Name"
+                                                />
                                             </div>
                                         </div>
                                     </section>
@@ -507,7 +517,7 @@ const ProjectDrawer = ({ isOpen, onClose, onSubmit, initialData, isEditing }) =>
                             >
                                 Cancel
                             </button>
-                            {!isViewOnly && (
+                            {(!isViewOnly || !isEditing) && (
                                 <button
                                     form="project-form"
                                     type="submit"

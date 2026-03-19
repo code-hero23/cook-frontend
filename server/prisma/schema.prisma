@@ -97,6 +97,7 @@ model Project {
   timelineDuration Int           @default(45) // 30 or 45 days
   
   status           String        @default("ONGOING") // ONGOING, COMPLETED, HOLD
+  createdBy        String?
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 

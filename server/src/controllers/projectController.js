@@ -65,7 +65,7 @@ exports.createProject = async (req, res) => {
         if (data.deadline) data.deadline = new Date(data.deadline);
 
         // Clean up empty/whitespace strings for optional fields to avoid Unique Constraint errors
-        ['cpNumber', 'gstin', 'spouseName', 'spousePhone', 'location', 'businessHeadId', 'propertyType', 'scopeOfWork', 'leadSource', 'salesRep', 'faId', 'laId', 'unitNumber', 'block', 'floor', 'area'].forEach(field => {
+        ['cpNumber', 'gstin', 'spouseName', 'spousePhone', 'location', 'businessHeadId', 'propertyType', 'scopeOfWork', 'leadSource', 'salesRep', 'faId', 'laId', 'unitNumber', 'block', 'floor', 'area', 'createdBy'].forEach(field => {
             if (!data[field] || (typeof data[field] === 'string' && data[field].trim() === "") || data[field] === "null" || data[field] === "undefined") {
                 data[field] = null; // Explicitly set to null to avoid Prisma unique constraint errors for empty strings
             } else if (typeof data[field] === 'string') {
