@@ -92,7 +92,6 @@ const WalkinHub = () => {
             contactNumber: walkin.contactNumber,
             showroom: walkin.showroom,
             architect: walkin.architect || '',
-            bhId: walkin.bhId || '',
             project: walkin.project || '',
             tentativeTime: walkin.tentativeTime || '',
             creId: walkin.creId || '',

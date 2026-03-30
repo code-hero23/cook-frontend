@@ -11,6 +11,11 @@ NC='\033[0m' # No Color
 
 echo -e "${BLUE}🚀 Starting Deployment Process...${NC}"
 
+# 0. Cleanup Hanging Processes
+echo -e "${BLUE}🧹 Cleaning up hanging processes...${NC}"
+# Stop only the relevant PM2 process to avoid disrupting other apps
+pm2 stop cook-backend || true
+
 # 1. Pull Latest Changes
 echo -e "${BLUE}📦 Pulling latest code from Git...${NC}"
 git pull origin main
@@ -30,7 +35,7 @@ echo -e "${BLUE}⚙️  Syncing Backend & Database...${NC}"
 cd server
 npm install
 
-# Run safe database update script
+# Run the ROBUST database update script
 echo -e "${BLUE}🛢️  Updating database schema safely...${NC}"
 node scripts/safe_update.js
 
@@ -39,7 +44,7 @@ echo -e "${BLUE}⚙️  Regenerating Prisma Client...${NC}"
 npx prisma generate
 
 # 5. Restart Server
-echo -e "${BLUE}🔄 Restarting PM2 processes...${NC}"
-pm2 restart all
+echo -e "${BLUE}🔄 Restarting cook-backend...${NC}"
+pm2 restart cook-backend
 
 echo -e "${GREEN}✅ Deployment Complete! Visit your site to verify.${NC}"
