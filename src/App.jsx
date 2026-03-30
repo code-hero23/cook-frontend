@@ -5,6 +5,8 @@ import AdminApp from '@admin/App';
 import EmployeeApp from '@employee/App';
 import SupervisorApp from '@supervisor/App';
 import ClientApp from '@client/App';
+import CREApp from './features/cre/App';
+
 import Login from './pages/Login';
 import ClientLogin from './pages/ClientLogin';
 import ForgotPassword from './pages/ForgotPassword';
@@ -21,10 +23,12 @@ const RootRedirect = () => {
     }
 
     if (token) {
-        if (['SUPER_ADMIN', 'MANAGER'].includes(user.role)) return <Navigate to="/admin/dashboard" replace />;
+        if (['SUPER_ADMIN', 'MANAGER', 'VIEW_ONLY_ADMIN', 'BUSINESS_HEAD'].includes(user.role)) return <Navigate to="/admin/dashboard" replace />;
         if (user.role === 'EMPLOYEE') return <Navigate to="/employee" replace />;
         if (user.role === 'SITE_SUPERVISOR') return <Navigate to="/supervisor" replace />;
+        if (user.role === 'CLIENT_RELATIONSHIP_EXECUTIVE') return <Navigate to="/cre" replace />;
     }
+
 
     return <Navigate to="/login" replace />;
 };
@@ -48,6 +52,8 @@ function App() {
                     <Route path="/employee/*" element={<EmployeeApp />} />
                     <Route path="/supervisor/*" element={<SupervisorApp />} />
                     <Route path="/client/*" element={<ClientApp />} />
+                    <Route path="/cre/*" element={<CREApp />} />
+
 
                     {/* Fallback */}
                     <Route path="*" element={<Navigate to="/login" replace />} />

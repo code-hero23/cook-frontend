@@ -1,0 +1,625 @@
+import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Plus, Search, Filter, Phone, MapPin, User, Star, Calendar, Download, Upload, Briefcase, ChevronRight, Check, FileText, Edit2 } from 'lucide-react';
+import { useCRE } from '../context/CREContext';
+import * as XLSX from 'xlsx';
+import toast from 'react-hot-toast';
+import api from '../../../shared/utils/axios';
+
+const WorkReports = () => {
+    const { reports, stats, loading, addReport, updateReport, bhs, cres } = useCRE();
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const isPrivileged = ['SUPER_ADMIN', 'MANAGER', 'BUSINESS_HEAD'].includes(user.role);
+    const location = useLocation();
+    const isDark = false; 
+    const [searchTerm, setSearchTerm] = useState('');
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingReport, setEditingReport] = useState(null);
+    
+    const initialReportState = {
+        clientName: '',
+        contact: '',
+        showroom: 'MTRS',
+        source: 'DIRECT LEAD',
+        status: 'Y',
+        faName: '',
+        bhId: '',
+        bhName: '',
+        site: '',
+        star: 5,
+        remarks: '',
+        creId: ''
+    };
+
+    const [newReport, setNewReport] = useState(initialReportState);
+
+    const [filter, setFilter] = useState({
+        month: new Date().getMonth() + 1,
+        year: new Date().getFullYear(),
+        cre: '',
+        bh: ''
+    });
+
+    const months = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+
+    const currentReports = reports.filter(r => {
+        const date = new Date(r.date);
+        const matchDate = date.getMonth() + 1 === parseInt(filter.month) && 
+                         date.getFullYear() === parseInt(filter.year);
+        
+        const matchCre = !filter.cre || 
+                        r.cre?.name.toLowerCase().includes(filter.cre.toLowerCase());
+        
+        const matchBh = !filter.bh || 
+                       (r.bh?.name.toLowerCase().includes(filter.bh.toLowerCase()) || 
+                        r.bhName?.toLowerCase().includes(filter.bh.toLowerCase()));
+        
+        return matchDate && matchCre && matchBh;
+    });
+
+    const conversionRate = currentReports.length > 0 
+        ? Math.round((currentReports.filter(r => r.status === 'Y').length / currentReports.length) * 100) 
+        : 0;
+
+    const filteredReports = currentReports.filter(r => 
+        r.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        r.contact.includes(searchTerm)
+    );
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            let res;
+            if (editingReport) {
+                res = await updateReport(editingReport.id, newReport);
+            } else {
+                res = await addReport(newReport);
+            }
+
+            if (res.success) {
+                toast.success(editingReport ? "Report updated!" : "Report added successfully!");
+                setIsModalOpen(false);
+                setEditingReport(null);
+                setNewReport(initialReportState);
+            } else {
+                toast.error(res.error);
+            }
+        } catch (error) {
+            toast.error("Process failed");
+        }
+    };
+
+    const handleEdit = (report) => {
+        setEditingReport(report);
+        setNewReport({
+            clientName: report.clientName,
+            contact: report.contact,
+            showroom: report.showroom,
+            source: report.source,
+            status: report.status,
+            faName: report.faName || '',
+            bhId: report.bhId || '',
+            site: report.site || '',
+            star: report.star || 0,
+            remarks: report.remarks || '',
+            creId: report.creId || '',
+            bhId: report.bhId || '',
+            bhName: report.bhName || ''
+        });
+        setIsModalOpen(true);
+    };
+
+    const openAddModal = () => {
+        setEditingReport(null);
+        setNewReport(initialReportState);
+        setIsModalOpen(true);
+    };
+
+    const handleBulkImport = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (evt) => {
+            try {
+                const bstr = evt.target.result;
+                const wb = XLSX.read(bstr, { type: 'binary' });
+                const wsname = wb.SheetNames[0];
+                const ws = wb.Sheets[wsname];
+                const data = XLSX.utils.sheet_to_json(ws);
+
+                // Basic mapping to Prisma schema
+                const processed = data.map(row => ({
+                    clientName: row['Client Name'] || row.clientName,
+                    contact: String(row.Contact || row.contact || ""),
+                    showroom: row.Showroom || row.showroom || 'MTRS',
+                    source: row.Source || row.source || 'BULK',
+                    site: row.Site || row.site || '',
+                    faName: row['FA Name'] || row.faName || '',
+                    remarks: row.Remarks || row.remarks || '',
+                    status: row.Status || 'Y',
+                    star: Number(row.Quality || row.star || 5)
+                }));
+
+                const res = await api.post('/walkins/reports/bulk-import', processed);
+                if (res.data.success) {
+                    toast.success(`Successfully imported ${res.data.count} reports!`);
+                    window.location.reload();
+                }
+            } catch (err) {
+                console.error("Bulk Import Error:", err);
+                toast.error("Failed to parse or upload file. Ensure format is correct.");
+            }
+        };
+        reader.readAsBinaryString(file);
+    };
+
+    const StatusTogggle = ({ status }) => (
+        <div className={`p-1 w-10 flex ${status === 'Y' ? 'justify-end bg-orange-500' : 'justify-start bg-slate-800'} rounded-full border border-white/5 transition-all duration-300`}>
+            <div className="w-4 h-4 bg-white rounded-full shadow-lg" />
+        </div>
+    );
+
+    return (
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h1 className={`text-3xl font-black tracking-widest flex items-center ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                        WORK <span className="text-orange-500 ml-2">REPORTS</span>
+                    </h1>
+                    <p className="text-slate-500 text-xs font-bold tracking-[0.2em] mt-1 uppercase">Lead Assignment & Conversion Tracker</p>
+                    <div className="flex items-center gap-2">
+                        <select 
+                            value={filter.month}
+                            onChange={(e) => setFilter({...filter, month: e.target.value})}
+                            className={`border rounded-2xl px-4 py-2.5 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-orange-500/50 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M5%207.5L10%2012.5L15%207.5%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%221.66667%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E')] bg-no-repeat bg-[right_1rem_center] min-w-[140px] ${isDark ? 'bg-slate-900 border-white/5 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-sm'}`}
+                        >
+                            {months.map((m, i) => (
+                                <option key={i} value={i + 1}>{m}</option>
+                            ))}
+                        </select>
+                        <input 
+                            type="number"
+                            value={filter.year}
+                            onChange={(e) => setFilter({...filter, year: e.target.value})}
+                            className={`w-24 border rounded-2xl px-4 py-2.5 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-orange-500/50 ${isDark ? 'bg-slate-900 border-white/5 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-sm'}`}
+                        />
+                    </div>
+                </div>
+                <div className="flex gap-3">
+                    <input 
+                        type="file" 
+                        id="bulk-import-input" 
+                        className="hidden" 
+                        accept=".xlsx, .xls, .csv" 
+                        onChange={handleBulkImport} 
+                    />
+                    <label 
+                        htmlFor="bulk-import-input"
+                        className={`flex items-center px-4 py-2.5 border rounded-2xl transition-all text-[10px] font-black uppercase tracking-widest cursor-pointer ${isDark ? 'bg-slate-900 border-white/5 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-900 shadow-sm'}`}
+                    >
+                        <Upload className="w-4 h-4 mr-2" />
+                        Bulk Import
+                    </label>
+                    <button className={`flex items-center px-4 py-2.5 border rounded-2xl transition-all text-[10px] font-black uppercase tracking-widest ${isDark ? 'bg-slate-900 border-white/5 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-900 shadow-sm'}`}>
+                        <Download className="w-4 h-4 mr-2" />
+                        Export
+                    </button>
+                </div>
+            </div>
+
+            {/* Quick Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {[
+                    { label: 'Pending Reports', val: stats.pendingReports, color: 'text-orange-500', icon: Clock },
+                    { label: 'Total Leads', val: reports.length, color: 'text-slate-900', icon: Briefcase },
+                    { label: 'Convert Rate', val: `${conversionRate}%`, color: 'text-emerald-500', icon: Check }
+                ].map((s, i) => (
+                    <div key={i} className="p-8 rounded-[40px] border border-slate-200 bg-white shadow-sm flex items-center justify-between group hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-500">
+                        <div>
+                            <p className="text-[10px] font-black tracking-[0.2em] text-slate-400 uppercase mb-2">{s.label}</p>
+                            <p className={`text-4xl font-black tracking-tighter ${s.color}`}>{s.val}</p>
+                        </div>
+                        <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
+                            <s.icon className={`w-7 h-7 ${s.color}`} />
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* Advanced Filters Bar */}
+            <div className="flex flex-wrap gap-4 items-center bg-white border border-slate-200 p-6 rounded-[32px] shadow-sm">
+                <div className="flex items-center gap-2">
+                    <Filter className="w-4 h-4 text-orange-500" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Quick Filters</span>
+                </div>
+                <input 
+                    type="text"
+                    placeholder="Filter by CRE Name..."
+                    value={filter.cre}
+                    onChange={(e) => setFilter({...filter, cre: e.target.value})}
+                    className="border border-slate-100 bg-slate-50/50 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-orange-500/50 min-w-[180px]"
+                />
+                <input 
+                    type="text"
+                    placeholder="Filter by BH Name..."
+                    value={filter.bh}
+                    onChange={(e) => setFilter({...filter, bh: e.target.value})}
+                    className="border border-slate-100 bg-slate-50/50 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-orange-500/50 min-w-[180px]"
+                />
+                <button 
+                    onClick={() => setFilter({ month: new Date().getMonth() + 1, year: new Date().getFullYear(), cre: '', bh: '' })}
+                    className="text-[10px] font-black uppercase tracking-widest text-orange-500 hover:text-orange-600 ml-auto"
+                >
+                    Reset Filters
+                </button>
+            </div>
+
+            {/* Search & Add */}
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div className="relative w-full md:w-96 group">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-orange-500 transition-colors" />
+                    <input 
+                        type="text" 
+                        placeholder="Search lead or name..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className={`w-full border rounded-2xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-orange-500/50 ${isDark ? 'bg-slate-900/50 border-white/5 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                    />
+                </div>
+                <button 
+                    onClick={openAddModal}
+                    className="w-full md:w-auto px-8 py-3 bg-orange-500 rounded-2xl text-white font-black text-xs uppercase shadow-lg shadow-orange-500/20 hover:bg-orange-600 transition-all flex items-center justify-center"
+                >
+                    <Plus className="w-4 h-4 mr-2" />
+                    New Work Report
+                </button>
+            </div>
+
+            {/* Main Table */}
+            <div className="rounded-[48px] border border-slate-200 overflow-hidden bg-white shadow-sm shadow-slate-200/50">
+                <div className="overflow-x-auto min-h-[500px]">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="bg-slate-50/50 border-b border-slate-100">
+                                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Lead Details</th>
+                                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Assignment</th>
+                                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Source/Site</th>
+                                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Quality</th>
+                                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Status</th>
+                                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-right">View</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-50">
+                            {filteredReports.map((r, idx) => (
+                                <motion.tr 
+                                    key={r.id}
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: idx * 0.03 }}
+                                    className="hover:bg-white/[0.02] group"
+                                >
+                                    <td className="px-8 py-6">
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-black text-slate-900 group-hover:text-orange-500 transition-colors uppercase tracking-tight">{r.clientName}</span>
+                                            <span className="text-[10px] font-black text-slate-400 flex items-center mt-1 tracking-widest uppercase">
+                                                <Phone className="w-3.5 h-3.5 mr-2 text-slate-300" /> {r.contact}
+                                            </span>
+                                            <div className="flex items-center text-[9px] text-slate-500 mt-2 font-black uppercase tracking-[0.2em]">
+                                                <Calendar className="w-3.5 h-3.5 mr-2 text-slate-300" /> 
+                                                {new Date(r.date).toLocaleDateString()}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-8 py-6 whitespace-nowrap">
+                                        <div className="space-y-2">
+                                            <div className="flex items-center">
+                                                <div className="w-8 h-8 rounded-xl flex items-center justify-center border border-orange-100 bg-orange-50 mr-3">
+                                                    <Briefcase className="w-4 h-4 text-orange-500" />
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">FA Assigned</span>
+                                                    <span className="text-[10px] font-black text-slate-700 uppercase">{r.faName || 'None'}</span>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center">
+                                                <div className="w-8 h-8 rounded-xl flex items-center justify-center border border-blue-100 bg-blue-50 mr-3">
+                                                    <User className="w-4 h-4 text-blue-500" />
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Business Head</span>
+                                                    <span className="text-[10px] font-black text-slate-700 uppercase">{r.bh?.name || r.bhName || 'Unassigned'}</span>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center">
+                                                <div className="w-8 h-8 rounded-xl flex items-center justify-center border border-orange-100 bg-orange-50 mr-3">
+                                                    <Star className="w-4 h-4 text-orange-500" />
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-[8px] font-black text-orange-400 uppercase tracking-widest">CRE Name</span>
+                                                    <span className="text-[10px] font-black text-orange-600 uppercase italic">{r.cre?.name || 'System'}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-8 py-6">
+                                        <div className="space-y-1.5">
+                                            <div className="inline-flex items-center px-4 py-1.5 rounded-2xl border border-slate-200 bg-slate-50">
+                                                <MapPin className="w-3.5 h-3.5 mr-2 text-orange-500 flex-shrink-0" />
+                                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-600 truncate max-w-[120px]">{r.showroom} / {r.site || 'N/A'}</span>
+                                            </div>
+                                            <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-4">Source: {r.source}</div>
+                                        </div>
+                                    </td>
+                                    <td className="px-8 py-6">
+                                        <div className="flex justify-center gap-0.5">
+                                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((star) => (
+                                                <Star 
+                                                    key={star} 
+                                                    className={`w-2.5 h-2.5 ${star <= r.star ? 'fill-orange-500 text-orange-500' : 'text-slate-100'}`} 
+                                                />
+                                            ))}
+                                        </div>
+                                    </td>
+                                    <td className="px-8 py-6 text-center">
+                                        <div className="flex justify-center">
+                                            <div className={`p-1.5 w-12 flex ${r.status === 'Y' ? 'justify-end bg-orange-500' : 'justify-start bg-slate-200'} rounded-2xl transition-all duration-500 shadow-inner`}>
+                                                <div className="w-4 h-4 bg-white rounded-lg shadow-sm" />
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-8 py-6 text-right">
+                                        <button 
+                                            onClick={() => handleEdit(r)}
+                                            className="p-3 text-slate-400 hover:text-orange-500 bg-slate-50 hover:bg-orange-50 rounded-2xl transition-all border border-transparent hover:border-orange-100 shadow-sm"
+                                        >
+                                            <Edit2 className="w-5 h-5" />
+                                        </button>
+                                    </td>
+                                </motion.tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {/* Modal for New Report */}
+            <AnimatePresence>
+                {isModalOpen && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                        <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsModalOpen(false)}
+                            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                        />
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className={`relative w-full max-w-2xl rounded-[32px] border shadow-2xl p-8 overflow-y-auto max-h-[90vh] ${isDark ? 'bg-slate-900 border-white/10' : 'bg-white border-slate-200'}`}
+                        >
+                            <h2 className={`text-2xl font-black uppercase tracking-widest mb-6 ${isDark ? 'text-white' : 'text-slate-900'}`}>{editingReport ? 'Edit' : 'New'} <span className="text-orange-500">Work Report</span></h2>
+                            
+                            <form onSubmit={handleSubmit} className="space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {/* Client Details */}
+                                    <div className="space-y-4">
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Client Name</label>
+                                            <input 
+                                                required
+                                                type="text" 
+                                                placeholder="Enter client name"
+                                                value={newReport.clientName}
+                                                onChange={(e) => setNewReport({...newReport, clientName: e.target.value})}
+                                                className={`w-full border rounded-2xl p-4 text-sm focus:outline-none focus:border-orange-500/50 ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                                            />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Contact Number</label>
+                                            <input 
+                                                required
+                                                type="tel" 
+                                                placeholder="e.g. 9876543210"
+                                                value={newReport.contact}
+                                                onChange={(e) => setNewReport({...newReport, contact: e.target.value})}
+                                                className={`w-full border rounded-2xl p-4 text-sm focus:outline-none focus:border-orange-500/50 ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Location & Source */}
+                                    <div className="space-y-4">
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Showroom</label>
+                                            <select 
+                                                value={newReport.showroom}
+                                                onChange={(e) => setNewReport({...newReport, showroom: e.target.value})}
+                                                className={`w-full border rounded-2xl p-4 text-sm focus:outline-none focus:border-orange-500/50 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M5%207.5L10%2012.5L15%207.5%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%221.66667%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E')] bg-no-repeat bg-[right_1rem_center] ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                                            >
+                                                <option value="MTRS" className={!isDark ? 'text-slate-900' : ''}>MTRS</option>
+                                                <option value="OMR" className={!isDark ? 'text-slate-900' : ''}>OMR</option>
+                                                <option value="PORUR" className={!isDark ? 'text-slate-900' : ''}>PORUR</option>
+                                                <option value="COIMBATORE" className={!isDark ? 'text-slate-900' : ''}>COIMBATORE</option>
+                                            </select>
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Site / Location</label>
+                                            <input 
+                                                type="text" 
+                                                placeholder="e.g. Velachery"
+                                                value={newReport.site}
+                                                onChange={(e) => setNewReport({...newReport, site: e.target.value})}
+                                                className={`w-full border rounded-2xl p-4 text-sm focus:outline-none focus:border-orange-500/50 ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Assignment */}
+                                    <div className="space-y-4">
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">FA Name</label>
+                                            <input 
+                                                type="text" 
+                                                placeholder="Assign FA"
+                                                value={newReport.faName}
+                                                onChange={(e) => setNewReport({...newReport, faName: e.target.value})}
+                                                className={`w-full border rounded-2xl p-4 text-sm focus:outline-none focus:border-orange-500/50 ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                                            />
+                                        </div>
+                                    {/* Business Head Selector */}
+                                    <div className="space-y-1.5 col-span-2">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Business Head (BH)</label>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <select 
+                                                value={newReport.bhName || (newReport.bhId ? 'EXISTING' : '')}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    if (val === 'MANUAL') {
+                                                        setNewReport({...newReport, bhId: '', bhName: ''});
+                                                    } else if (val === 'EXISTING') {
+                                                        setNewReport({...newReport, bhName: ''});
+                                                    } else if (val === '') {
+                                                        setNewReport({...newReport, bhId: '', bhName: ''});
+                                                    } else {
+                                                        setNewReport({...newReport, bhId: '', bhName: val});
+                                                    }
+                                                }}
+                                                className={`w-full border rounded-2xl p-4 text-sm focus:outline-none focus:border-orange-500/50 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M5%207.5L10%2012.5L15%207.5%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%221.66667%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E')] bg-no-repeat bg-[right_1rem_center] ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                                            >
+                                                <option value="">Unassigned</option>
+                                                <option value="Leo Jenison">Leo Jenison</option>
+                                                <option value="Sanghatamizh">Sanghatamizh</option>
+                                                <option value="Rajkumar">Rajkumar</option>
+                                                <option value="Pughazh">Pughazh</option>
+                                                <option value="Shanmugham">Shanmugham</option>
+                                                <option value="EXISTING">Registered BH User</option>
+                                                <option value="MANUAL">Manual Input...</option>
+                                            </select>
+
+                                            {/* Show input if Manual or Existing User list if Existing */}
+                                            {newReport.bhName !== 'Leo Jenison' && 
+                                             newReport.bhName !== 'Sanghatamizh' && 
+                                             newReport.bhName !== 'Rajkumar' && 
+                                             newReport.bhName !== 'Pughazh' && 
+                                             newReport.bhName !== 'Shanmugham' && 
+                                             newReport.bhName !== '' && (
+                                                <input 
+                                                    type="text"
+                                                    placeholder="Enter BH Name"
+                                                    value={newReport.bhName}
+                                                    onChange={(e) => setNewReport({...newReport, bhName: e.target.value})}
+                                                    className={`w-full border rounded-2xl p-4 text-sm focus:outline-none focus:border-orange-500/50 ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-orange-50 border-orange-200 text-slate-900'}`}
+                                                />
+                                            )}
+
+                                            {(newReport.bhId || !newReport.bhName) && !['Leo Jenison', 'Sanghatamizh', 'Rajkumar', 'Pughazh', 'Shanmugham'].includes(newReport.bhName) && (
+                                                <select 
+                                                    value={newReport.bhId}
+                                                    onChange={(e) => setNewReport({...newReport, bhId: e.target.value, bhName: ''})}
+                                                    className={`w-full border rounded-2xl p-4 text-sm focus:outline-none focus:border-orange-500/50 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M5%207.5L10%2012.5L15%207.5%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%221.66667%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E')] bg-no-repeat bg-[right_1rem_center] ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                                                >
+                                                    <option value="">Registered Users...</option>
+                                                    {(bhs || []).map(bh => (
+                                                        <option key={bh.id} value={bh.id}>{bh.name}</option>
+                                                    ))}
+                                                </select>
+                                            )}
+                                        </div>
+                                    </div>
+                                    </div>
+
+                                    {/* Quality & Status */}
+                                    <div className="space-y-4">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Lead Quality</label>
+                                            <div className="flex flex-wrap gap-1">
+                                                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((star) => (
+                                                    <button
+                                                        key={star}
+                                                        type="button"
+                                                        onClick={() => setNewReport({...newReport, star})}
+                                                        className="p-1 transition-all"
+                                                    >
+                                                        <Star className={`w-5 h-5 ${star <= newReport.star ? 'fill-orange-500 text-orange-500 scale-110' : isDark ? 'text-slate-700' : 'text-slate-200'}`} />
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div className={`flex items-center justify-between p-4 rounded-2xl border ${isDark ? 'bg-white/5 border-white/10' : 'bg-slate-50 border-slate-200'}`}>
+                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Successful Lead (Y/N)</span>
+                                            <button 
+                                                type="button"
+                                                onClick={() => setNewReport({...newReport, status: newReport.status === 'Y' ? 'N' : 'Y'})}
+                                            >
+                                                <div className={`p-1 w-10 flex ${newReport.status === 'Y' ? 'justify-end bg-orange-500' : isDark ? 'justify-start bg-slate-800' : 'justify-start bg-slate-200'} rounded-full border border-white/5 transition-all duration-300`}>
+                                                    <div className="w-4 h-4 bg-white rounded-full shadow-lg" />
+                                                </div>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Remarks */}
+                                    <div className="col-span-2 space-y-1.5">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Remarks</label>
+                                        <textarea 
+                                            placeholder="Add meeting notes or next steps..."
+                                            value={newReport.remarks}
+                                            onChange={(e) => setNewReport({...newReport, remarks: e.target.value})}
+                                            className={`w-full border rounded-2xl p-4 text-sm focus:outline-none focus:border-orange-500/50 min-h-[100px] ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                                        />
+                                    </div>
+
+                                    {/* CRE Attribution - Only for Privileged Roles */}
+                                    {isPrivileged && (
+                                        <div className="col-span-2 space-y-1.5">
+                                            <label className="text-[10px] font-black text-orange-500 uppercase tracking-widest ml-1">Attributed CRE</label>
+                                            <select 
+                                                value={newReport.creId}
+                                                onChange={(e) => setNewReport({...newReport, creId: e.target.value})}
+                                                className={`w-full border rounded-2xl p-4 text-sm focus:outline-none focus:border-orange-500/50 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M5%207.5L10%2012.5L15%207.5%22%20stroke%3D%22%23f97316%22%20stroke-width%3D%221.66667%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E')] bg-no-repeat bg-[right_1rem_center] ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-orange-50/50 border-orange-100 text-slate-900'}`}
+                                            >
+                                                <option value="">Select CRE (Default: You)</option>
+                                                {cres.map(c => (
+                                                    <option key={c.id} value={c.id}>{c.name}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="flex gap-4 pt-4">
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setIsModalOpen(false)}
+                                        className={`flex-1 px-6 py-4 border rounded-2xl font-bold text-xs uppercase transition-all ${isDark ? 'bg-white/5 border-white/10 text-slate-400 hover:text-white' : 'bg-slate-50 border-slate-200 text-slate-500 hover:text-slate-900'}`}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button 
+                                        type="submit" 
+                                        className="flex-[2] px-8 py-4 bg-orange-500 rounded-2xl text-white font-black text-xs uppercase shadow-lg shadow-orange-500/20 hover:bg-orange-600 transition-all font-bold"
+                                    >
+                                        Save Report
+                                    </button>
+                                </div>
+                            </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+};
+
+// Reusable icons
+const Clock = ({ className }) => <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
+
+export default WorkReports;

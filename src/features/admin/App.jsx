@@ -19,6 +19,11 @@ import Helpdesk from "./pages/Helpdesk.jsx";
 import DevPanel from "./pages/DevPanel.jsx";
 import Settings from "./pages/Settings.jsx";
 import { AppProvider } from "./context/AppContext.jsx";
+import WalkinHub from "../cre/pages/WalkinHub";
+import WorkReports from "../cre/pages/WorkReports";
+import MonthlyReports from "../cre/pages/MonthlyReports";
+import TeamMonthlyPerformance from "./pages/TeamMonthlyPerformance";
+import { CREProvider } from "../cre/context/CREContext";
 
 // 🔐 Protected Layout Component (Keeps Layout mounted)
 const ProtectedLayout = () => {
@@ -90,6 +95,39 @@ const App = () => {
           <Route path="client-access" element={<ClientAccess />} />
           <Route path="dev-panel" element={<DevPanel />} />
 
+          {/* 🏢 Walkin & Leads (CRE Feature) */}
+          <Route 
+            path="walkin-hub" 
+            element={
+              <CREProvider>
+                <WalkinHub />
+              </CREProvider>
+            } 
+          />
+          <Route 
+            path="work-reports" 
+            element={
+              <CREProvider>
+                <WorkReports />
+              </CREProvider>
+            } 
+          />
+          <Route 
+            path="monthly-reports" 
+            element={
+              <CREProvider>
+                <MonthlyReports />
+              </CREProvider>
+            } 
+          />
+          <Route 
+            path="monthly-performance" 
+            element={
+              <CREProvider>
+                <TeamMonthlyPerformance />
+              </CREProvider>
+            } 
+          />
         </Route>
 
         {/* Client Facing Routes */}

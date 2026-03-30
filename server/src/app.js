@@ -26,6 +26,9 @@ const clientRoutes = require('./routes/clientRoutes');
 const messageRoutes = require('./routes/messageRoutes');
 const projectDataRoutes = require('./routes/projectDataRoutes');
 const adminRoutes = require('./routes/adminRoutes'); // New Admin Routes
+const walkinRoutes = require('./routes/walkinRoutes');
+const monthlyReportRoutes = require('./routes/monthlyReportRoutes');
+
 
 const { initScheduler: initBackupScheduler } = require('./services/backupService');
 const { initScheduler: initTaskScheduler } = require('./services/schedulerService');
@@ -50,6 +53,9 @@ app.use('/api/upload', require('./routes/uploadRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/tickets', require('./routes/ticketRoutes'));
 app.use('/api/activities', require('./routes/activityRoutes'));
+app.use('/api/walkins', walkinRoutes);
+app.use('/api/monthly-reports', monthlyReportRoutes);
+
 
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'Cookscape Backend is running' });

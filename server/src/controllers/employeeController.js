@@ -2,6 +2,47 @@ const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
+// Get only Business Heads
+exports.getBusinessHeads = async (req, res) => {
+    try {
+        const bhs = await prisma.user.findMany({
+            where: {
+                role: {
+                    in: ['MANAGER', 'BUSINESS_HEAD']
+                },
+                status: 'ACTIVE'
+            },
+            select: {
+                id: true,
+                name: true,
+                role: true
+            }
+        });
+        res.json(bhs);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Get only CREs
+exports.getCREs = async (req, res) => {
+    try {
+        const cres = await prisma.user.findMany({
+            where: {
+                role: 'CLIENT_RELATIONSHIP_EXECUTIVE',
+                status: 'ACTIVE'
+            },
+            select: {
+                id: true,
+                name: true
+            }
+        });
+        res.json(cres);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 // Get all employees
 exports.getEmployees = async (req, res) => {
     try {

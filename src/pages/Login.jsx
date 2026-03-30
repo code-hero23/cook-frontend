@@ -52,14 +52,14 @@ const UnifiedLogin = () => {
             const userRole = res.data.user.role;
 
             // Strict Role Validation based on selected tab
-            if (activePortal === 'admin' && !['SUPER_ADMIN', 'MANAGER', 'VIEW_ONLY_ADMIN'].includes(userRole)) {
+            if (activePortal === 'admin' && !['SUPER_ADMIN', 'MANAGER', 'VIEW_ONLY_ADMIN', 'BUSINESS_HEAD'].includes(userRole)) {
                 setError("Access denied. Google account not linked to an Admin role.");
                 setLoading(false);
                 return;
             }
 
-            if (activePortal === 'employee' && !['EMPLOYEE', 'SITE_SUPERVISOR'].includes(userRole)) {
-                setError("Access denied. Google account not linked to an Employee role.");
+            if (activePortal === 'employee' && !['EMPLOYEE', 'SITE_SUPERVISOR', 'CLIENT_RELATIONSHIP_EXECUTIVE'].includes(userRole)) {
+                setError("Access denied. Google account not linked to an Employee or CRE role.");
                 setLoading(false);
                 return;
             }
@@ -75,6 +75,8 @@ const UnifiedLogin = () => {
                 navigate("/employee");
             } else if (userRole === 'SITE_SUPERVISOR') {
                 navigate("/supervisor");
+            } else if (userRole === 'CLIENT_RELATIONSHIP_EXECUTIVE') {
+                navigate("/cre");
             } else {
                 setError("Unknown role.");
             }
@@ -101,13 +103,13 @@ const UnifiedLogin = () => {
             const userRole = res.data.user.role;
 
             // Strict Role Validation based on selected tab
-            if (activePortal === 'admin' && !['SUPER_ADMIN', 'MANAGER', 'VIEW_ONLY_ADMIN'].includes(userRole)) {
+            if (activePortal === 'admin' && !['SUPER_ADMIN', 'MANAGER', 'VIEW_ONLY_ADMIN', 'BUSINESS_HEAD'].includes(userRole)) {
                 setError("Access denied. You are not an authorized administrator.");
                 setLoading(false);
                 return;
             }
 
-            if (activePortal === 'employee' && !['EMPLOYEE', 'SITE_SUPERVISOR'].includes(userRole)) {
+            if (activePortal === 'employee' && !['EMPLOYEE', 'SITE_SUPERVISOR', 'CLIENT_RELATIONSHIP_EXECUTIVE'].includes(userRole)) {
                 setError("Access denied. Please use the Admin portal.");
                 setLoading(false);
                 return;
@@ -124,6 +126,8 @@ const UnifiedLogin = () => {
                 navigate("/employee");
             } else if (userRole === 'SITE_SUPERVISOR') {
                 navigate("/supervisor");
+            } else if (userRole === 'CLIENT_RELATIONSHIP_EXECUTIVE') {
+                navigate("/cre");
             } else {
                 setError("Unknown role.");
             }

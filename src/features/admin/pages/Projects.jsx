@@ -208,6 +208,7 @@ const Projects = () => {
                 New Project
               </button>
             )}
+          </div>
 
           <RefreshButton
             onRefresh={refreshData}

@@ -14,7 +14,11 @@ import {
   Mail,
   LifeBuoy,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Activity,
+  FileText,
+  History,
+  BarChart3
 } from "lucide-react";
 
 const navItems = [
@@ -27,6 +31,10 @@ const navItems = [
   { to: "/admin/email", label: "Email", icon: Mail },
   { to: "/admin/helpdesk", label: "Helpdesk", icon: LifeBuoy },
   { to: "/admin/reports", label: "Reports", icon: FileSpreadsheet },
+  { to: "/admin/walkin-hub", label: "Walkin Hub", icon: Activity },
+  { to: "/admin/work-reports", label: "Work Reports", icon: FileText },
+  { to: "/admin/monthly-reports", label: "Monthly Hub", icon: History },
+  { to: "/admin/monthly-performance", label: "Team Performance", icon: BarChart3 },
   { to: "/admin/client-access", label: "Client Access", icon: Link2 },
   { to: "/admin/settings", label: "Data & Backups", icon: ShieldCheck },
   { to: "/admin/dev-panel", label: "System Control", icon: ShieldCheck },

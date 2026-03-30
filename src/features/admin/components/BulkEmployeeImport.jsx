@@ -97,7 +97,7 @@ const BulkEmployeeImport = ({ onClose, onSuccess }) => {
     };
 
     const downloadTemplate = () => {
-        const csv = "name,email,role,password,department,phone\nJohn Doe,john@orbix.com,EMPLOYEE,SecurePass123,Installation,9876543210";
+        const csv = "name,email,role,password,department,phone\nJohn Doe,john@cookscape.com,EMPLOYEE,SecurePass123,Installation,9876543210\nJane Smith,jane@cookscape.com,CLIENT_RELATIONSHIP_EXECUTIVE,SecurePass123,Sales,9876543211";
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');

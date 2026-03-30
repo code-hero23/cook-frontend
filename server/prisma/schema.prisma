@@ -14,7 +14,7 @@ model User {
   email         String         @unique
   passwordHash  String
   name          String
-  role          String         @default("EMPLOYEE") // SUPER_ADMIN, MANAGER, EMPLOYEE, SITE_SUPERVISOR
+  role          String         @default("EMPLOYEE") // SUPER_ADMIN, MANAGER, EMPLOYEE, SITE_SUPERVISOR, CLIENT_RELATIONSHIP_EXECUTIVE
   department    String?
   phone         String?
   status        String         @default("ACTIVE") // ACTIVE, INACTIVE
@@ -34,6 +34,12 @@ model User {
   bhProjects Project[] @relation("ProjectBH")
   faProjects Project[] @relation("ProjectFA")
   laProjects Project[] @relation("ProjectLA")
+  
+  creWalkins    WalkinHubEntry[] @relation("CREWalkins")
+  bhWalkins     WalkinHubEntry[] @relation("BHWalkins")
+  creWorkReports WorkReport[]    @relation("CREWorkReports")
+  bhWorkReports WorkReport[]    @relation("BHWorkReports")
+  creMonthlyReports CREMonthlyReport[] @relation("CREMonthlyReports")
 }
 
 model Project {
@@ -296,3 +302,65 @@ model PushSubscription {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 }
+
+model WalkinHubEntry {
+  id                String   @id @default(uuid())
+  creId             String
+  cre               User     @relation("CREWalkins", fields: [creId], references: [id])
+  architect         String?
+  bhId              String?
+  bh                User?    @relation("BHWalkins", fields: [bhId], references: [id])
+  bhName            String?
+  clientName        String
+  contactNumber     String
+  project           String?
+  status            String?  @default("ACTIVE") // ACTIVE, COMPLETED
+  dateOfVisit       DateTime @default(now())
+  dayOfVisit        String?  // Sat/Sun
+  tentativeTime     String?
+  showroom          String
+  visitStatusMonday String?
+  remarks           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model WorkReport {
+  id          String   @id @default(uuid())
+  date        DateTime @default(now())
+  nextFD      DateTime?
+  clientName  String
+  contact     String
+  source      String?
+  showroom    String
+  status      String?  @default("Y") // Y/N
+  faName      String?
+  bhId        String?
+  bh          User?    @relation("BHWorkReports", fields: [bhId], references: [id])
+  bhName      String?
+  creId       String?
+  cre         User?    @relation("CREWorkReports", fields: [creId], references: [id])
+  site        String?
+  star        Int      @default(0)
+  remarks     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model CREMonthlyReport {
+  id          String   @id @default(uuid())
+  creId       String
+  cre         User     @relation("CREMonthlyReports", fields: [creId], references: [id])
+  month       Int      // 1-12
+  year        Int
+  calls       Int      @default(0)
+  srv         Int      @default(0)
+  proposals   Int      @default(0)
+  orders      Int      @default(0)
+  value       Float    @default(0) // Stored in Lakhs or raw, UI handles display
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([creId, month, year])
+}
+
