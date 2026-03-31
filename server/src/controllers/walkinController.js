@@ -117,12 +117,18 @@ exports.createWalkin = async (req, res) => {
 exports.updateWalkin = async (req, res) => {
     try {
         const { id } = req.params;
+        const { dateOfVisit, ...rest } = req.body;
+        
         const updated = await prisma.walkinHubEntry.update({
             where: { id },
-            data: sanitizeData(req.body)
+            data: {
+                ...sanitizeData(rest),
+                dateOfVisit: dateOfVisit ? new Date(dateOfVisit) : undefined
+            }
         });
         res.json(updated);
     } catch (error) {
+        console.error('[Walkin] Update Error:', error);
         res.status(400).json({ error: error.message });
     }
 };
