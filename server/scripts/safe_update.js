@@ -30,9 +30,12 @@ async function main() {
       // Use double quotes for safety in PostgreSQL to preserve exact case
       await prisma.$executeRawUnsafe(`
         ALTER TABLE "${actualTableName}" 
-        ADD COLUMN IF NOT EXISTS "bhName" TEXT;
+        ADD COLUMN IF NOT EXISTS "bhName" TEXT,
+        ADD COLUMN IF NOT EXISTS "inTime" TEXT,
+        ADD COLUMN IF NOT EXISTS "outTime" TEXT,
+        ADD COLUMN IF NOT EXISTS "remarks" TEXT;
       `);
-      console.log(`✨ Successfully checked/updated column "bhName" in table "${actualTableName}"`);
+      console.log(`✨ Successfully checked/updated columns in table "${actualTableName}"`);
     }
     
     console.log('🚀 Database schema check completed successfully.');

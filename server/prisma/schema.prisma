@@ -318,6 +318,8 @@ model WalkinHubEntry {
   dateOfVisit       DateTime @default(now())
   dayOfVisit        String?  // Sat/Sun
   tentativeTime     String?
+  inTime            String?
+  outTime           String?
   showroom          String
   visitStatusMonday String?
   remarks           String?

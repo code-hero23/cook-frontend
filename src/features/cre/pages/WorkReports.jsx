@@ -107,7 +107,6 @@ const WorkReports = () => {
             star: report.star || 0,
             remarks: report.remarks || '',
             creId: report.creId || '',
-            bhId: report.bhId || '',
             bhName: report.bhName || ''
         });
         setIsModalOpen(true);

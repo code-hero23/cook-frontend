@@ -44,7 +44,11 @@ exports.getWalkins = async (req, res) => {
 
 exports.createWalkin = async (req, res) => {
     try {
-        const { clientName, contactNumber, showroom, architect, bhId, bhName, project, dayOfVisit, tentativeTime, creId: bodyCreId } = req.body;
+        const { 
+            clientName, contactNumber, showroom, architect, bhId, bhName, 
+            project, dayOfVisit, tentativeTime, creId: bodyCreId,
+            inTime, outTime, remarks, dateOfVisit, status
+        } = req.body;
         const { role, id: loggedInUserId } = req.user;
 
         // Allow Admin/Manager/BH to set creId explicitly
@@ -85,7 +89,11 @@ exports.createWalkin = async (req, res) => {
                 project,
                 dayOfVisit,
                 tentativeTime,
-                status: 'ACTIVE'
+                inTime,
+                outTime,
+                remarks,
+                dateOfVisit: dateOfVisit ? new Date(dateOfVisit) : today,
+                status: status || 'ACTIVE'
             })
         });
 

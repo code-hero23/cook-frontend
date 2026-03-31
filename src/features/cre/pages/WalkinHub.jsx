@@ -25,6 +25,11 @@ const WalkinHub = () => {
         bhName: '',
         project: '',
         tentativeTime: '',
+        inTime: '',
+        outTime: '',
+        remarks: '',
+        dateOfVisit: new Date().toISOString().split('T')[0],
+        status: 'ACTIVE',
         creId: ''
     };
 
@@ -94,6 +99,11 @@ const WalkinHub = () => {
             architect: walkin.architect || '',
             project: walkin.project || '',
             tentativeTime: walkin.tentativeTime || '',
+            inTime: walkin.inTime || '',
+            outTime: walkin.outTime || '',
+            remarks: walkin.remarks || '',
+            dateOfVisit: walkin.dateOfVisit ? new Date(walkin.dateOfVisit).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+            status: walkin.status || 'ACTIVE',
             creId: walkin.creId || '',
             bhName: walkin.bhName || '',
             bhId: walkin.bhId || ''
@@ -270,6 +280,23 @@ const WalkinHub = () => {
                                                         <span className="uppercase tracking-widest">Arch:</span>
                                                         <span className="ml-2 text-slate-600">{w.architect || 'None'}</span>
                                                     </div>
+                                                    {w.remarks && (
+                                                        <div className="flex items-center text-[10px] font-black text-slate-400">
+                                                            <div className="w-3 h-3 mr-2 bg-orange-500/20 rounded-full" />
+                                                            <span className="uppercase tracking-widest">Remarks:</span>
+                                                            <span className="ml-2 text-slate-500 italic truncate max-w-[150px]">{w.remarks}</span>
+                                                        </div>
+                                                    )}
+                                                    <div className="flex items-center gap-3 mt-2 pt-2 border-t border-slate-100">
+                                                        <div className="flex flex-col">
+                                                            <span className="text-[8px] font-black uppercase text-slate-300">In</span>
+                                                            <span className="text-[10px] font-black text-slate-600">{w.inTime || '--:--'}</span>
+                                                        </div>
+                                                        <div className="flex flex-col border-l border-slate-100 pl-3">
+                                                            <span className="text-[8px] font-black uppercase text-slate-300">Out</span>
+                                                            <span className="text-[10px] font-black text-slate-600">{w.outTime || '--:--'}</span>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </td>
                                             <td className="px-8 py-6 text-center">
@@ -403,6 +430,54 @@ const WalkinHub = () => {
                                             placeholder="e.g. Velachery"
                                             value={newEntry.project}
                                             onChange={(e) => setNewEntry({...newEntry, project: e.target.value})}
+                                            className={`w-full border rounded-2xl p-4 text-sm focus:outline-none focus:border-orange-500/50 ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Date of Visit</label>
+                                        <input 
+                                            type="date" 
+                                            value={newEntry.dateOfVisit}
+                                            onChange={(e) => setNewEntry({...newEntry, dateOfVisit: e.target.value})}
+                                            className={`w-full border rounded-2xl p-4 text-sm focus:outline-none focus:border-orange-500/50 ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">In Time</label>
+                                        <input 
+                                            type="time" 
+                                            value={newEntry.inTime}
+                                            onChange={(e) => setNewEntry({...newEntry, inTime: e.target.value})}
+                                            className={`w-full border rounded-2xl p-4 text-sm focus:outline-none focus:border-orange-500/50 ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Out Time</label>
+                                        <input 
+                                            type="time" 
+                                            value={newEntry.outTime}
+                                            onChange={(e) => setNewEntry({...newEntry, outTime: e.target.value})}
+                                            className={`w-full border rounded-2xl p-4 text-sm focus:outline-none focus:border-orange-500/50 ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5 col-span-2">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Status</label>
+                                        <select 
+                                            value={newEntry.status}
+                                            onChange={(e) => setNewEntry({...newEntry, status: e.target.value})}
+                                            className={`w-full border rounded-2xl p-4 text-sm focus:outline-none focus:border-orange-500/50 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M5%207.5L10%2012.5L15%207.5%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%221.66667%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E')] bg-no-repeat bg-[right_1rem_center] ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                                        >
+                                            <option value="ACTIVE text-slate-900">ACTIVE</option>
+                                            <option value="COMPLETED text-slate-900">COMPLETED</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-1.5 col-span-2">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Remarks</label>
+                                        <textarea 
+                                            rows="2"
+                                            placeholder="Special requirements or observations..."
+                                            value={newEntry.remarks}
+                                            onChange={(e) => setNewEntry({...newEntry, remarks: e.target.value})}
                                             className={`w-full border rounded-2xl p-4 text-sm focus:outline-none focus:border-orange-500/50 ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
                                         />
                                     </div>
