@@ -512,29 +512,25 @@ const WalkinHub = () => {
                                                 <option value="MANUAL">Manual Input...</option>
                                             </select>
 
-                                            {/* Show input if Manual or Existing User list if Existing */}
-                                            {newEntry.bhName !== 'Leo Jenison' && 
-                                             newEntry.bhName !== 'Sanghatamizh' && 
-                                             newEntry.bhName !== 'Rajkumar' && 
-                                             newEntry.bhName !== 'Pughazh' && 
-                                             newEntry.bhName !== 'Shanmugham' && 
-                                             newEntry.bhName !== '' && (
+                                            {/* Show manual input only if explicitly requested */}
+                                            {newEntry.bhName === 'MANUAL' && (
                                                 <input 
                                                     type="text"
                                                     placeholder="Enter BH Name"
-                                                    value={newEntry.bhName}
+                                                    value={newEntry.bhName === 'MANUAL' ? '' : newEntry.bhName}
                                                     onChange={(e) => setNewEntry({...newEntry, bhName: e.target.value})}
                                                     className={`w-full border rounded-2xl p-4 text-sm focus:outline-none focus:border-orange-500/50 ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-orange-50 border-orange-200 text-slate-900'}`}
                                                 />
                                             )}
 
-                                            {(newEntry.bhId || !newEntry.bhName) && !['Leo Jenison', 'Sanghatamizh', 'Rajkumar', 'Pughazh', 'Shanmugham'].includes(newEntry.bhName) && (
+                                            {/* Show registered users list only if 'EXISTING' is selected or bhId is already set */}
+                                            {(newEntry.bhId || (newEntry.bhName === 'EXISTING')) && (
                                                 <select 
                                                     value={newEntry.bhId}
                                                     onChange={(e) => setNewEntry({...newEntry, bhId: e.target.value, bhName: ''})}
                                                     className={`w-full border rounded-2xl p-4 text-sm focus:outline-none focus:border-orange-500/50 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M5%207.5L10%2012.5L15%207.5%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%221.66667%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E')] bg-no-repeat bg-[right_1rem_center] ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
                                                 >
-                                                    <option value="">Registered Users...</option>
+                                                    <option value="">Select Registered User...</option>
                                                     {(bhs || []).map(bh => (
                                                         <option key={bh.id} value={bh.id}>{bh.name}</option>
                                                     ))}
