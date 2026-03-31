@@ -7,7 +7,7 @@ import * as XLSX from 'xlsx';
 import toast from 'react-hot-toast';
 import api from '../../../shared/utils/axios';
 
-const WorkReports = () => {
+const WorkReports = ({ hideHeader = false }) => {
     const { reports, stats, loading, addReport, updateReport, bhs, cres } = useCRE();
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const isPrivileged = ['SUPER_ADMIN', 'MANAGER', 'BUSINESS_HEAD'].includes(user.role);
@@ -168,51 +168,53 @@ const WorkReports = () => {
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <h1 className={`text-3xl font-black tracking-widest flex items-center ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                        WORK <span className="text-orange-500 ml-2">REPORTS</span>
-                    </h1>
-                    <p className="text-slate-500 text-xs font-bold tracking-[0.2em] mt-1 uppercase">Lead Assignment & Conversion Tracker</p>
-                    <div className="flex items-center gap-2">
-                        <select 
-                            value={filter.month}
-                            onChange={(e) => setFilter({...filter, month: e.target.value})}
-                            className={`border rounded-2xl px-4 py-2.5 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-orange-500/50 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M5%207.5L10%2012.5L15%207.5%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%221.66667%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E')] bg-no-repeat bg-[right_1rem_center] min-w-[140px] ${isDark ? 'bg-slate-900 border-white/5 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-sm'}`}
-                        >
-                            {months.map((m, i) => (
-                                <option key={i} value={i + 1}>{m}</option>
-                            ))}
-                        </select>
+            {!hideHeader && (
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h1 className={`text-3xl font-black tracking-widest flex items-center ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                            WORK <span className="text-orange-500 ml-2">REPORTS</span>
+                        </h1>
+                        <p className="text-slate-500 text-xs font-bold tracking-[0.2em] mt-1 uppercase">Lead Assignment & Conversion Tracker</p>
+                        <div className="flex items-center gap-2">
+                            <select 
+                                value={filter.month}
+                                onChange={(e) => setFilter({...filter, month: e.target.value})}
+                                className={`border rounded-2xl px-4 py-2.5 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-orange-500/50 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M5%207.5L10%2012.5L15%207.5%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%221.66667%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E')] bg-no-repeat bg-[right_1rem_center] min-w-[140px] ${isDark ? 'bg-slate-900 border-white/5 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-sm'}`}
+                            >
+                                {months.map((m, i) => (
+                                    <option key={i} value={i + 1}>{m}</option>
+                                ))}
+                            </select>
+                            <input 
+                                type="number"
+                                value={filter.year}
+                                onChange={(e) => setFilter({...filter, year: e.target.value})}
+                                className={`w-24 border rounded-2xl px-4 py-2.5 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-orange-500/50 ${isDark ? 'bg-slate-900 border-white/5 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-sm'}`}
+                            />
+                        </div>
+                    </div>
+                    <div className="flex gap-3">
                         <input 
-                            type="number"
-                            value={filter.year}
-                            onChange={(e) => setFilter({...filter, year: e.target.value})}
-                            className={`w-24 border rounded-2xl px-4 py-2.5 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-orange-500/50 ${isDark ? 'bg-slate-900 border-white/5 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-sm'}`}
+                            type="file" 
+                            id="bulk-import-input" 
+                            className="hidden" 
+                            accept=".xlsx, .xls, .csv" 
+                            onChange={handleBulkImport} 
                         />
+                        <label 
+                            htmlFor="bulk-import-input"
+                            className={`flex items-center px-4 py-2.5 border rounded-2xl transition-all text-[10px] font-black uppercase tracking-widest cursor-pointer ${isDark ? 'bg-slate-900 border-white/5 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-900 shadow-sm'}`}
+                        >
+                            <Upload className="w-4 h-4 mr-2" />
+                            Bulk Import
+                        </label>
+                        <button className={`flex items-center px-4 py-2.5 border rounded-2xl transition-all text-[10px] font-black uppercase tracking-widest ${isDark ? 'bg-slate-900 border-white/5 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-900 shadow-sm'}`}>
+                            <Download className="w-4 h-4 mr-2" />
+                            Export
+                        </button>
                     </div>
                 </div>
-                <div className="flex gap-3">
-                    <input 
-                        type="file" 
-                        id="bulk-import-input" 
-                        className="hidden" 
-                        accept=".xlsx, .xls, .csv" 
-                        onChange={handleBulkImport} 
-                    />
-                    <label 
-                        htmlFor="bulk-import-input"
-                        className={`flex items-center px-4 py-2.5 border rounded-2xl transition-all text-[10px] font-black uppercase tracking-widest cursor-pointer ${isDark ? 'bg-slate-900 border-white/5 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-900 shadow-sm'}`}
-                    >
-                        <Upload className="w-4 h-4 mr-2" />
-                        Bulk Import
-                    </label>
-                    <button className={`flex items-center px-4 py-2.5 border rounded-2xl transition-all text-[10px] font-black uppercase tracking-widest ${isDark ? 'bg-slate-900 border-white/5 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-900 shadow-sm'}`}>
-                        <Download className="w-4 h-4 mr-2" />
-                        Export
-                    </button>
-                </div>
-            </div>
+            )}
 
             {/* Quick Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

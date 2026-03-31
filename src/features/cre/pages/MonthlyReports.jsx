@@ -5,7 +5,7 @@ import { Plus, Search, Calendar, BarChart3, TrendingUp, Save, History, DollarSig
 import api from '../../../shared/utils/axios';
 import toast from 'react-hot-toast';
 
-const MonthlyReports = () => {
+const MonthlyReports = ({ hideHeader = false }) => {
     const location = useLocation();
     const isDark = false; // Forced light theme for CRE as per request
     const [loading, setLoading] = useState(false);
@@ -78,22 +78,23 @@ const MonthlyReports = () => {
 
     return (
         <div className="space-y-8 animate-in fade-in duration-700">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <h1 className={`text-3xl font-black tracking-widest flex items-center ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                        MONTHLY <span className="text-orange-500 ml-2">DATA</span>
-                    </h1>
-                    <p className="text-slate-500 text-xs font-bold tracking-[0.2em] mt-1 uppercase">CRE Monthly Performance Input</p>
+            {!hideHeader && (
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h1 className={`text-3xl font-black tracking-widest flex items-center ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                            MONTHLY <span className="text-orange-500 ml-2">DATA</span>
+                        </h1>
+                        <p className="text-slate-500 text-xs font-bold tracking-[0.2em] mt-1 uppercase">CRE Monthly Performance Input</p>
+                    </div>
+                    <button 
+                        onClick={openNewSubmission}
+                        className="flex items-center px-6 py-3 bg-orange-500 rounded-2xl text-white font-black text-xs uppercase shadow-lg shadow-orange-500/20 hover:bg-orange-600 transition-all font-bold"
+                    >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Submit This Month
+                    </button>
                 </div>
-                <button 
-                    onClick={openNewSubmission}
-                    className="flex items-center px-6 py-3 bg-orange-500 rounded-2xl text-white font-black text-xs uppercase shadow-lg shadow-orange-500/20 hover:bg-orange-600 transition-all font-bold"
-                >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Submit This Month
-                </button>
-            </div>
+            )}
 
             {/* Quick Stats of Last Month */}
             {reports.length > 0 && (

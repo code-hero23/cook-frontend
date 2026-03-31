@@ -9,9 +9,7 @@ const Sidebar = ({ open, onClose }) => {
     };
 
     const links = [
-        { name: 'Walkin Hub', path: '/cre/walkin-hub', icon: LayoutDashboard },
-        { name: 'Work Reports', path: '/cre/work-reports', icon: FileText },
-        { name: 'Monthly Data', path: '/cre/monthly-reports', icon: History },
+        { name: 'CRE Reports', path: '/cre/reports', icon: LayoutDashboard },
     ];
 
     const user = JSON.parse(localStorage.getItem('user') || '{}');
