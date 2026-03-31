@@ -8,6 +8,7 @@ export const CREProvider = ({ children }) => {
     const [reports, setReports] = useState([]);
     const [bhs, setBhs] = useState([]);
     const [cres, setCres] = useState([]);
+    const [employees, setEmployees] = useState([]);
     const [loading, setLoading] = useState(false);
     const [stats, setStats] = useState({
         activeVisitors: 0,
@@ -33,10 +34,19 @@ export const CREProvider = ({ children }) => {
         }
     };
 
+    const fetchEmployees = async () => {
+        try {
+            const res = await api.get('/employees');
+            setEmployees(res.data);
+        } catch (error) {
+            console.error('[CREContext] Error fetching all employees:', error);
+        }
+    };
+
     const fetchData = async () => {
         try {
             setLoading(true);
-            await Promise.all([fetchBhs(), fetchCres()]);
+            await Promise.all([fetchBhs(), fetchCres(), fetchEmployees()]);
             const [walkinsRes, reportsRes] = await Promise.all([
                 api.get('/walkins/hub'),
                 api.get('/walkins/reports')
@@ -126,6 +136,7 @@ export const CREProvider = ({ children }) => {
         reports,
         bhs,
         cres,
+        employees,
         loading,
         stats,
         refreshData: fetchData,

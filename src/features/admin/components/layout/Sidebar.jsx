@@ -105,7 +105,7 @@ const Sidebar = ({ open, onClose }) => {
           </div>
           {!isCollapsed && (
             <div className="overflow-hidden whitespace-nowrap animate-in fade-in slide-in-from-left-2 duration-300">
-              <p className="text-xs uppercase text-white font-black tracking-widest">Orbix Projects</p>
+              <p className="text-xs uppercase text-white font-black tracking-widest">Bix Projects</p>
               <p className="font-bold text-[10px] text-brand-400 mt-0.5">
                 {isManager ? "ADMIN MANAGER" : "SUPER ADMIN"}
               </p>

@@ -40,6 +40,7 @@ model User {
   creWorkReports WorkReport[]    @relation("CREWorkReports")
   bhWorkReports WorkReport[]    @relation("BHWorkReports")
   creMonthlyReports CREMonthlyReport[] @relation("CREMonthlyReports")
+  architectWalkins WalkinHubEntry[] @relation("ArchitectWalkins")
 }
 
 model Project {
@@ -307,7 +308,9 @@ model WalkinHubEntry {
   id                String   @id @default(uuid())
   creId             String
   cre               User     @relation("CREWalkins", fields: [creId], references: [id])
-  architect         String?
+  architectName     String?
+  architectId       String?
+  architect         User?    @relation("ArchitectWalkins", fields: [architectId], references: [id])
   bhId              String?
   bh                User?    @relation("BHWalkins", fields: [bhId], references: [id])
   bhName            String?

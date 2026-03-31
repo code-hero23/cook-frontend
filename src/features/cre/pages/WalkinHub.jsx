@@ -7,7 +7,7 @@ import ShowroomMonitor from '../components/ShowroomMonitor';
 import toast from 'react-hot-toast';
 
 const WalkinHub = ({ hideHeader = false }) => {
-    const { walkins, stats, loading, bhs, cres, addWalkin, updateWalkin, deleteWalkin } = useCRE();
+    const { walkins, stats, loading, bhs, cres, employees, addWalkin, updateWalkin, deleteWalkin } = useCRE();
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const isPrivileged = ['SUPER_ADMIN', 'MANAGER', 'BUSINESS_HEAD'].includes(user.role);
     const location = useLocation();
@@ -20,7 +20,8 @@ const WalkinHub = ({ hideHeader = false }) => {
         clientName: '',
         contactNumber: '',
         showroom: 'MTRS',
-        architect: '',
+        architectName: '',
+        architectId: '',
         bhId: '',
         bhName: '',
         project: '',
@@ -48,7 +49,7 @@ const WalkinHub = ({ hideHeader = false }) => {
     ];
 
     const currentWalkins = walkins.filter(w => {
-        const date = new Date(w.createdAt);
+        const date = new Date(w.dateOfVisit || w.createdAt);
         const matchDate = date.getMonth() + 1 === parseInt(filter.month) && 
                          date.getFullYear() === parseInt(filter.year);
         
@@ -59,7 +60,11 @@ const WalkinHub = ({ hideHeader = false }) => {
                        (w.bh?.name.toLowerCase().includes(filter.bh.toLowerCase()) || 
                         w.bhName?.toLowerCase().includes(filter.bh.toLowerCase()));
         
-        return matchDate && matchCre && matchBh;
+        // Role based access: Employees only see their own assigned visits (as CRE or Architect)
+        const isEmployee = user.role === 'EMPLOYEE';
+        const matchRole = !isEmployee || (w.creId === user.id || w.architectId === user.id);
+        
+        return matchDate && matchCre && matchBh && matchRole;
     });
 
     const filteredWalkins = currentWalkins.filter(w => 
@@ -96,7 +101,8 @@ const WalkinHub = ({ hideHeader = false }) => {
             clientName: walkin.clientName,
             contactNumber: walkin.contactNumber,
             showroom: walkin.showroom,
-            architect: walkin.architect || '',
+            architectName: walkin.architectName || '',
+            architectId: walkin.architectId || '',
             project: walkin.project || '',
             tentativeTime: walkin.tentativeTime || '',
             inTime: walkin.inTime || '',
@@ -280,7 +286,7 @@ const WalkinHub = ({ hideHeader = false }) => {
                                                     <div className="flex items-center text-[10px] font-black text-slate-400">
                                                         <Briefcase className="w-3 h-3 mr-2 text-slate-300" />
                                                         <span className="uppercase tracking-widest">Arch:</span>
-                                                        <span className="ml-2 text-slate-600">{w.architect || 'None'}</span>
+                                                        <span className="ml-2 text-slate-600">{w.architect?.name || w.architectName || 'None'}</span>
                                                     </div>
                                                     {w.remarks && (
                                                         <div className="flex items-center text-[10px] font-black text-slate-400">
@@ -416,14 +422,20 @@ const WalkinHub = ({ hideHeader = false }) => {
                                         />
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Architect</label>
-                                        <input 
-                                            type="text" 
-                                            placeholder="Name"
-                                            value={newEntry.architect}
-                                            onChange={(e) => setNewEntry({...newEntry, architect: e.target.value})}
-                                            className={`w-full border rounded-2xl p-4 text-sm focus:outline-none focus:border-orange-500/50 ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
-                                        />
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Architect / Employee</label>
+                                        <select 
+                                            value={newEntry.architectId}
+                                            onChange={(e) => {
+                                                const sel = employees.find(emp => emp.id === e.target.value);
+                                                setNewEntry({...newEntry, architectId: e.target.value, architectName: sel?.name || ''});
+                                            }}
+                                            className={`w-full border rounded-2xl p-4 text-sm focus:outline-none focus:border-orange-500/50 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M5%207.5L10%2012.5L15%207.5%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%221.66667%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E')] bg-no-repeat bg-[right_1rem_center] ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                                        >
+                                            <option value="">None / External</option>
+                                            {employees.map(emp => (
+                                                <option key={emp.id} value={emp.id}>{emp.name} ({emp.role.split('_').join(' ')})</option>
+                                            ))}
+                                        </select>
                                     </div>
                                     <div className="space-y-1.5">
                                         <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Project Location</label>

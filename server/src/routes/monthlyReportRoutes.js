@@ -14,4 +14,7 @@ router.get('/', monthlyReportController.getReports);
 // Get monthly totals for admin
 router.get('/summary', monthlyReportController.getSummary);
 
+// Sync stats from activity hubs
+router.post('/sync', monthlyReportController.syncReports);
+
 module.exports = router;

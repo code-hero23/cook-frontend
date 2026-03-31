@@ -104,3 +104,77 @@ exports.getSummary = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+exports.syncReports = async (req, res) => {
+    try {
+        const { month, year } = req.body;
+        if (!month || !year) return res.status(400).json({ error: "Month and Year required" });
+
+        // Fetch all active CRE users
+        const cres = await prisma.user.findMany({
+            where: { role: 'CLIENT_RELATIONSHIP_EXECUTIVE', status: 'ACTIVE' }
+        });
+
+        const syncResults = [];
+
+        for (const cre of cres) {
+            // 1. Calculate SRV (Visits) from WalkinHub
+            const startDate = new Date(year, month - 1, 1);
+            const endDate = new Date(year, month, 0, 23, 59, 59);
+
+            const srvCount = await prisma.walkinHubEntry.count({
+                where: {
+                    creId: cre.id,
+                    dateOfVisit: {
+                        gte: startDate,
+                        lte: endDate
+                    }
+                }
+            });
+
+            // 2. Calculate Orders from WorkReport (Status 'Y')
+            const ordersCount = await prisma.workReport.count({
+                where: {
+                    creId: cre.id,
+                    date: {
+                        gte: startDate,
+                        lte: endDate
+                    },
+                    status: 'Y'
+                }
+            });
+
+            // 3. Upsert into CREMonthlyReport
+            const report = await prisma.cREMonthlyReport.upsert({
+                where: {
+                    creId_month_year: {
+                        creId: cre.id,
+                        month: parseInt(month),
+                        year: parseInt(year)
+                    }
+                },
+                update: {
+                    srv: srvCount,
+                    orders: ordersCount
+                },
+                create: {
+                    creId: cre.id,
+                    month: parseInt(month),
+                    year: parseInt(year),
+                    srv: srvCount,
+                    orders: ordersCount,
+                    calls: 0,
+                    proposals: 0,
+                    value: 0
+                }
+            });
+
+            syncResults.push({ cre: cre.name, report });
+        }
+
+        res.json({ message: `Successfully synced ${syncResults.length} CRE records`, results: syncResults });
+    } catch (error) {
+        console.error('[Sync] Error:', error);
+        res.status(500).json({ error: error.message });
+    }
+};

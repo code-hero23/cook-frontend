@@ -5,7 +5,7 @@ const { sendUserPushNotification } = require('../services/notificationService');
 // --- Helper for Sanitization ---
 const sanitizeData = (data) => {
     const cleaned = { ...data };
-    ['bhId', 'creId'].forEach(field => {
+    ['bhId', 'creId', 'architectId'].forEach(field => {
         if (cleaned[field] === '') {
             cleaned[field] = null;
         }
@@ -24,7 +24,8 @@ exports.getWalkins = async (req, res) => {
         if (!['SUPER_ADMIN', 'MANAGER', 'BUSINESS_HEAD'].includes(role)) {
             filter.OR = [
                 { creId: userId },
-                { bhId: userId }
+                { bhId: userId },
+                { architectId: userId }
             ];
         }
 
@@ -32,7 +33,8 @@ exports.getWalkins = async (req, res) => {
             where: filter,
             include: {
                 cre: { select: { id: true, name: true } },
-                bh: { select: { id: true, name: true } }
+                bh: { select: { id: true, name: true } },
+                architectRel: { select: { id: true, name: true } }
             },
             orderBy: { createdAt: 'desc' }
         });
@@ -45,7 +47,7 @@ exports.getWalkins = async (req, res) => {
 exports.createWalkin = async (req, res) => {
     try {
         const { 
-            clientName, contactNumber, showroom, architect, bhId, bhName, 
+            clientName, contactNumber, showroom, architectName, architectId, bhId, bhName, 
             project, dayOfVisit, tentativeTime, creId: bodyCreId,
             inTime, outTime, remarks, dateOfVisit, status
         } = req.body;
@@ -83,7 +85,8 @@ exports.createWalkin = async (req, res) => {
                 clientName,
                 contactNumber,
                 showroom,
-                architect,
+                architectName,
+                architectId,
                 bhId,
                 bhName,
                 project,
@@ -152,7 +155,8 @@ exports.getWorkReports = async (req, res) => {
         if (!['SUPER_ADMIN', 'MANAGER', 'BUSINESS_HEAD'].includes(role)) {
             filter.OR = [
                 { creId: userId },
-                { bhId: userId }
+                { bhId: userId },
+                { architectId: userId }
             ];
         }
 

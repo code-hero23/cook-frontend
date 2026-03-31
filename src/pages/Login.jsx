@@ -3,38 +3,29 @@ import { useNavigate } from "react-router-dom";
 import {
     Shield,
     User,
-    FolderKey,
     Lock,
     Eye,
     EyeOff,
     Loader2,
-    ChevronRight,
-    Info,
-    Mail,
-    Hash,
     ArrowRight,
-    AlertTriangle
+    AlertTriangle,
+    Mail,
+    Sparkles
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "../shared/utils/axios";
 import { GoogleLogin } from '@react-oauth/google';
-import { jwtDecode } from "jwt-decode";
-
-// NOTE: We assume the mock axios instances are available and work for their respective endpoints.
-// For the unified login, we'll try to use the admin axios as a base if it points to the same API.
 
 const UnifiedLogin = () => {
     const navigate = useNavigate();
-    const [activePortal, setActivePortal] = useState("admin"); // 'admin', 'employee', 'client'
+    const [activePortal, setActivePortal] = useState("admin"); // 'admin', 'employee'
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
-    // Form states
     const [formData, setFormData] = useState({
         email: "",
-        password: "",
-        projectId: ""
+        password: ""
     });
 
     const handleChange = (e) => {
@@ -46,12 +37,9 @@ const UnifiedLogin = () => {
         setError("");
         try {
             const { credential } = credentialResponse;
-            // Send to backend for verification and login
             const res = await axios.post("/auth/google-login", { token: credential });
-
             const userRole = res.data.user.role;
 
-            // Strict Role Validation based on selected tab
             if (activePortal === 'admin' && !['SUPER_ADMIN', 'MANAGER', 'VIEW_ONLY_ADMIN', 'BUSINESS_HEAD'].includes(userRole)) {
                 setError("Access denied. Google account not linked to an Admin role.");
                 setLoading(false);
@@ -59,16 +47,14 @@ const UnifiedLogin = () => {
             }
 
             if (activePortal === 'employee' && !['EMPLOYEE', 'SITE_SUPERVISOR', 'CLIENT_RELATIONSHIP_EXECUTIVE'].includes(userRole)) {
-                setError("Access denied. Google account not linked to an Employee or CRE role.");
+                setError("Access denied. Google account not linked to an Employee role.");
                 setLoading(false);
                 return;
             }
 
-            // Store Auth Data
             localStorage.setItem("token", res.data.token);
             localStorage.setItem("user", JSON.stringify(res.data.user));
 
-            // Routing
             if (userRole === 'SUPER_ADMIN' || userRole === 'MANAGER' || userRole === 'VIEW_ONLY_ADMIN') {
                 navigate("/admin/dashboard");
             } else if (userRole === 'EMPLOYEE') {
@@ -77,13 +63,9 @@ const UnifiedLogin = () => {
                 navigate("/supervisor");
             } else if (userRole === 'CLIENT_RELATIONSHIP_EXECUTIVE') {
                 navigate("/cre");
-            } else {
-                setError("Unknown role.");
             }
-
         } catch (err) {
-            console.error("Google Login Error:", err);
-            setError(err.response?.data?.message || err.message || "Google Sign-In failed.");
+            setError(err.response?.data?.message || "Google Sign-In failed.");
         } finally {
             setLoading(false);
         }
@@ -102,9 +84,8 @@ const UnifiedLogin = () => {
 
             const userRole = res.data.user.role;
 
-            // Strict Role Validation based on selected tab
             if (activePortal === 'admin' && !['SUPER_ADMIN', 'MANAGER', 'VIEW_ONLY_ADMIN', 'BUSINESS_HEAD'].includes(userRole)) {
-                setError("Access denied. You are not an authorized administrator.");
+                setError("Access denied. Please use the Admin portal.");
                 setLoading(false);
                 return;
             }
@@ -115,11 +96,9 @@ const UnifiedLogin = () => {
                 return;
             }
 
-            // Store Auth Data
             localStorage.setItem("token", res.data.token);
             localStorage.setItem("user", JSON.stringify(res.data.user));
 
-            // Routing
             if (userRole === 'SUPER_ADMIN' || userRole === 'MANAGER' || userRole === 'VIEW_ONLY_ADMIN') {
                 navigate("/admin/dashboard");
             } else if (userRole === 'EMPLOYEE') {
@@ -128,211 +107,166 @@ const UnifiedLogin = () => {
                 navigate("/supervisor");
             } else if (userRole === 'CLIENT_RELATIONSHIP_EXECUTIVE') {
                 navigate("/cre");
-            } else {
-                setError("Unknown role.");
             }
         } catch (err) {
-            console.error("Login Error:", err);
             setError(err.response?.data?.message || "Invalid credentials. Please try again.");
         } finally {
             setLoading(false);
         }
     };
 
-    const portals = [
-        { id: "admin", label: "Admin", icon: Shield, color: "blue" },
-        { id: "employee", label: "Employee", icon: User, color: "green" },
-    ];
-
     return (
-        <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4">
-            {/* Background elements */}
-            <div className="fixed inset-0 pointer-events-none overflow-hidden">
-                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/5 rounded-full blur-3xl"></div>
-                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-orange-500/5 rounded-full blur-3xl"></div>
-            </div>
+        <div className="min-h-screen bg-[#0A0F1A] flex items-center justify-center p-4 relative overflow-hidden font-outfit">
+            {/* Mesh Gradients */}
+            <div className="absolute top-0 right-0 w-[60%] h-[60%] bg-orange-500/10 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-[50%] h-[50%] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(255,122,0,0.05),transparent_50%)] pointer-events-none" />
+
+            {/* Grid Pattern */}
+            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] pointer-events-none" />
 
             <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="w-full max-w-md"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="w-full max-w-[440px] relative z-10"
             >
-                {/* Logo Section */}
-                <div className="flex flex-col items-center mb-8">
-                    <img
-                        src="/FINAL_LOGO.png"
-                        alt="Orbix Projects"
-                        className="h-16 mb-4 object-contain"
-                    />
-                    <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Orbix Projects Unified</h1>
-                    <p className="text-slate-500 text-sm mt-1">Select your portal to continue</p>
-                </div>
-
-                {/* Portal Selector */}
-                <div className="flex bg-slate-200/50 p-1 rounded-2xl mb-8 backdrop-blur-sm">
-                    {portals.map(p => {
-                        const Icon = p.icon;
-                        const isActive = activePortal === p.id;
-                        return (
-                            <button
-                                key={p.id}
-                                onClick={() => { setActivePortal(p.id); setError(""); }}
-                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 ${isActive ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                            >
-                                <Icon size={16} className={isActive ? `text-${p.color}-500` : ''} />
-                                {p.label}
-                            </button>
-                        )
-                    })}
+                {/* Brand Logo */}
+                <div className="flex flex-col items-center mb-10">
+                    <motion.div 
+                        initial={{ y: -20 }}
+                        animate={{ y: 0 }}
+                        className="w-20 h-20 bg-white/5 backdrop-blur-xl rounded-[32px] border border-white/10 flex items-center justify-center mb-6 shadow-2xl relative group"
+                    >
+                        <div className="absolute inset-0 bg-orange-500/20 rounded-[32px] blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                        <img src="/FINAL_LOGO.png" alt="Bix" className="w-12 h-12 object-contain relative z-10" />
+                    </motion.div>
+                    <h1 className="text-4xl font-black text-white tracking-[0.2em] mb-2">BIX <span className="text-orange-500">PROJECTS</span></h1>
+                    <p className="text-slate-400 text-xs font-bold tracking-[0.4em] uppercase opacity-60">High Performance Unified System</p>
                 </div>
 
                 {/* Login Card */}
-                <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200 p-8">
-                    <AnimatePresence mode="wait">
-                        <motion.form
-                            key={activePortal}
-                            initial={{ opacity: 0, x: activePortal === "admin" ? -20 : 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: activePortal === "admin" ? 20 : -20 }}
-                            onSubmit={handleLogin}
-                            className="space-y-5"
+                <div className="bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-[48px] p-10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] overflow-hidden">
+                    {/* Portal Switcher */}
+                    <div className="flex p-1.5 bg-black/40 rounded-[28px] mb-8 border border-white/5">
+                        <button
+                            onClick={() => { setActivePortal("admin"); setError(""); }}
+                            className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-[22px] text-[10px] font-black uppercase tracking-widest transition-all duration-500 ${activePortal === "admin" ? 'bg-orange-500 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
                         >
-                            <div className="text-center mb-6">
-                                <h2 className="text-xl font-bold text-slate-900 capitalize">{activePortal} Login</h2>
-                                {activePortal === "client" && (
-                                    <p className="text-xs text-slate-500 mt-1">Track your project progress in real-time</p>
-                                )}
-                            </div>
+                            <Shield size={14} className={activePortal === "admin" ? 'animate-pulse' : ''} />
+                            Admin Portal
+                        </button>
+                        <button
+                            onClick={() => { setActivePortal("employee"); setError(""); }}
+                            className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-[22px] text-[10px] font-black uppercase tracking-widest transition-all duration-500 ${activePortal === "employee" ? 'bg-orange-500 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                        >
+                            <User size={14} className={activePortal === "employee" ? 'animate-pulse' : ''} />
+                            Staff Portal
+                        </button>
+                    </div>
 
+                    <form onSubmit={handleLogin} className="space-y-6">
+                        <AnimatePresence mode="wait">
                             {error && (
                                 <motion.div
-                                    initial={{ opacity: 0, scale: 0.95 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    className="bg-red-50 border border-red-100 text-red-600 px-4 py-2.5 rounded-xl text-xs flex items-center gap-2"
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    className="bg-red-500/10 border border-red-500/20 text-red-500 px-5 py-4 rounded-[20px] text-[11px] font-bold flex items-center gap-3"
                                 >
-                                    <AlertTriangle size={14} />
+                                    <AlertTriangle size={16} />
                                     {error}
                                 </motion.div>
                             )}
+                        </AnimatePresence>
 
-                            {/* Dynamic Inputs */}
+                        <div className="space-y-4">
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-slate-600 ml-1 uppercase tracking-wider">Email Address</label>
+                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Email Account</p>
                                 <div className="relative group">
-                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
-                                        <Mail size={18} />
-                                    </span>
+                                    <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-orange-500 transition-colors" />
                                     <input
                                         type="email"
                                         name="email"
                                         value={formData.email}
                                         onChange={handleChange}
                                         required
-                                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all text-sm outline-none placeholder:text-slate-400"
-                                        placeholder={activePortal === "admin" ? "admin@orbix.com" : "employee@orbix.com"}
+                                        className="w-full bg-white/5 border border-white/5 rounded-[24px] py-4 pl-12 pr-6 text-sm text-white focus:outline-none focus:border-orange-500/50 focus:bg-white/10 transition-all placeholder:text-slate-600"
+                                        placeholder="Enter your email"
                                     />
                                 </div>
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-slate-600 ml-1 uppercase tracking-wider">Password</label>
+                                <div className="flex justify-between items-center px-4">
+                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Access Key</p>
+                                    <button type="button" onClick={() => navigate('/forgot-password')} className="text-[10px] font-bold text-orange-500/60 hover:text-orange-500 uppercase tracking-widest">Forgot?</button>
+                                </div>
                                 <div className="relative group">
-                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-500 transition-colors">
-                                        <Lock size={18} />
-                                    </span>
+                                    <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-orange-500 transition-colors" />
                                     <input
                                         type={showPassword ? "text" : "password"}
                                         name="password"
                                         value={formData.password}
                                         onChange={handleChange}
                                         required
-                                        className="w-full pl-11 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all text-sm outline-none placeholder:text-slate-400"
+                                        className="w-full bg-white/5 border border-white/5 rounded-[24px] py-4 pl-12 pr-12 text-sm text-white focus:outline-none focus:border-orange-500/50 focus:bg-white/10 transition-all placeholder:text-slate-600"
                                         placeholder="••••••••"
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                                        className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-600 hover:text-white transition-colors"
                                     >
-                                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                                    </button>
-                                </div>
-                                <div className="flex justify-end mt-1">
-                                    <button
-                                        type="button"
-                                        onClick={() => navigate('/forgot-password')}
-                                        className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline"
-                                    >
-                                        Forgot Password?
+                                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                                     </button>
                                 </div>
                             </div>
-
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className={`w-full py-4 rounded-xl font-bold text-white shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2 group ${activePortal === "admin" ? "bg-blue-600 shadow-blue-200 hover:bg-blue-700" :
-                                    "bg-green-600 shadow-green-200 hover:bg-green-700"
-                                    } disabled:opacity-70 disabled:shadow-none`}
-                            >
-                                {loading ? (
-                                    <Loader2 className="animate-spin" size={20} />
-                                ) : (
-                                    <>
-                                        Sign In to {activePortal.charAt(0).toUpperCase() + activePortal.slice(1)}
-                                        <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                                    </>
-                                )}
-                            </button>
-
-                            {/* Google Sign In Divider */}
-                            <div className="relative flex items-center gap-2 my-4">
-                                <div className="h-[1px] bg-slate-200 w-full"></div>
-                                <span className="text-xs text-slate-400 font-medium">OR</span>
-                                <div className="h-[1px] bg-slate-200 w-full"></div>
-                            </div>
-
-                            {/* Google Button */}
-                            <div className="flex justify-center">
-                                <GoogleLogin
-                                    onSuccess={handleGoogleSuccess}
-                                    onError={() => setError("Google Sign-In Failed")}
-                                    useOneTap
-                                    shape="pill"
-                                />
-                            </div>
-                        </motion.form>
-                    </AnimatePresence>
-
-                    {/* Quick Hints */}
-                    <div className="mt-8 pt-6 border-t border-slate-100 text-center">
-                        <div className="mt-4 pt-3">
-                            <button onClick={() => navigate("/client/login", { replace: true })} className="inline-flex items-center gap-1 text-xs font-semibold text-slate-400 hover:text-orange-500 transition-colors bg-transparent border-none cursor-pointer">
-                                Customer Login <ArrowRight size={10} />
-                            </button>
                         </div>
-                    </div>
+
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full py-4.5 bg-orange-500 hover:bg-orange-600 text-white rounded-[24px] text-xs font-black uppercase tracking-[0.2em] shadow-lg shadow-orange-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                        >
+                            {loading ? <Loader2 className="animate-spin" size={18} /> : (
+                                <>
+                                    Establish Link
+                                    <ArrowRight size={16} />
+                                </>
+                            )}
+                        </button>
+
+                        <div className="relative flex items-center gap-4 my-8">
+                            <div className="flex-1 h-[1px] bg-white/5" />
+                            <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Cloud Access</span>
+                            <div className="flex-1 h-[1px] bg-white/5" />
+                        </div>
+
+                        <div className="flex justify-center scale-110">
+                            <GoogleLogin
+                                onSuccess={handleGoogleSuccess}
+                                onError={() => setError("Google Access Refused")}
+                                shape="pill"
+                                theme="filled_black"
+                            />
+                        </div>
+                    </form>
                 </div>
 
-                {/* Global Footer */}
-                <p className="text-center text-slate-400 text-xs mt-8">
-                    &copy; 2026 Orbix Projects. All rights reserved.
-                </p>
-            </motion.div >
-
-            {/* In-page Styles */}
-            < style dangerouslySetInnerHTML={{
-                __html: `
-                @keyframes shake {
-                    0%, 100% { transform: translateX(0); }
-                    25% { transform: translateX(-5px); }
-                    75% { transform: translateX(5px); }
-                }
-                .animate-shake {
-                    animation: shake 0.3s ease-in-out;
-                }
-            `}} />
-        </div >
+                {/* Footer Section */}
+                <div className="mt-12 flex flex-col items-center gap-6">
+                    <button 
+                        onClick={() => navigate("/client/login")}
+                        className="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] hover:text-white transition-colors py-2 px-4 rounded-full border border-white/5 hover:bg-white/5"
+                    >
+                        <Sparkles size={14} className="text-orange-500" />
+                        Switch to Client Portal
+                    </button>
+                    <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest opacity-40">
+                        &copy; 2026 BIX PROJECTS &bull; VERS 3.1
+                    </p>
+                </div>
+            </motion.div>
+        </div>
     );
 };
 

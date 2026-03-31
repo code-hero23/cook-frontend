@@ -89,13 +89,13 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
         <div className={`flex items-center justify-between px-5 py-6 border-b border-white/5 ${isCollapsed ? 'justify-center' : ''}`}>
           {!isCollapsed ? (
             <div>
-              <h1 className="text-xl font-black text-white tracking-widest leading-none">ORBIX PROJECTS</h1>
+              <h1 className="text-xl font-black text-white tracking-widest leading-none">BIX PROJECTS</h1>
               <h2 className="text-[10px] font-black tracking-widest uppercase text-[#FF7A00] mt-1.5 opacity-80">
                 EMPLOYEE PORTAL
               </h2>
             </div>
           ) : (
-            <div className="w-10 h-10 bg-[#FF7A00] rounded-xl flex items-center justify-center font-black text-white">O</div>
+            <div className="w-10 h-10 bg-[#FF7A00] rounded-xl flex items-center justify-center font-black text-white">B</div>
           )}
 
           <button

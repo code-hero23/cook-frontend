@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Calendar, Download, Filter, TrendingUp, DollarSign, PhoneCall, Users, FileText, CheckCircle, Table, Edit2 } from 'lucide-react';
+import { Search, Calendar, Download, Filter, TrendingUp, DollarSign, PhoneCall, Users, FileText, CheckCircle, Table, Edit2, RefreshCw } from 'lucide-react';
 import api from '../../../shared/utils/axios';
 import toast from 'react-hot-toast';
 
@@ -9,6 +9,7 @@ const CREContributions = ({ hideHeader = false }) => {
     const location = useLocation();
     const isDark = !location.pathname.includes('/admin/');
     const [loading, setLoading] = useState(false);
+    const [syncing, setSyncing] = useState(false);
     const [reports, setReports] = useState([]);
     const [summary, setSummary] = useState(null);
     const [filter, setFilter] = useState({
@@ -43,6 +44,21 @@ const CREContributions = ({ hideHeader = false }) => {
             toast.error("Failed to fetch team data");
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleSync = async () => {
+        try {
+            if (!window.confirm("This will automatically calculate SRV and Orders from Walk-in Hub and Work Reports for this period. Continue?")) return;
+            setSyncing(true);
+            const res = await api.post('/monthly-reports/sync', { month: filter.month, year: filter.year });
+            toast.success(res.data.message || "Data synced successfully!");
+            fetchData();
+        } catch (error) {
+            console.error('[Sync] Error:', error);
+            toast.error(error.response?.data?.error || "Sync failed");
+        } finally {
+            setSyncing(false);
         }
     };
 
@@ -101,6 +117,14 @@ const CREContributions = ({ hideHeader = false }) => {
                         >
                             <Download className="w-4 h-4 mr-2" />
                             Export Excel
+                        </button>
+                        <button 
+                            onClick={handleSync}
+                            disabled={syncing}
+                            className={`flex items-center px-4 py-2.5 border rounded-2xl transition-all text-[10px] font-black uppercase tracking-widest ${syncing ? 'opacity-50 cursor-not-allowed' : ''} ${isDark ? 'bg-orange-500/10 border-orange-500/20 text-orange-500 hover:bg-orange-500/20' : 'bg-orange-50 border-orange-100 text-orange-600 hover:bg-orange-100 shadow-sm'}`}
+                        >
+                            <RefreshCw className={`w-4 h-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
+                            {syncing ? 'Syncing...' : 'Sync Activities'}
                         </button>
                         <div className="flex items-center gap-2">
                             <select 
