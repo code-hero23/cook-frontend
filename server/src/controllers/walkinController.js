@@ -34,7 +34,7 @@ exports.getWalkins = async (req, res) => {
             include: {
                 cre: { select: { id: true, name: true } },
                 bh: { select: { id: true, name: true } },
-                architectRel: { select: { id: true, name: true } }
+                architect: { select: { id: true, name: true } }
             },
             orderBy: { createdAt: 'desc' }
         });
