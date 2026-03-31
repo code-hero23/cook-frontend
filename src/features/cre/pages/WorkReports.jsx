@@ -29,7 +29,8 @@ const WorkReports = () => {
         site: '',
         star: 5,
         remarks: '',
-        creId: ''
+        creId: '',
+        date: new Date().toISOString().split('T')[0]
     };
 
     const [newReport, setNewReport] = useState(initialReportState);
@@ -107,7 +108,8 @@ const WorkReports = () => {
             star: report.star || 0,
             remarks: report.remarks || '',
             creId: report.creId || '',
-            bhName: report.bhName || ''
+            bhName: report.bhName || '',
+            date: report.date ? new Date(report.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
         });
         setIsModalOpen(true);
     };
@@ -429,6 +431,16 @@ const WorkReports = () => {
                                                 placeholder="e.g. 9876543210"
                                                 value={newReport.contact}
                                                 onChange={(e) => setNewReport({...newReport, contact: e.target.value})}
+                                                className={`w-full border rounded-2xl p-4 text-sm focus:outline-none focus:border-orange-500/50 ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                                            />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Date of Report</label>
+                                            <input 
+                                                required
+                                                type="date" 
+                                                value={newReport.date}
+                                                onChange={(e) => setNewReport({...newReport, date: e.target.value})}
                                                 className={`w-full border rounded-2xl p-4 text-sm focus:outline-none focus:border-orange-500/50 ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
                                             />
                                         </div>

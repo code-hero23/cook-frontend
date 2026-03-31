@@ -177,6 +177,7 @@ exports.createWorkReport = async (req, res) => {
         const report = await prisma.workReport.create({
             data: sanitizeData({
                 ...rest,
+                date: rest.date ? new Date(rest.date) : new Date(),
                 creId,
                 bhName: req.body.bhName // Explicitly include if passed
             })
@@ -192,7 +193,10 @@ exports.updateWorkReport = async (req, res) => {
         const { id } = req.params;
         const updated = await prisma.workReport.update({
             where: { id },
-            data: sanitizeData(req.body)
+            data: sanitizeData({
+                ...req.body,
+                date: req.body.date ? new Date(req.body.date) : undefined
+            })
         });
         res.json(updated);
     } catch (error) {
