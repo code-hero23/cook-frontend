@@ -12,7 +12,8 @@ import {
   X,
   UserCircle,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Activity
 } from "lucide-react";
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
@@ -152,6 +153,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
           <NavLink to="/employee/issues" className={navItem} onClick={() => setSidebarOpen(false)} title={isCollapsed ? "Issues" : ""}>
             <Bug size={20} className="shrink-0" />
             {!isCollapsed && <span>Issues</span>}
+          </NavLink>
+          <NavLink to="/employee/walkin-hub" className={navItem} onClick={() => setSidebarOpen(false)} title={isCollapsed ? "Walk-in Hub" : ""}>
+            <Activity size={20} className="shrink-0" />
+            {!isCollapsed && <span>Walk-in Hub</span>}
           </NavLink>
           <NavLink to="/employee/profile" className={navItem} onClick={() => setSidebarOpen(false)} title={isCollapsed ? "Profile" : ""}>
             <UserCircle size={20} className="shrink-0" />

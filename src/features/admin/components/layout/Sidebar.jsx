@@ -32,7 +32,7 @@ const navItems = [
   { to: "/admin/helpdesk", label: "Helpdesk", icon: LifeBuoy },
   { to: "/admin/reports", label: "Reports", icon: FileSpreadsheet },
   { to: "/admin/cre-contributions", label: "CRE Contributions", icon: BarChart3 },
-  { to: "/admin/cre-reports", label: "Activity Reports", icon: LayoutDashboard },
+  { to: "/admin/cre-reports", label: "CRE Reports", icon: LayoutDashboard },
   { to: "/admin/client-access", label: "Client Access", icon: Link2 },
   { to: "/admin/settings", label: "Data & Backups", icon: ShieldCheck },
   { to: "/admin/dev-panel", label: "System Control", icon: ShieldCheck },
