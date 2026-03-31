@@ -1,17 +1,15 @@
 import React, { useState } from 'react';
-import { Activity, FileText, History, BarChart3 } from 'lucide-react';
+import { Activity, FileText, History } from 'lucide-react';
 import WalkinHub from '../../cre/pages/WalkinHub';
 import WorkReports from '../../cre/pages/WorkReports';
 import MonthlyReports from '../../cre/pages/MonthlyReports';
-import TeamMonthlyPerformance from './TeamMonthlyPerformance';
 import { CREProvider } from '../../cre/context/CREContext';
 
 const CREReportsAdmin = () => {
-    const [activeTab, setActiveTab] = useState('performance');
+    const [activeTab, setActiveTab] = useState('walkin');
     const isDark = false;
 
     const tabs = [
-        { id: 'performance', name: 'Team Performance', icon: BarChart3 },
         { id: 'walkin', name: 'Walk-in Hub', icon: Activity },
         { id: 'work', name: 'Work Reports', icon: FileText },
         { id: 'monthly', name: 'Monthly Hub', icon: History }
@@ -20,13 +18,13 @@ const CREReportsAdmin = () => {
     return (
         <CREProvider>
             <div className="space-y-6">
-                {/* Premium Tab Bar */}
+                {/* Activity Reports Bar */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                     <div>
                         <h1 className="text-3xl font-black text-slate-900 tracking-widest flex items-center uppercase">
-                            Admin <span className="text-orange-500 ml-2">Reports</span>
+                            Activity <span className="text-orange-500 ml-2">Reports</span>
                         </h1>
-                        <p className="text-slate-500 text-xs font-bold tracking-[0.2em] mt-1 uppercase">Unified Team Activity & Performance Dashboard</p>
+                        <p className="text-slate-500 text-xs font-bold tracking-[0.2em] mt-1 uppercase">Unified Team Activity Dashboard</p>
                     </div>
 
                     <div className="flex p-1.5 bg-slate-100/80 backdrop-blur-md rounded-[24px] border border-slate-200/50 shadow-inner overflow-x-auto max-w-full">
@@ -48,7 +46,6 @@ const CREReportsAdmin = () => {
                 </div>
 
                 <div className="pt-4">
-                    {activeTab === 'performance' && <TeamMonthlyPerformance hideHeader={true} />}
                     {activeTab === 'walkin' && <WalkinHub hideHeader={true} />}
                     {activeTab === 'work' && <WorkReports hideHeader={true} />}
                     {activeTab === 'monthly' && <MonthlyReports hideHeader={true} />}

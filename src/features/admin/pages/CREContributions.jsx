@@ -5,7 +5,7 @@ import { Search, Calendar, Download, Filter, TrendingUp, DollarSign, PhoneCall, 
 import api from '../../../shared/utils/axios';
 import toast from 'react-hot-toast';
 
-const TeamMonthlyPerformance = ({ hideHeader = false }) => {
+const CREContributions = ({ hideHeader = false }) => {
     const location = useLocation();
     const isDark = !location.pathname.includes('/admin/');
     const [loading, setLoading] = useState(false);
@@ -90,9 +90,9 @@ const TeamMonthlyPerformance = ({ hideHeader = false }) => {
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
                         <h1 className={`text-3xl font-black tracking-widest flex items-center ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                            TEAM <span className="text-orange-500 ml-2">PERFORMANCE</span>
+                            CRE <span className="text-orange-500 ml-2">CONTRIBUTIONS</span>
                         </h1>
-                        <p className="text-slate-500 text-xs font-bold tracking-[0.2em] mt-1 uppercase">CRE's Reports Scorecard</p>
+                        <p className="text-slate-500 text-xs font-bold tracking-[0.2em] mt-1 uppercase">Team performance and contributions overview</p>
                     </div>
                     <div className="flex gap-3">
                         <button 
@@ -318,4 +318,4 @@ const TeamMonthlyPerformance = ({ hideHeader = false }) => {
     );
 };
 
-export default TeamMonthlyPerformance;
+export default CREContributions;

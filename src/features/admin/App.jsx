@@ -20,6 +20,7 @@ import DevPanel from "./pages/DevPanel.jsx";
 import Settings from "./pages/Settings.jsx";
 import { AppProvider } from "./context/AppContext.jsx";
 import CREReportsAdmin from "./pages/CREReportsAdmin";
+import CREContributions from "./pages/CREContributions";
 
 // 🔐 Protected Layout Component (Keeps Layout mounted)
 const ProtectedLayout = () => {
@@ -93,10 +94,11 @@ const App = () => {
 
           {/* 🏢 Walkin & Leads (Consolidated Admin View) */}
           <Route path="cre-reports" element={<CREReportsAdmin />} />
+          <Route path="cre-contributions" element={<CREContributions />} />
           <Route path="walkin-hub" element={<Navigate to="../cre-reports" replace />} />
           <Route path="work-reports" element={<Navigate to="../cre-reports" replace />} />
           <Route path="monthly-reports" element={<Navigate to="../cre-reports" replace />} />
-          <Route path="monthly-performance" element={<Navigate to="../cre-reports" replace />} />
+          <Route path="monthly-performance" element={<Navigate to="../cre-contributions" replace />} />
         </Route>
 
         {/* Client Facing Routes */}
