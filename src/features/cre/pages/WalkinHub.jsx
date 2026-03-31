@@ -60,9 +60,8 @@ const WalkinHub = ({ hideHeader = false }) => {
                        (w.bh?.name.toLowerCase().includes(filter.bh.toLowerCase()) || 
                         w.bhName?.toLowerCase().includes(filter.bh.toLowerCase()));
         
-        // Role based access: Employees only see their own assigned visits (as CRE or Architect)
-        const isEmployee = user.role === 'EMPLOYEE';
-        const matchRole = !isEmployee || (w.creId === user.id || w.architectId === user.id);
+        // Role based access: Privileged roles see all, others only see entries where they are the CRE, BH, or Architect
+        const matchRole = isPrivileged || (w.creId === user.id || w.architectId === user.id || w.bhId === user.id);
         
         return matchDate && matchCre && matchBh && matchRole;
     });

@@ -97,7 +97,12 @@ exports.createWalkin = async (req, res) => {
                 remarks,
                 dateOfVisit: dateOfVisit ? new Date(dateOfVisit) : today,
                 status: status || 'ACTIVE'
-            })
+            }),
+            include: {
+                cre: { select: { id: true, name: true } },
+                bh: { select: { id: true, name: true } },
+                architect: { select: { id: true, name: true } }
+            }
         });
 
         // 3. Notifications
@@ -127,6 +132,11 @@ exports.updateWalkin = async (req, res) => {
             data: {
                 ...sanitizeData(rest),
                 dateOfVisit: dateOfVisit ? new Date(dateOfVisit) : undefined
+            },
+            include: {
+                cre: { select: { id: true, name: true } },
+                bh: { select: { id: true, name: true } },
+                architect: { select: { id: true, name: true } }
             }
         });
         res.json(updated);
@@ -155,8 +165,7 @@ exports.getWorkReports = async (req, res) => {
         if (!['SUPER_ADMIN', 'MANAGER', 'BUSINESS_HEAD'].includes(role)) {
             filter.OR = [
                 { creId: userId },
-                { bhId: userId },
-                { architectId: userId }
+                { bhId: userId }
             ];
         }
 
