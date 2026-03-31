@@ -19,11 +19,7 @@ import Helpdesk from "./pages/Helpdesk.jsx";
 import DevPanel from "./pages/DevPanel.jsx";
 import Settings from "./pages/Settings.jsx";
 import { AppProvider } from "./context/AppContext.jsx";
-import WalkinHub from "../cre/pages/WalkinHub";
-import WorkReports from "../cre/pages/WorkReports";
-import MonthlyReports from "../cre/pages/MonthlyReports";
-import TeamMonthlyPerformance from "./pages/TeamMonthlyPerformance";
-import { CREProvider } from "../cre/context/CREContext";
+import CREReportsAdmin from "./pages/CREReportsAdmin";
 
 // 🔐 Protected Layout Component (Keeps Layout mounted)
 const ProtectedLayout = () => {
@@ -95,39 +91,12 @@ const App = () => {
           <Route path="client-access" element={<ClientAccess />} />
           <Route path="dev-panel" element={<DevPanel />} />
 
-          {/* 🏢 Walkin & Leads (CRE Feature) */}
-          <Route 
-            path="walkin-hub" 
-            element={
-              <CREProvider>
-                <WalkinHub />
-              </CREProvider>
-            } 
-          />
-          <Route 
-            path="work-reports" 
-            element={
-              <CREProvider>
-                <WorkReports />
-              </CREProvider>
-            } 
-          />
-          <Route 
-            path="monthly-reports" 
-            element={
-              <CREProvider>
-                <MonthlyReports />
-              </CREProvider>
-            } 
-          />
-          <Route 
-            path="monthly-performance" 
-            element={
-              <CREProvider>
-                <TeamMonthlyPerformance />
-              </CREProvider>
-            } 
-          />
+          {/* 🏢 Walkin & Leads (Consolidated Admin View) */}
+          <Route path="cre-reports" element={<CREReportsAdmin />} />
+          <Route path="walkin-hub" element={<Navigate to="../cre-reports" replace />} />
+          <Route path="work-reports" element={<Navigate to="../cre-reports" replace />} />
+          <Route path="monthly-reports" element={<Navigate to="../cre-reports" replace />} />
+          <Route path="monthly-performance" element={<Navigate to="../cre-reports" replace />} />
         </Route>
 
         {/* Client Facing Routes */}

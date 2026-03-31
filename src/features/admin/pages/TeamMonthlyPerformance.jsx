@@ -5,7 +5,7 @@ import { Search, Calendar, Download, Filter, TrendingUp, DollarSign, PhoneCall, 
 import api from '../../../shared/utils/axios';
 import toast from 'react-hot-toast';
 
-const TeamMonthlyPerformance = () => {
+const TeamMonthlyPerformance = ({ hideHeader = false }) => {
     const location = useLocation();
     const isDark = !location.pathname.includes('/admin/');
     const [loading, setLoading] = useState(false);
@@ -86,41 +86,42 @@ const TeamMonthlyPerformance = () => {
 
     return (
         <div className="space-y-8 animate-in fade-in duration-700">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <h1 className={`text-3xl font-black tracking-widest flex items-center ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                        TEAM <span className="text-orange-500 ml-2">PERFORMANCE</span>
-                    </h1>
-                    <p className="text-slate-500 text-xs font-bold tracking-[0.2em] mt-1 uppercase">CRE's Reports Scorecard</p>
-                </div>
-                <div className="flex gap-3">
-                    <button 
-                        onClick={handleExport}
-                        className={`flex items-center px-4 py-2.5 border rounded-2xl transition-all text-[10px] font-black uppercase tracking-widest ${isDark ? 'bg-slate-900 border-white/5 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-900 shadow-sm'}`}
-                    >
-                        <Download className="w-4 h-4 mr-2" />
-                        Export Excel
-                    </button>
-                    <div className="flex items-center gap-2">
-                        <select 
-                            value={filter.month}
-                            onChange={(e) => setFilter({...filter, month: e.target.value})}
-                            className={`border rounded-2xl px-4 py-2.5 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-orange-500/50 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M5%207.5L10%2012.5L15%207.5%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%221.66667%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E')] bg-no-repeat bg-[right_1rem_center] min-w-[140px] ${isDark ? 'bg-slate-900 border-white/5 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
+            {!hideHeader && (
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h1 className={`text-3xl font-black tracking-widest flex items-center ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                            TEAM <span className="text-orange-500 ml-2">PERFORMANCE</span>
+                        </h1>
+                        <p className="text-slate-500 text-xs font-bold tracking-[0.2em] mt-1 uppercase">CRE's Reports Scorecard</p>
+                    </div>
+                    <div className="flex gap-3">
+                        <button 
+                            onClick={handleExport}
+                            className={`flex items-center px-4 py-2.5 border rounded-2xl transition-all text-[10px] font-black uppercase tracking-widest ${isDark ? 'bg-slate-900 border-white/5 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-900 shadow-sm'}`}
                         >
-                            {months.map((m, i) => (
-                                <option key={i} value={i + 1}>{m}</option>
-                            ))}
-                        </select>
-                        <input 
-                            type="number"
-                            value={filter.year}
-                            onChange={(e) => setFilter({...filter, year: e.target.value})}
-                            className={`w-24 border rounded-2xl px-4 py-2.5 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-orange-500/50 ${isDark ? 'bg-slate-900 border-white/5 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
-                        />
+                            <Download className="w-4 h-4 mr-2" />
+                            Export Excel
+                        </button>
+                        <div className="flex items-center gap-2">
+                            <select 
+                                value={filter.month}
+                                onChange={(e) => setFilter({...filter, month: e.target.value})}
+                                className={`border rounded-2xl px-4 py-2.5 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-orange-500/50 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M5%207.5L10%2012.5L15%207.5%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%221.66667%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E')] bg-no-repeat bg-[right_1rem_center] min-w-[140px] ${isDark ? 'bg-slate-900 border-white/5 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
+                            >
+                                {months.map((m, i) => (
+                                    <option key={i} value={i + 1}>{m}</option>
+                                ))}
+                            </select>
+                            <input 
+                                type="number"
+                                value={filter.year}
+                                onChange={(e) => setFilter({...filter, year: e.target.value})}
+                                className={`w-24 border rounded-2xl px-4 py-2.5 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-orange-500/50 ${isDark ? 'bg-slate-900 border-white/5 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
+                            />
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
 
             {/* Scorecard Table - Excel Style */}
             <div className={`rounded-[40px] border overflow-hidden backdrop-blur-2xl ${isDark ? 'bg-slate-900/30 border-white/5' : 'bg-white border-slate-200 shadow-xl'}`}>
