@@ -33,7 +33,9 @@ async function main() {
         ADD COLUMN IF NOT EXISTS "bhName" TEXT,
         ADD COLUMN IF NOT EXISTS "inTime" TEXT,
         ADD COLUMN IF NOT EXISTS "outTime" TEXT,
-        ADD COLUMN IF NOT EXISTS "remarks" TEXT;
+        ADD COLUMN IF NOT EXISTS "remarks" TEXT,
+        ADD COLUMN IF NOT EXISTS "status" TEXT,
+        ADD COLUMN IF NOT EXISTS "dateOfVisit" TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
       `);
       console.log(`✨ Successfully checked/updated columns in table "${actualTableName}"`);
     }
