@@ -364,7 +364,7 @@ const WalkinHub = () => {
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className={`relative w-full max-w-lg rounded-[32px] border shadow-2xl p-8 ${isDark ? 'bg-slate-900 border-white/10' : 'bg-white border-slate-200'}`}
+                            className={`relative w-full max-w-lg rounded-[32px] border shadow-2xl p-8 overflow-y-auto max-h-[90vh] ${isDark ? 'bg-slate-900 border-white/10' : 'bg-white border-slate-200'}`}
                         >
                             <h2 className={`text-2xl font-black uppercase tracking-widest mb-6 ${isDark ? 'text-white' : 'text-slate-900'}`}>{editingWalkin ? 'Edit' : 'New'} <span className="text-orange-500">Visitor</span></h2>
                             <form onSubmit={handleSubmit} className="space-y-4">
