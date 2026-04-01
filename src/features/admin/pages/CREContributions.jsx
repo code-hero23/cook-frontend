@@ -59,6 +59,10 @@ const CREContributions = ({ hideHeader = false }) => {
 
     const handleSync = async () => {
         try {
+            if (!filter.month || !filter.year) {
+                toast.error("Please select a specific Month and Year to sync data");
+                return;
+            }
             if (!window.confirm("This will automatically calculate SRV and Orders from Walk-in Hub and Work Reports for this period. Continue?")) return;
             setSyncing(true);
             const res = await api.post('/monthly-reports/sync', { month: filter.month, year: filter.year });
