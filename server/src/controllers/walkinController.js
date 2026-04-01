@@ -2,6 +2,20 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const { sendUserPushNotification } = require('../services/notificationService');
 
+const sanitizeTime = (timeStr) => {
+    if (!timeStr || typeof timeStr !== 'string') return '';
+    // If it is in format 10:00 AM or 10:00 PM, convert it for HTML5 time input (HH:mm)
+    const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+    if (match) {
+        let [_, hours, minutes, ampm] = match;
+        hours = parseInt(hours);
+        if (ampm.toUpperCase() === 'PM' && hours < 12) hours += 12;
+        if (ampm.toUpperCase() === 'AM' && hours === 12) hours = 0;
+        return `${String(hours).padStart(2, '0')}:${minutes}`;
+    }
+    return timeStr;
+};
+
 // --- Helper for Sanitization ---
 const sanitizeData = (data) => {
     const cleaned = { ...data };
@@ -10,6 +24,12 @@ const sanitizeData = (data) => {
             cleaned[field] = null;
         }
     });
+
+    // Also sanitize times
+    if (cleaned.inTime) cleaned.inTime = sanitizeTime(cleaned.inTime);
+    if (cleaned.outTime) cleaned.outTime = sanitizeTime(cleaned.outTime);
+    if (cleaned.tentativeTime) cleaned.tentativeTime = sanitizeTime(cleaned.tentativeTime);
+
     return cleaned;
 };
 
@@ -241,12 +261,12 @@ exports.bulkImportWalkins = async (req, res) => {
 
         const sanitized = data.map(item => ({
             clientName: item.clientName || 'Unnamed Client',
-            contactNumber: item.contactNumber || '0000000000', // Provide default to avoid Prisma error
+            contactNumber: item.contactNumber || '0000000000',
             showroom: item.showroom || 'MTRS',
             project: item.project || '',
             dateOfVisit: item.dateOfVisit ? new Date(item.dateOfVisit) : new Date(),
-            inTime: item.inTime || '',
-            outTime: item.outTime || '',
+            inTime: sanitizeTime(item.inTime) || '',
+            outTime: sanitizeTime(item.outTime) || '',
             remarks: item.remarks || '',
             creId: item.creId || req.user.id,
             status: item.status || 'ACTIVE'
