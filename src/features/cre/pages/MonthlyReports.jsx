@@ -422,20 +422,36 @@ const MonthlyReports = ({ hideHeader = false }) => {
                                             className={`w-full border rounded-2xl p-4 text-sm focus:outline-none focus:border-orange-500/50 ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
                                         />
                                     </div>
-                                    <div className="space-y-1.5 col-span-2">
-                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Total Amount (₹)</label>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Total Orders</label>
                                         <input 
                                             type="number"
-                                            placeholder="e.g. 456000"
-                                            onChange={(e) => {
-                                                const val = parseFloat(e.target.value);
-                                                if (!isNaN(val)) {
-                                                    setFormData({...formData, value: (val / 100000).toFixed(2)});
-                                                }
-                                            }}
-                                            className={`w-full border rounded-2xl p-4 text-sm focus:outline-none focus:border-orange-500/50 ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-orange-50 border-orange-200 text-slate-900'}`}
+                                            value={formData.orders}
+                                            onChange={(e) => setFormData({...formData, orders: e.target.value})}
+                                            className={`w-full border rounded-2xl p-4 text-sm focus:outline-none focus:border-orange-500/50 ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
                                         />
-                                        <p className="text-[9px] font-bold text-orange-500 uppercase tracking-widest ml-1">Automatically converts to Lakhs below</p>
+                                    </div>
+                                    <div className="space-y-1.5 col-span-2">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Total Amount (₹)</label>
+                                        <div className="relative">
+                                            <input 
+                                                type="number"
+                                                placeholder="e.g. 456000"
+                                                onChange={(e) => {
+                                                    const val = parseFloat(e.target.value);
+                                                    if (!isNaN(val)) {
+                                                        setFormData({...formData, value: (val / 100000).toFixed(2)});
+                                                    }
+                                                }}
+                                                className={`w-full border rounded-2xl p-4 text-sm focus:outline-none focus:border-orange-500/50 ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-orange-50 border-orange-200 text-slate-900'}`}
+                                            />
+                                            <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none">
+                                                <div className="h-4 w-px bg-slate-300 mx-2" />
+                                                <span className="text-xs font-black text-slate-400 uppercase tracking-tighter">Value: </span>
+                                                <span className="text-xs font-black text-orange-500 tracking-tighter">{formData.value} L</span>
+                                            </div>
+                                        </div>
+                                        <p className="text-[9px] font-bold text-orange-500 uppercase tracking-widest ml-1">Example: 10,00,000 = 10.00 L</p>
                                     </div>
                                     <div className="space-y-1.5 col-span-2">
                                         <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Total Value (in Lakhs)</label>
