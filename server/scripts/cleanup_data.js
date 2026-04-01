@@ -40,7 +40,33 @@ async function cleanup() {
             fixCount++;
         }
 
-        console.log(`✅ Successfully cleaned ${fixCount} entries!`);
+        // 2. Find and Fix Dummy WhatsApp Statuses
+        console.log('🔍 Checking for incorrectly marked dummy WhatsApp statuses...');
+        const DUMMY_NUMBERS = ['0000000000', '1234567890', '9876543210'];
+        
+        const dummyEntries = await prisma.walkinHubEntry.findMany({
+            where: {
+                whatsappStatus: 'SENT',
+                OR: DUMMY_NUMBERS.map(num => ({ contactNumber: { contains: num } }))
+            }
+        });
+
+        console.log(`🔍 Found ${dummyEntries.length} dummy entries mistakenly marked as SENT.`);
+
+        let waFixCount = 0;
+        for (const entry of dummyEntries) {
+            await prisma.walkinHubEntry.update({
+                where: { id: entry.id },
+                data: { 
+                    whatsappStatus: 'FAILED',
+                    whatsappError: 'Dummy Number Detected'
+                }
+            });
+            waFixCount++;
+        }
+
+        console.log(`✅ Successfully cleaned ${fixCount} status labels.`);
+        console.log(`✅ Successfully fixed ${waFixCount} WhatsApp dummy statuses!`);
 
     } catch (error) {
         console.error('❌ Error during cleanup:', error);
