@@ -18,6 +18,9 @@ export default defineConfig({
       strategies: 'injectManifest',
       srcDir: 'src',
       filename: 'sw.js',
+      injectManifest: {
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024 // Increase to 5MB
+      },
       manifest: {
         name: 'Orbix Projects',
         short_name: 'Orbix Projects',
