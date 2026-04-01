@@ -141,7 +141,7 @@ const WalkinHub = ({ hideHeader = false }) => {
             if (data.length === 0) throw new Error("Excel file is empty");
 
             // Mapping Excel keys to API keys if necessary, or assuming they match headers
-            const res = await api.post('/walkin/hub/bulk-import', data);
+            const res = await api.post('/walkins/hub/bulk-import', data);
             toast.success(`Successfully imported ${res.data.count} entries!`);
             window.location.reload(); 
         } catch (error) {

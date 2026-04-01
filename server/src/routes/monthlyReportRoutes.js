@@ -15,6 +15,11 @@ router.get('/', monthlyReportController.getReports);
 router.get('/summary', monthlyReportController.getSummary);
 
 // Sync stats from activity hubs
+router.post('/sync', monthlyReportController.syncReports);
+
+// Bulk Import performance data
+router.post('/bulk-import', monthlyReportController.bulkImportReports);
+
 // Delete a record (Admin only)
 router.delete('/:id', monthlyReportController.deleteReport);
 

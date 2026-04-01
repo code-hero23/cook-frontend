@@ -123,7 +123,7 @@ const WorkReports = ({ hideHeader = false }) => {
             const data = await readExcel(file);
             if (data.length === 0) throw new Error("Excel file is empty");
 
-            const res = await api.post('/walkin/reports/bulk-import', data);
+            const res = await api.post('/walkins/reports/bulk-import', data);
             toast.success(`Successfully imported ${res.data.count} work reports!`);
             window.location.reload(); 
         } catch (error) {
