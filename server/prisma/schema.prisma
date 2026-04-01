@@ -328,6 +328,9 @@ model WalkinHubEntry {
   remarks           String?
   outTimeMarkedAt   DateTime?
   whatsappSent      Boolean  @default(false)
+  whatsappStatus    String   @default("PENDING") // PENDING, SENT, FAILED
+  whatsappError     String?
+  whatsappSentAt    DateTime?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 }

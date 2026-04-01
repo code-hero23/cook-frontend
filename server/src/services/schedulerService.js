@@ -178,8 +178,27 @@ const checkPendingReviewRequests = async () => {
             if (result.success) {
                 await prisma.walkinHubEntry.update({
                     where: { id: entry.id },
-                    data: { whatsappSent: true }
+                    data: { 
+                        whatsappSent: true,
+                        whatsappStatus: 'SENT',
+                        whatsappSentAt: new Date(),
+                        whatsappError: null
+                    }
                 });
+            } else {
+                // Determine the error message from Meta response if available
+                const errorData = result.error?.error || result.error;
+                const errorMessage = typeof errorData === 'string' ? errorData : (errorData?.message || 'Unknown WhatsApp Error');
+                
+                await prisma.walkinHubEntry.update({
+                    where: { id: entry.id },
+                    data: { 
+                        whatsappSent: true, // Mark as attempted so we don't spam 20 times (or leave false to retry?)
+                        whatsappStatus: 'FAILED',
+                        whatsappError: errorMessage
+                    }
+                });
+                console.error(`[Scheduler] WhatsApp Failed for ${entry.clientName}:`, errorMessage);
             }
         }
 

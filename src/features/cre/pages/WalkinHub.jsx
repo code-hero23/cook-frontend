@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Search, Filter, Phone, MapPin, User, LogOut, Clock, Calendar, CheckCircle, Activity, Briefcase, Edit2, Star, TrendingUp } from 'lucide-react';
+import { Plus, Search, Filter, Phone, MapPin, User, LogOut, Clock, Calendar, CheckCircle, Activity, Briefcase, Edit2, Star, TrendingUp, MessageSquare, AlertCircle, Loader2 } from 'lucide-react';
 import { useCRE } from '../context/CREContext';
 import ShowroomMonitor from '../components/ShowroomMonitor';
 import toast from 'react-hot-toast';
@@ -363,9 +363,38 @@ const WalkinHub = ({ hideHeader = false }) => {
                                                     </div>
                                                     <div className="ml-4">
                                                         <p className="text-sm font-black text-slate-900 tracking-tight">{w.clientName}</p>
-                                                        <div className="flex items-center text-[10px] text-slate-400 font-black mt-1 tracking-widest uppercase">
-                                                            <Phone className="w-3 h-3 mr-1 text-slate-300" />
-                                                            {w.contactNumber}
+                                                        <div className="flex items-center gap-3 mt-1">
+                                                            <div className="flex items-center text-[10px] text-slate-400 font-black tracking-widest uppercase">
+                                                                <Phone className="w-3 h-3 mr-1 text-slate-300" />
+                                                                {w.contactNumber}
+                                                            </div>
+                                                            
+                                                            {/* WhatsApp Review Status Indicator */}
+                                                            {w.status === 'COMPLETED' && (
+                                                                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-50 border border-slate-100 group/wa relative">
+                                                                    {w.whatsappStatus === 'SENT' ? (
+                                                                        <>
+                                                                            <MessageSquare className="w-2.5 h-2.5 text-emerald-500" />
+                                                                            <span className="text-[8px] font-black text-emerald-600 uppercase tracking-tighter">Review Sent</span>
+                                                                        </>
+                                                                    ) : w.whatsappStatus === 'FAILED' ? (
+                                                                        <>
+                                                                            <AlertCircle className="w-2.5 h-2.5 text-red-500" />
+                                                                            <span className="text-[8px] font-black text-red-600 uppercase tracking-tighter">Review Failed</span>
+                                                                            {/* Tooltip for Error */}
+                                                                            <div className="absolute bottom-full mb-2 left-0 w-48 p-2 bg-slate-900 text-white text-[9px] rounded-lg opacity-0 group-hover/wa:opacity-100 transition-opacity z-50 pointer-events-none shadow-xl">
+                                                                                <p className="font-bold text-red-400 mb-1">REASON:</p>
+                                                                                {w.whatsappError || "Unknown Meta API Error"}
+                                                                            </div>
+                                                                        </>
+                                                                    ) : (
+                                                                        <>
+                                                                            <Loader2 className="w-2.5 h-2.5 text-slate-400 animate-spin" />
+                                                                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-tighter">Review Pending</span>
+                                                                        </>
+                                                                    )}
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>
