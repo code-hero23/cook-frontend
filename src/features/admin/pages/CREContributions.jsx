@@ -166,7 +166,7 @@ const CREContributions = ({ hideHeader = false }) => {
             <div className={`rounded-[40px] border overflow-hidden backdrop-blur-2xl ${isDark ? 'bg-slate-900/30 border-white/5' : 'bg-white border-slate-200 shadow-xl'}`}>
                 <div className="px-8 py-6 border-b border-white/5 bg-gradient-to-r from-orange-500/5 to-transparent">
                     <h3 className={`text-sm font-black uppercase tracking-[0.3em] text-center ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                        CRE'S REPORTS 01 - {new Date(filter.year, filter.month, 0).getDate()} {months[filter.month - 1].toUpperCase().slice(0, 3)}
+                        CRE'S REPORTS {filter.month ? `01 - ${new Date(filter.year, filter.month, 0).getDate()} ${months[filter.month - 1].toUpperCase().slice(0, 3)}` : 'ALL TIME'}
                     </h3>
                 </div>
                 <div className="overflow-x-auto">

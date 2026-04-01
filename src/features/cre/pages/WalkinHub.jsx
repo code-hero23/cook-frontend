@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Search, Filter, Phone, MapPin, User, LogOut, Clock, Calendar, CheckCircle, Activity, Briefcase, Edit2, Star } from 'lucide-react';
+import { Plus, Search, Filter, Phone, MapPin, User, LogOut, Clock, Calendar, CheckCircle, Activity, Briefcase, Edit2, Star, TrendingUp } from 'lucide-react';
 import { useCRE } from '../context/CREContext';
 import ShowroomMonitor from '../components/ShowroomMonitor';
 import toast from 'react-hot-toast';
@@ -67,6 +67,21 @@ const WalkinHub = ({ hideHeader = false }) => {
         
         return matchDate && matchCre && matchBh && matchRole;
     });
+
+    const adminStats = useMemo(() => {
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const startOfYear = new Date(now.getFullYear(), 0, 1);
+        const last7Days = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
+        const last15Days = new Date(now.getTime() - (15 * 24 * 60 * 60 * 1000));
+
+        return {
+            month: walkins.filter(w => new Date(w.dateOfVisit || w.createdAt) >= startOfMonth).length,
+            week: walkins.filter(w => new Date(w.dateOfVisit || w.createdAt) >= last7Days).length,
+            fifteenDays: walkins.filter(w => new Date(w.dateOfVisit || w.createdAt) >= last15Days).length,
+            year: walkins.filter(w => new Date(w.dateOfVisit || w.createdAt) >= startOfYear).length
+        };
+    }, [walkins]);
 
     const filteredWalkins = currentWalkins.filter(w => 
         w.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -172,6 +187,32 @@ const WalkinHub = ({ hideHeader = false }) => {
                             <span className="text-xl font-black text-slate-900 tracking-tighter">{stats.totalToday}</span>
                         </div>
                     </div>
+                </div>
+            )}
+
+            {/* Admin Stats Row */}
+            {isPrivileged && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-in slide-in-from-top duration-700">
+                    {[
+                        { label: 'Total Walkin Month', val: adminStats.month, icon: Calendar, color: 'text-blue-500', bg: 'bg-blue-50/50' },
+                        { label: 'Last Week Walkin', val: adminStats.week, icon: Activity, color: 'text-orange-500', bg: 'bg-orange-50/50' },
+                        { label: 'Last 15 Days Walkin', val: adminStats.fifteenDays, icon: Star, color: 'text-purple-500', bg: 'bg-purple-50/50' },
+                        { label: 'Total Walkin Year', val: adminStats.year, icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-50/50' }
+                    ].map((s, i) => (
+                        <div key={i} className={`p-6 rounded-[32px] border border-slate-200 bg-white shadow-sm hover:shadow-md transition-all group overflow-hidden relative`}>
+                            <div className={`absolute top-0 right-0 w-24 h-24 ${s.bg} rounded-bl-full translate-x-8 -translate-y-8 group-hover:scale-110 transition-transform`} />
+                            <div className="relative z-10">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className={`p-3 rounded-2xl ${s.bg}`}>
+                                        <s.icon className={`w-5 h-5 ${s.color}`} />
+                                    </div>
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{s.label.split(' ')[0]}</span>
+                                </div>
+                                <p className="text-3xl font-black text-slate-900 tracking-tight">{s.val}</p>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{s.label}</p>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             )}
 
