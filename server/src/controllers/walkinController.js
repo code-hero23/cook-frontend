@@ -223,6 +223,15 @@ exports.updateWorkReport = async (req, res) => {
     }
 };
 
+exports.deleteWorkReport = async (req, res) => {
+    try {
+        await prisma.workReport.delete({ where: { id: req.params.id } });
+        res.json({ message: 'Work report deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 // --- Bulk Imports ---
 
 exports.bulkImportWalkins = async (req, res) => {

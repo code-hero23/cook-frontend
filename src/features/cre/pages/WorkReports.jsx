@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 import api from '../../../shared/utils/axios';
 
 const WorkReports = ({ hideHeader = false }) => {
-    const { reports, stats, loading, addReport, updateReport, bhs, cres } = useCRE();
+    const { reports, stats, loading, addReport, updateReport, deleteWorkReport, bhs, cres } = useCRE();
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const isPrivileged = ['SUPER_ADMIN', 'MANAGER', 'BUSINESS_HEAD'].includes(user.role);
     const location = useLocation();
@@ -387,13 +387,22 @@ const WorkReports = ({ hideHeader = false }) => {
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-8 py-6 text-right">
+                                    <td className="px-8 py-6 text-right flex justify-end gap-2 text-right">
                                         <button 
                                             onClick={() => handleEdit(r)}
                                             className="p-3 text-slate-400 hover:text-orange-500 bg-slate-50 hover:bg-orange-50 rounded-2xl transition-all border border-transparent hover:border-orange-100 shadow-sm"
                                         >
                                             <Edit2 className="w-5 h-5" />
                                         </button>
+                                        {isPrivileged && (
+                                            <button 
+                                                onClick={() => deleteWorkReport(r.id)}
+                                                className="p-3 text-red-400 hover:text-white bg-slate-50 hover:bg-red-500 rounded-2xl transition-all border border-transparent shadow-sm"
+                                                title="Delete Report"
+                                            >
+                                                <Plus className="w-5 h-5 rotate-45" />
+                                            </button>
+                                        )}
                                     </td>
                                 </motion.tr>
                             ))}

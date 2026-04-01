@@ -46,6 +46,17 @@ const MonthlyReports = ({ hideHeader = false }) => {
         fetchReports();
     }, []);
 
+    // Calculate Cumulative Totals
+    const totals = reports.reduce((acc, r) => ({
+        calls: acc.calls + (r.calls || 0),
+        srv: acc.srv + (r.srv || 0),
+        proposals: acc.proposals + (r.proposals || 0),
+        orders: acc.orders + (r.orders || 0),
+        value: acc.value + (r.value || 0)
+    }), { calls: 0, srv: 0, proposals: 0, orders: 0, value: 0 });
+
+    const closingRatio = totals.srv > 0 ? ((totals.orders / totals.srv) * 100).toFixed(1) : 0;
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -97,22 +108,25 @@ const MonthlyReports = ({ hideHeader = false }) => {
                 </div>
             )}
 
-            {/* Quick Stats of Last Month */}
+            {/* Cumulative Performance Overview */}
             {reports.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
                     {[
-                        { label: 'Calls', val: reports[0].calls, icon: PhoneCall, color: 'text-blue-500' },
-                        { label: 'SRV', val: reports[0].srv, icon: Users, color: 'text-orange-500' },
-                        { label: 'Proposals', val: reports[0].proposals, icon: FileText, color: 'text-purple-500' },
-                        { label: 'Orders', val: reports[0].orders, icon: CheckCircle, color: 'text-emerald-500' },
-                        { label: 'Value (L)', val: reports[0].value, icon: DollarSign, color: 'text-yellow-500' }
+                        { label: 'Total Calls', val: totals.calls, icon: PhoneCall, color: 'text-blue-500' },
+                        { label: 'Total SRV', val: totals.srv, icon: Users, color: 'text-orange-500' },
+                        { label: 'Proposals', val: totals.proposals, icon: FileText, color: 'text-purple-500' },
+                        { label: 'Orders', val: totals.orders, icon: CheckCircle, color: 'text-emerald-500' },
+                        { label: 'Total Value', val: `₹${totals.value.toFixed(1)}L`, icon: DollarSign, color: 'text-yellow-500' },
+                        { label: 'Closing %', val: `${closingRatio}%`, icon: TrendingUp, color: 'text-indigo-500' }
                     ].map((stat, i) => (
-                        <div key={i} className={`p-4 rounded-2xl border backdrop-blur-md ${isDark ? 'bg-slate-900/40 border-white/5' : 'bg-white border-slate-200'}`}>
-                            <div className="flex items-center justify-between mb-2">
-                                <stat.icon className={`w-4 h-4 ${stat.color}`} />
-                                <span className="text-[10px] font-black text-slate-500 uppercase">{stat.label}</span>
+                        <div key={i} className={`p-5 rounded-[32px] border transition-all duration-300 hover:shadow-lg ${isDark ? 'bg-slate-900/40 border-white/5' : 'bg-white border-slate-200 shadow-sm'}`}>
+                            <div className="flex items-center justify-between mb-3">
+                                <div className={`p-2 rounded-xl ${stat.color.replace('text-', 'bg-')}/10`}>
+                                    <stat.icon className={`w-4 h-4 ${stat.color}`} />
+                                </div>
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{stat.label}</span>
                             </div>
-                            <p className={`text-xl font-black ${isDark ? 'text-white' : 'text-slate-900'}`}>{stat.val}</p>
+                            <p className={`text-2xl font-black tracking-tighter ${isDark ? 'text-white' : 'text-slate-900'}`}>{stat.val}</p>
                         </div>
                     ))}
                 </div>
@@ -135,6 +149,7 @@ const MonthlyReports = ({ hideHeader = false }) => {
                     <table className="w-full text-left">
                         <thead>
                             <tr className={isDark ? 'bg-white/5' : 'bg-slate-50'}>
+                                <th className="px-8 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">CRE Name</th>
                                 <th className="px-8 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Period</th>
                                 <th className="px-8 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Calls</th>
                                 <th className="px-8 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">SRV</th>
@@ -147,6 +162,14 @@ const MonthlyReports = ({ hideHeader = false }) => {
                         <tbody className="divide-y divide-slate-50">
                             {reports.map((r) => (
                                 <tr key={r.id} className="hover:bg-slate-50/50 transition-colors group">
+                                    <td className="px-10 py-6">
+                                        <div className="flex items-center">
+                                            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center mr-3 border border-slate-200">
+                                                <span className="text-[10px] font-black text-slate-500">{r.cre?.name?.charAt(0) || 'C'}</span>
+                                            </div>
+                                            <span className="text-xs font-black text-slate-700 uppercase tracking-tighter">{r.cre?.name || 'Unknown CRE'}</span>
+                                        </div>
+                                    </td>
                                     <td className="px-10 py-6">
                                         <div className="px-4 py-1.5 rounded-2xl border border-slate-200 bg-slate-50 inline-block">
                                             <span className="text-[10px] font-black uppercase text-slate-600">{months[r.month - 1]} {r.year}</span>

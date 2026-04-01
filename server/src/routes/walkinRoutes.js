@@ -17,6 +17,7 @@ router.post('/hub/bulk-import', authorize('SUPER_ADMIN', 'MANAGER', 'BUSINESS_HE
 router.get('/reports', walkinController.getWorkReports);
 router.post('/reports', walkinController.createWorkReport);
 router.patch('/reports/:id', walkinController.updateWorkReport);
+router.delete('/reports/:id', authorize('SUPER_ADMIN', 'MANAGER', 'BUSINESS_HEAD'), walkinController.deleteWorkReport);
 router.post('/reports/bulk-import', authorize('SUPER_ADMIN', 'MANAGER', 'BUSINESS_HEAD'), walkinController.bulkImportWorkReports);
 
 module.exports = router;

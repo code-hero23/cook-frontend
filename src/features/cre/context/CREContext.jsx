@@ -134,10 +134,27 @@ export const CREProvider = ({ children }) => {
         try {
             const res = await api.patch(`/walkins/reports/${id}`, updates);
             setReports(prev => prev.map(r => r.id === id ? res.data : r));
+            toast.success("Report updated!");
             return { success: true };
         } catch (error) {
             console.error('[CREContext] Update Report Error:', error);
+            toast.error(error.message);
             return { success: false, error: error.message };
+        }
+    };
+
+    const deleteWorkReport = async (id) => {
+        try {
+            if (!window.confirm("Are you sure you want to delete this work report?")) return { success: false };
+            await api.delete(`/walkins/reports/${id}`);
+            setReports(prev => prev.filter(r => r.id !== id));
+            toast.success("Report deleted successfully!");
+            return { success: true };
+        } catch (error) {
+            console.error('[CREContext] Delete Report Error:', error);
+            const msg = error.response?.status === 403 ? "Access Denied: Super Admin or Manager only" : error.message;
+            toast.error(msg);
+            return { success: false, error: msg };
         }
     };
 
@@ -154,7 +171,8 @@ export const CREProvider = ({ children }) => {
         updateWalkin,
         deleteWalkin,
         addReport,
-        updateReport
+        updateReport,
+        deleteWorkReport
     };
 
     return <CREContext.Provider value={value}>{children}</CREContext.Provider>;
