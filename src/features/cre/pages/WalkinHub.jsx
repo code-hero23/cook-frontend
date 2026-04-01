@@ -5,6 +5,8 @@ import { Plus, Search, Filter, Phone, MapPin, User, LogOut, Clock, Calendar, Che
 import { useCRE } from '../context/CREContext';
 import ShowroomMonitor from '../components/ShowroomMonitor';
 import toast from 'react-hot-toast';
+import { exportToExcel, readExcel, downloadTemplate } from '../../../shared/utils/excel';
+import api from '../../../shared/utils/axios';
 
 const WalkinHub = ({ hideHeader = false }) => {
     const { walkins, stats, loading, bhs, cres, employees, addWalkin, updateWalkin, deleteWalkin } = useCRE();
@@ -14,7 +16,9 @@ const WalkinHub = ({ hideHeader = false }) => {
     const isDark = false; 
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [editingWalkin, setEditingWalkin] = useState(null);
+    const [importing, setImporting] = useState(false);
     
     const initialEntryState = {
         clientName: '',
@@ -108,6 +112,44 @@ const WalkinHub = ({ hideHeader = false }) => {
             }
         } catch (error) {
             toast.error("Process failed");
+        }
+    };
+
+    const handleExport = () => {
+        const exportData = filteredWalkins.map(w => ({
+            'Client Name': w.clientName,
+            'Contact': w.contactNumber,
+            'Project': w.project,
+            'Showroom': w.showroom,
+            'Date of Visit': new Date(w.dateOfVisit).toLocaleDateString(),
+            'In Time': w.inTime,
+            'Out Time': w.outTime,
+            'Remarks': w.remarks,
+            'CRE': w.cre?.name || 'Manual'
+        }));
+        exportToExcel(exportData, 'WalkinHub_Report');
+        toast.success("Exporting Walk-in Report...");
+    };
+
+    const handleImport = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        try {
+            setImporting(true);
+            const data = await readExcel(file);
+            if (data.length === 0) throw new Error("Excel file is empty");
+
+            // Mapping Excel keys to API keys if necessary, or assuming they match headers
+            const res = await api.post('/walkin/hub/bulk-import', data);
+            toast.success(`Successfully imported ${res.data.count} entries!`);
+            window.location.reload(); 
+        } catch (error) {
+            console.error('[Import] Error:', error);
+            toast.error(error.response?.data?.error || "Import failed. Please check the template format.");
+        } finally {
+            setImporting(false);
+            setIsImportModalOpen(false);
         }
     };
 
@@ -264,9 +306,21 @@ const WalkinHub = ({ hideHeader = false }) => {
                     />
                 </div>
                 <div className="flex gap-3 w-full md:w-auto">
-                    <button className={`flex-1 md:flex-none flex items-center justify-center px-4 py-3 border rounded-2xl transition-all ${isDark ? 'bg-slate-900/50 border-white/5 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-900 shadow-sm'}`}>
-                        <Filter className="w-4 h-4 mr-2" />
-                        <span className="text-xs font-extrabold uppercase">Filters</span>
+                    <button 
+                        onClick={handleExport}
+                        className={`flex-1 md:flex-none flex items-center justify-center px-4 py-3 border rounded-2xl transition-all ${isDark ? 'bg-slate-900/50 border-white/5 text-slate-400 hover:text-orange-500' : 'bg-white border-slate-200 text-slate-500 hover:text-orange-500 shadow-sm'}`}
+                        title="Export to Excel"
+                    >
+                        <TrendingUp className="w-4 h-4 mr-2" />
+                        <span className="text-xs font-extrabold uppercase">Export</span>
+                    </button>
+                    <button 
+                        onClick={() => setIsImportModalOpen(true)}
+                        className={`flex-1 md:flex-none flex items-center justify-center px-4 py-3 border rounded-2xl transition-all ${isDark ? 'bg-slate-900/50 border-white/5 text-slate-400 hover:text-emerald-500' : 'bg-white border-slate-200 text-slate-500 hover:text-emerald-500 shadow-sm'}`}
+                        title="Import from Excel"
+                    >
+                        <Activity className="w-4 h-4 mr-2" />
+                        <span className="text-xs font-extrabold uppercase">Import</span>
                     </button>
                     <button 
                         onClick={openAddModal}
@@ -637,6 +691,70 @@ const WalkinHub = ({ hideHeader = false }) => {
                                     </button>
                                 </div>
                             </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+            {/* Import Modal */}
+            <AnimatePresence>
+                {isImportModalOpen && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                        <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsImportModalOpen(false)}
+                            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                        />
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className={`relative w-full max-w-md rounded-[32px] border shadow-2xl p-8 ${isDark ? 'bg-slate-900 border-white/10' : 'bg-white border-slate-200'}`}
+                        >
+                            <div className="flex items-center justify-center w-16 h-16 rounded-[24px] bg-emerald-50 mb-6 mx-auto">
+                                <TrendingUp className="w-8 h-8 text-emerald-500" />
+                            </div>
+                            <h2 className={`text-2xl font-black text-center uppercase tracking-widest mb-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>Bulk <span className="text-emerald-500">Import</span></h2>
+                            <p className="text-[10px] font-black text-slate-400 text-center uppercase tracking-widest mb-8">Upload Excel File To Import Multi-Entries</p>
+                            
+                            <div className="space-y-6">
+                                <label className="block">
+                                    <div className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-slate-200 rounded-[32px] bg-slate-50 hover:bg-slate-100 transition-all cursor-pointer group">
+                                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                            <Activity className="w-10 h-10 text-slate-300 group-hover:text-emerald-500 transition-all mb-4" />
+                                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                                                {importing ? 'Processing File...' : 'Click or Drag Excel File'}
+                                            </p>
+                                        </div>
+                                        <input 
+                                            type="file" 
+                                            className="hidden" 
+                                            accept=".xlsx, .xls"
+                                            onChange={handleImport}
+                                            disabled={importing}
+                                        />
+                                    </div>
+                                </label>
+
+                                <div className="p-5 rounded-[24px] bg-orange-50 border border-orange-100">
+                                    <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-3">Download Sample Sheet</p>
+                                    <button 
+                                        onClick={() => downloadTemplate('walkin')}
+                                        className="w-full py-3 bg-white border border-orange-200 rounded-xl text-[10px] font-black uppercase text-orange-500 shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
+                                    >
+                                        <Calendar className="w-4 h-4" />
+                                        Sample_Template.xlsx
+                                    </button>
+                                </div>
+
+                                <button 
+                                    onClick={() => setIsImportModalOpen(false)}
+                                    className="w-full py-4 text-xs font-black uppercase text-slate-400 hover:text-slate-900 transition-all"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
                         </motion.div>
                     </div>
                 )}

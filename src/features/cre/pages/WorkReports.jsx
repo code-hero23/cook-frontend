@@ -3,9 +3,9 @@ import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Search, Filter, Phone, MapPin, User, Star, Calendar, Download, Upload, Briefcase, ChevronRight, Check, FileText, Edit2 } from 'lucide-react';
 import { useCRE } from '../context/CREContext';
-import * as XLSX from 'xlsx';
 import toast from 'react-hot-toast';
 import api from '../../../shared/utils/axios';
+import { exportToExcel, readExcel, downloadTemplate } from '../../../shared/utils/excel';
 
 const WorkReports = ({ hideHeader = false }) => {
     const { reports, stats, loading, addReport, updateReport, deleteWorkReport, bhs, cres } = useCRE();
@@ -15,7 +15,9 @@ const WorkReports = ({ hideHeader = false }) => {
     const isDark = false; 
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [editingReport, setEditingReport] = useState(null);
+    const [importing, setImporting] = useState(false);
     
     const initialReportState = {
         clientName: '',
@@ -93,6 +95,43 @@ const WorkReports = ({ hideHeader = false }) => {
             }
         } catch (error) {
             toast.error("Process failed");
+        }
+    };
+
+    const handleExport = () => {
+        const exportData = filteredReports.map(r => ({
+            'Date': new Date(r.date).toLocaleDateString(),
+            'Client Name': r.clientName,
+            'Contact': r.contact,
+            'Showroom': r.showroom || 'MTRS',
+            'Status': r.status === 'Y' ? 'Completed' : 'Pending',
+            'Site': r.site || 'N/A',
+            'Rating': r.star,
+            'Remarks': r.remarks,
+            'CRE': r.cre?.name || 'Manual'
+        }));
+        exportToExcel(exportData, 'WorkReports_Audit');
+        toast.success("Exporting Work Reports...");
+    };
+
+    const handleImport = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        try {
+            setImporting(true);
+            const data = await readExcel(file);
+            if (data.length === 0) throw new Error("Excel file is empty");
+
+            const res = await api.post('/walkin/reports/bulk-import', data);
+            toast.success(`Successfully imported ${res.data.count} work reports!`);
+            window.location.reload(); 
+        } catch (error) {
+            console.error('[Import] Error:', error);
+            toast.error(error.response?.data?.error || "Import failed. Please check the template format.");
+        } finally {
+            setImporting(false);
+            setIsImportModalOpen(false);
         }
     };
 
@@ -179,23 +218,21 @@ const WorkReports = ({ hideHeader = false }) => {
                         <p className="text-slate-500 text-xs font-bold tracking-[0.2em] mt-1 uppercase">Lead Assignment & Conversion Tracker</p>
                     </div>
                     <div className="flex gap-3">
-                        <input 
-                            type="file" 
-                            id="bulk-import-input" 
-                            className="hidden" 
-                            accept=".xlsx, .xls, .csv" 
-                            onChange={handleBulkImport} 
-                        />
-                        <label 
-                            htmlFor="bulk-import-input"
-                            className={`flex items-center px-4 py-2.5 border rounded-2xl transition-all text-[10px] font-black uppercase tracking-widest cursor-pointer ${isDark ? 'bg-slate-900 border-white/5 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-900 shadow-sm'}`}
+                        <button 
+                            onClick={handleExport}
+                            className={`flex items-center px-4 py-2.5 border rounded-2xl transition-all text-[10px] font-black uppercase tracking-widest ${isDark ? 'bg-slate-900 border-white/5 text-slate-400 hover:text-orange-500' : 'bg-white border-slate-200 text-slate-500 hover:text-orange-500 hover:border-orange-200 shadow-sm'}`}
+                            title="Export to Excel"
                         >
-                            <Upload className="w-4 h-4 mr-2" />
-                            Bulk Import
-                        </label>
-                        <button className={`flex items-center px-4 py-2.5 border rounded-2xl transition-all text-[10px] font-black uppercase tracking-widest ${isDark ? 'bg-slate-900 border-white/5 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-900 shadow-sm'}`}>
                             <Download className="w-4 h-4 mr-2" />
                             Export
+                        </button>
+                        <button 
+                            onClick={() => setIsImportModalOpen(true)}
+                            className={`flex items-center px-4 py-2.5 border rounded-2xl transition-all text-[10px] font-black uppercase tracking-widest ${isDark ? 'bg-slate-900 border-white/5 text-slate-400 hover:text-emerald-500' : 'bg-white border-slate-200 text-slate-500 hover:text-emerald-500 hover:border-emerald-200 shadow-sm'}`}
+                            title="Import from Excel"
+                        >
+                            <Upload className="w-4 h-4 mr-2" />
+                            Import
                         </button>
                     </div>
                 </div>
@@ -640,6 +677,70 @@ const WorkReports = ({ hideHeader = false }) => {
                                     </button>
                                 </div>
                             </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+            {/* Import Modal */}
+            <AnimatePresence>
+                {isImportModalOpen && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                        <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsImportModalOpen(false)}
+                            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                        />
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className={`relative w-full max-w-md rounded-[32px] border shadow-2xl p-8 ${isDark ? 'bg-slate-900 border-white/10' : 'bg-white border-slate-200'}`}
+                        >
+                            <div className="flex items-center justify-center w-16 h-16 rounded-[24px] bg-emerald-50 mb-6 mx-auto">
+                                <Upload className="w-8 h-8 text-emerald-500" />
+                            </div>
+                            <h2 className={`text-2xl font-black text-center uppercase tracking-widest mb-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>Work <span className="text-emerald-500">Import</span></h2>
+                            <p className="text-[10px] font-black text-slate-400 text-center uppercase tracking-widest mb-8">Upload Excel File To Import Multi-Entries</p>
+                            
+                            <div className="space-y-6">
+                                <label className="block">
+                                    <div className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-slate-200 rounded-[32px] bg-slate-50 hover:bg-slate-100 transition-all cursor-pointer group">
+                                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                            <Briefcase className="w-10 h-10 text-slate-300 group-hover:text-emerald-500 transition-all mb-4" />
+                                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                                                {importing ? 'Processing File...' : 'Click or Drag Excel File'}
+                                            </p>
+                                        </div>
+                                        <input 
+                                            type="file" 
+                                            className="hidden" 
+                                            accept=".xlsx, .xls"
+                                            onChange={handleImport}
+                                            disabled={importing}
+                                        />
+                                    </div>
+                                </label>
+
+                                <div className="p-5 rounded-[24px] bg-blue-50 border border-blue-100">
+                                    <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-3">Download Sample Sheet</p>
+                                    <button 
+                                        onClick={() => downloadTemplate('workreport')}
+                                        className="w-full py-3 bg-white border border-blue-200 rounded-xl text-[10px] font-black uppercase text-blue-500 shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
+                                    >
+                                        <Download className="w-4 h-4" />
+                                        WorkReport_Template.xlsx
+                                    </button>
+                                </div>
+
+                                <button 
+                                    onClick={() => setIsImportModalOpen(false)}
+                                    className="w-full py-4 text-xs font-black uppercase text-slate-400 hover:text-slate-900 transition-all"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
                         </motion.div>
                     </div>
                 )}

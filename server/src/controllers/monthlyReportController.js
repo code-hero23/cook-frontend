@@ -207,3 +207,46 @@ exports.deleteReport = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+exports.bulkImportReports = async (req, res) => {
+    try {
+        const data = req.body;
+        if (!Array.isArray(data)) return res.status(400).json({ error: "Expected an array" });
+
+        const results = [];
+        for (const item of data) {
+            const report = await prisma.cREMonthlyReport.upsert({
+                where: {
+                    creId_month_year: {
+                        creId: item.creId || req.user.id,
+                        month: parseInt(item.month),
+                        year: parseInt(item.year)
+                    }
+                },
+                update: {
+                    calls: parseInt(item.calls) || 0,
+                    srv: parseInt(item.srv) || 0,
+                    proposals: parseInt(item.proposals) || 0,
+                    orders: parseInt(item.orders) || 0,
+                    value: parseFloat(item.value) || 0
+                },
+                create: {
+                    creId: item.creId || req.user.id,
+                    month: parseInt(item.month),
+                    year: parseInt(item.year),
+                    calls: parseInt(item.calls) || 0,
+                    srv: parseInt(item.srv) || 0,
+                    proposals: parseInt(item.proposals) || 0,
+                    orders: parseInt(item.orders) || 0,
+                    value: parseFloat(item.value) || 0
+                }
+            });
+            results.push(report);
+        }
+
+        res.json({ success: true, count: results.length });
+    } catch (error) {
+        console.error('[BulkImportReports] Error:', error);
+        res.status(500).json({ error: error.message });
+    }
+};

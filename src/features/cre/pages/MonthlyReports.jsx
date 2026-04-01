@@ -5,6 +5,7 @@ import { Plus, Search, Calendar, BarChart3, TrendingUp, Save, History, DollarSig
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, AreaChart, Area } from 'recharts';
 import api from '../../../shared/utils/axios';
 import toast from 'react-hot-toast';
+import { exportToExcel, readExcel, downloadTemplate } from '../../../shared/utils/excel';
 
 const MonthlyReports = ({ hideHeader = false }) => {
     const location = useLocation();
@@ -12,7 +13,9 @@ const MonthlyReports = ({ hideHeader = false }) => {
     const [loading, setLoading] = useState(false);
     const [reports, setReports] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [syncing, setSyncing] = useState(false);
+    const [importing, setImporting] = useState(false);
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     
     const initialFormState = {
@@ -151,6 +154,42 @@ const MonthlyReports = ({ hideHeader = false }) => {
         }
     };
 
+    const handleExport = () => {
+        const exportData = reports.map(r => ({
+            'Month': months[r.month - 1],
+            'Year': r.year,
+            'Calls': r.calls,
+            'Visits/SRV': r.srv,
+            'Proposals': r.proposals,
+            'Orders': r.orders,
+            'Revenue (Lakhs)': r.value,
+            'CRE': r.cre?.name || 'Manual'
+        }));
+        exportToExcel(exportData, 'Monthly_Performance_Report');
+        toast.success("Exporting Monthly Performance...");
+    };
+
+    const handleImport = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        try {
+            setImporting(true);
+            const data = await readExcel(file);
+            if (data.length === 0) throw new Error("Excel file is empty");
+
+            const res = await api.post('/monthly-reports/bulk-import', data);
+            toast.success(`Successfully imported ${res.data.count} performance records!`);
+            fetchReports();
+        } catch (error) {
+            console.error('[Import] Error:', error);
+            toast.error(error.response?.data?.error || "Import failed. Please check the template format.");
+        } finally {
+            setImporting(false);
+            setIsImportModalOpen(false);
+        }
+    };
+
     return (
         <div className="space-y-8 animate-in fade-in duration-700">
             {!hideHeader && (
@@ -175,18 +214,34 @@ const MonthlyReports = ({ hideHeader = false }) => {
                         <p className="text-[10px] font-black text-slate-400 uppercase">Manage your monthly submission</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                    <button 
+                        onClick={handleExport}
+                        className="flex items-center px-4 py-3 bg-white border border-slate-200 rounded-2xl text-slate-500 hover:text-orange-500 hover:border-orange-200 transition-all font-black text-[10px] uppercase shadow-sm"
+                        title="Export to Excel"
+                    >
+                        <TrendingUp className="w-4 h-4 mr-2" />
+                        Export
+                    </button>
+                    <button 
+                        onClick={() => setIsImportModalOpen(true)}
+                        className="flex items-center px-4 py-3 bg-white border border-slate-200 rounded-2xl text-slate-500 hover:text-emerald-500 hover:border-emerald-200 transition-all font-black text-[10px] uppercase shadow-sm"
+                        title="Import from Excel"
+                    >
+                        <Users className="w-4 h-4 mr-2" />
+                        Import
+                    </button>
                     <button 
                         onClick={handleSync}
                         disabled={syncing}
-                        className={`flex items-center px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all bg-white border border-slate-200 text-slate-600 hover:text-orange-500 hover:border-orange-200 shadow-sm ${syncing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className={`flex items-center px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all bg-white border border-slate-200 text-slate-600 hover:text-blue-500 hover:border-blue-200 shadow-sm ${syncing ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                         <RefreshCw className={`w-4 h-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
                         {syncing ? 'Syncing...' : 'Sync Activities'}
                     </button>
                     <button 
                         onClick={openNewSubmission}
-                        className="flex items-center px-6 py-3 bg-orange-500 rounded-2xl text-white font-black text-[10px] uppercase shadow-lg shadow-orange-500/20 hover:bg-orange-600 transition-all font-bold"
+                        className="flex items-center px-8 py-3 bg-orange-500 rounded-2xl text-white font-black text-[10px] uppercase shadow-lg shadow-orange-500/20 hover:bg-orange-600 transition-all"
                     >
                         <Plus className="w-4 h-4 mr-2" />
                         Submit This Month
@@ -510,6 +565,70 @@ const MonthlyReports = ({ hideHeader = false }) => {
                                     </button>
                                 </div>
                             </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+            {/* Import Modal */}
+            <AnimatePresence>
+                {isImportModalOpen && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                        <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsImportModalOpen(false)}
+                            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                        />
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className={`relative w-full max-w-md rounded-[32px] border shadow-2xl p-8 ${isDark ? 'bg-slate-900 border-white/10' : 'bg-white border-slate-200'}`}
+                        >
+                            <div className="flex items-center justify-center w-16 h-16 rounded-[24px] bg-emerald-50 mb-6 mx-auto">
+                                <BarChart3 className="w-8 h-8 text-emerald-500" />
+                            </div>
+                            <h2 className={`text-2xl font-black text-center uppercase tracking-widest mb-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>Performance <span className="text-emerald-500">Import</span></h2>
+                            <p className="text-[10px] font-black text-slate-400 text-center uppercase tracking-widest mb-8">Upload Excel File To Import Multi-Month Data</p>
+                            
+                            <div className="space-y-6">
+                                <label className="block">
+                                    <div className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-slate-200 rounded-[32px] bg-slate-50 hover:bg-slate-100 transition-all cursor-pointer group">
+                                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                            <TrendingUp className="w-10 h-10 text-slate-300 group-hover:text-emerald-500 transition-all mb-4" />
+                                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                                                {importing ? 'Processing File...' : 'Click or Drag Excel File'}
+                                            </p>
+                                        </div>
+                                        <input 
+                                            type="file" 
+                                            className="hidden" 
+                                            accept=".xlsx, .xls"
+                                            onChange={handleImport}
+                                            disabled={importing}
+                                        />
+                                    </div>
+                                </label>
+
+                                <div className="p-5 rounded-[24px] bg-orange-50 border border-orange-100">
+                                    <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-3">Download Sample Sheet</p>
+                                    <button 
+                                        onClick={() => downloadTemplate('monthly')}
+                                        className="w-full py-3 bg-white border border-orange-200 rounded-xl text-[10px] font-black uppercase text-orange-500 shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
+                                    >
+                                        <Save className="w-4 h-4" />
+                                        Performance_Template.xlsx
+                                    </button>
+                                </div>
+
+                                <button 
+                                    onClick={() => setIsImportModalOpen(false)}
+                                    className="w-full py-4 text-xs font-black uppercase text-slate-400 hover:text-slate-900 transition-all"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
                         </motion.div>
                     </div>
                 )}
