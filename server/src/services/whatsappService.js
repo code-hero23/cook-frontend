@@ -19,8 +19,16 @@ exports.sendReviewTemplate = async (phoneNumber, clientName) => {
         return { success: false, error: 'Missing credentials' };
     }
 
-    // Clean phone number: remove +, spaces, dashes. Ensure it has 91 prefix if 10 digits
+    // Clean phone number: remove +, spaces, dashes.
     let cleanPhone = phoneNumber.replace(/\D/g, '');
+    
+    // Check for dummy numbers
+    const DUMMY_NUMBERS = ['0000000000', '1234567890', '9876543210'];
+    if (DUMMY_NUMBERS.includes(cleanPhone) || cleanPhone.length < 10) {
+        console.error(`[WhatsApp] Blocked dummy/invalid number: ${cleanPhone}`);
+        return { success: false, error: 'Dummy/Invalid Phone Number' };
+    }
+
     if (cleanPhone.length === 10) {
         cleanPhone = '91' + cleanPhone;
     }
