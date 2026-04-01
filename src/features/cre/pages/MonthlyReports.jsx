@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Search, Calendar, BarChart3, TrendingUp, Save, History, DollarSign, PhoneCall, Users, FileText, CheckCircle, Edit2, ArrowUpRight, ArrowDownRight, RefreshCw } from 'lucide-react';
+import { Plus, Search, Calendar, BarChart3, TrendingUp, Save, History, DollarSign, PhoneCall, Users, FileText, CheckCircle, Edit2, ArrowUpRight, ArrowDownRight, RefreshCw, Trash2 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, AreaChart, Area } from 'recharts';
 import api from '../../../shared/utils/axios';
 import toast from 'react-hot-toast';
@@ -134,6 +134,20 @@ const MonthlyReports = ({ hideHeader = false }) => {
             toast.error(error.response?.data?.error || "Sync failed");
         } finally {
             setSyncing(false);
+        }
+    };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm("Are you sure you want to delete this monthly record? This action cannot be undone.")) return;
+        try {
+            setLoading(true);
+            await api.delete(`/monthly-reports/${id}`);
+            toast.success("Report deleted successfully");
+            fetchReports();
+        } catch (error) {
+            toast.error(error.response?.data?.error || "Delete failed");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -324,15 +338,26 @@ const MonthlyReports = ({ hideHeader = false }) => {
                                         <span className="text-orange-500 font-black text-sm tracking-tight">₹ {r.value.toFixed(2)} L</span>
                                     </td>
                                     <td className="px-10 py-6 text-right">
-                                        {(user.id === r.creId) && (
-                                            <button 
-                                                onClick={() => handleEdit(r)}
-                                                className="p-3 rounded-2xl bg-white text-slate-400 border border-slate-200 hover:text-orange-500 hover:border-orange-200 transition-all shadow-sm"
-                                                title="Edit Data"
-                                            >
-                                                <Edit2 className="w-4 h-4" />
-                                            </button>
-                                        )}
+                                        <div className="flex items-center justify-end gap-2">
+                                            {(user.id === r.creId) && (
+                                                <button 
+                                                    onClick={() => handleEdit(r)}
+                                                    className="p-3 rounded-2xl bg-white text-slate-400 border border-slate-200 hover:text-orange-500 hover:border-orange-200 transition-all shadow-sm"
+                                                    title="Edit Data"
+                                                >
+                                                    <Edit2 className="w-4 h-4" />
+                                                </button>
+                                            )}
+                                            {['SUPER_ADMIN', 'MANAGER', 'BUSINESS_HEAD'].includes(user.role) && (
+                                                <button 
+                                                    onClick={() => handleDelete(r.id)}
+                                                    className="p-3 rounded-2xl bg-red-50/50 text-red-400 border border-red-100 hover:text-red-600 hover:border-red-200 transition-all shadow-sm"
+                                                    title="Delete Entry"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            )}
+                                        </div>
                                     </td>
                                 </tr>
                             ))}

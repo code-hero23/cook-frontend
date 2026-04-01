@@ -178,3 +178,32 @@ exports.syncReports = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+exports.deleteReport = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { role } = req.user;
+
+        // Restriction: Only admin/manager roles can delete
+        if (!['SUPER_ADMIN', 'MANAGER', 'BUSINESS_HEAD'].includes(role)) {
+            return res.status(403).json({ error: "Unauthorized: Only managers can delete monthly history" });
+        }
+
+        const report = await prisma.cREMonthlyReport.findUnique({
+            where: { id }
+        });
+
+        if (!report) {
+            return res.status(404).json({ error: "Report not found" });
+        }
+
+        await prisma.cREMonthlyReport.delete({
+            where: { id }
+        });
+
+        res.json({ message: "Monthly report deleted successfully" });
+    } catch (error) {
+        console.error('[DeleteReport] Error:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
