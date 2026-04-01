@@ -50,8 +50,8 @@ exports.getReports = async (req, res) => {
         const { role, id: userId } = req.user;
         const filter = {};
 
-        if (month) filter.month = parseInt(month);
-        if (year) filter.year = parseInt(year);
+        if (month && !isNaN(parseInt(month))) filter.month = parseInt(month);
+        if (year && !isNaN(parseInt(year))) filter.year = parseInt(year);
 
         // If not admin, only show user's own reports
         if (!['SUPER_ADMIN', 'MANAGER', 'BUSINESS_HEAD'].includes(role)) {
@@ -83,13 +83,13 @@ exports.getReports = async (req, res) => {
 exports.getSummary = async (req, res) => {
     try {
         const { month, year } = req.query;
-        if (!month || !year) return res.status(400).json({ error: "Month and Year required" });
+        const filter = {};
+
+        if (month && !isNaN(parseInt(month))) filter.month = parseInt(month);
+        if (year && !isNaN(parseInt(year))) filter.year = parseInt(year);
 
         const aggregates = await prisma.cREMonthlyReport.aggregate({
-            where: {
-                month: parseInt(month),
-                year: parseInt(year)
-            },
+            where: filter,
             _sum: {
                 calls: true,
                 srv: true,
@@ -99,7 +99,7 @@ exports.getSummary = async (req, res) => {
             }
         });
 
-        res.json(aggregates._sum);
+        res.json(aggregates || { calls: 0, srv: 0, proposals: 0, orders: 0, value: 0 });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

@@ -37,8 +37,8 @@ const WalkinHub = ({ hideHeader = false }) => {
     const [newEntry, setNewEntry] = useState(initialEntryState);
 
     const [filter, setFilter] = useState({
-        month: new Date().getMonth() + 1,
-        year: new Date().getFullYear(),
+        month: '',
+        year: '',
         cre: '',
         bh: ''
     });
@@ -50,8 +50,10 @@ const WalkinHub = ({ hideHeader = false }) => {
 
     const currentWalkins = walkins.filter(w => {
         const date = new Date(w.dateOfVisit || w.createdAt);
-        const matchDate = date.getMonth() + 1 === parseInt(filter.month) && 
-                         date.getFullYear() === parseInt(filter.year);
+        const matchMonth = !filter.month || date.getMonth() + 1 === parseInt(filter.month);
+        const matchYear = !filter.year || date.getFullYear() === parseInt(filter.year);
+        
+        const matchDate = matchMonth && matchYear;
         
         const matchCre = !filter.cre || 
                         w.cre?.name.toLowerCase().includes(filter.cre.toLowerCase());
@@ -143,16 +145,21 @@ const WalkinHub = ({ hideHeader = false }) => {
                                 onChange={(e) => setFilter({...filter, month: e.target.value})}
                                 className={`border rounded-2xl px-4 py-2 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-orange-500/50 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M5%207.5L10%2012.5L15%207.5%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%221.66667%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E')] bg-no-repeat bg-[right_1rem_center] min-w-[120px] ${isDark ? 'bg-slate-900 border-white/5 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-sm'}`}
                             >
+                                <option value="">ALL MONTHS</option>
                                 {months.map((m, i) => (
                                     <option key={i} value={i + 1}>{m}</option>
                                 ))}
                             </select>
-                            <input 
-                                type="number"
+                            <select 
                                 value={filter.year}
                                 onChange={(e) => setFilter({...filter, year: e.target.value})}
-                                className={`w-20 border rounded-2xl px-4 py-2 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-orange-500/50 ${isDark ? 'bg-slate-900 border-white/5 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-sm'}`}
-                            />
+                                className={`border rounded-2xl px-4 py-2 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-orange-500/50 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M5%207.5L10%2012.5L15%207.5%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%221.66667%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E')] bg-no-repeat bg-[right_1rem_center] min-w-[100px] ${isDark ? 'bg-slate-900 border-white/5 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-sm'}`}
+                            >
+                                <option value="">ALL YEARS</option>
+                                <option value="2024">2024</option>
+                                <option value="2025">2025</option>
+                                <option value="2026">2026</option>
+                            </select>
                         </div>
                     </div>
                     <div className="flex gap-2">
