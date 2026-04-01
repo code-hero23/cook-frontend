@@ -226,47 +226,6 @@ const WorkReports = ({ hideHeader = false }) => {
                 </div>
             )}
 
-            {/* Persistent Actions Bar */}
-            <div className={`p-6 rounded-[32px] border shadow-sm flex flex-col md:flex-row items-center justify-between gap-4 ${isDark ? 'bg-slate-900 border-white/5' : 'bg-white border-slate-100'}`}>
-                <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center">
-                        <Briefcase className="w-6 h-6 text-orange-500" />
-                    </div>
-                    <div>
-                        <h3 className="text-sm font-black uppercase tracking-widest text-slate-900">Work Actions</h3>
-                        <p className="text-[10px] font-black text-slate-400 uppercase">Manage your client reports & bulk data</p>
-                    </div>
-                </div>
-                <div className="flex items-center gap-3 w-full md:w-auto">
-                    <button 
-                        onClick={handleExport}
-                        className={`flex-1 md:flex-none flex items-center justify-center px-6 py-3 border rounded-2xl transition-all text-[10px] font-black uppercase tracking-widest ${isDark ? 'bg-slate-900 border-white/10 text-slate-400 hover:text-orange-500' : 'bg-white border-slate-200 text-slate-500 hover:text-orange-500 hover:border-orange-200 shadow-sm'}`}
-                        title="Export to Excel"
-                    >
-                        <Download className="w-4 h-4 mr-2" />
-                        Export
-                    </button>
-                    <button 
-                        onClick={() => setIsImportModalOpen(true)}
-                        className={`flex-1 md:flex-none flex items-center justify-center px-6 py-3 border rounded-2xl transition-all text-[10px] font-black uppercase tracking-widest ${isDark ? 'bg-slate-900 border-white/10 text-slate-400 hover:text-emerald-500' : 'bg-white border-slate-200 text-slate-500 hover:text-emerald-500 hover:border-emerald-200 shadow-sm'}`}
-                        title="Import from Excel"
-                    >
-                        <Upload className="w-4 h-4 mr-2" />
-                        Import
-                    </button>
-                    <button 
-                        onClick={() => {
-                            setEditingReport(null);
-                            setNewReport(initialReportState);
-                            setIsModalOpen(true);
-                        }}
-                        className="flex-1 md:flex-none flex items-center justify-center px-8 py-3 bg-orange-500 rounded-2xl text-white font-black text-[10px] uppercase shadow-lg shadow-orange-500/20 hover:bg-orange-600 transition-all active:scale-95"
-                    >
-                        <Plus className="w-4 h-4 mr-2" />
-                        New Report
-                    </button>
-                </div>
-            </div>
 
             {/* Quick Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -353,13 +312,35 @@ const WorkReports = ({ hideHeader = false }) => {
                         className={`w-full border rounded-2xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-orange-500/50 ${isDark ? 'bg-slate-900/50 border-white/5 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
                     />
                 </div>
-                <button 
-                    onClick={openAddModal}
-                    className="w-full md:w-auto px-8 py-3 bg-orange-500 rounded-2xl text-white font-black text-xs uppercase shadow-lg shadow-orange-500/20 hover:bg-orange-600 transition-all flex items-center justify-center"
-                >
-                    <Plus className="w-4 h-4 mr-2" />
-                    New Work Report
-                </button>
+                <div className="flex gap-3 w-full md:w-auto">
+                    <button 
+                        onClick={handleExport}
+                        className={`flex-1 md:flex-none flex items-center justify-center px-4 py-3 border rounded-2xl transition-all text-[10px] font-black uppercase tracking-widest ${isDark ? 'bg-slate-900/50 border-white/5 text-slate-400 hover:text-orange-500' : 'bg-white border-slate-200 text-slate-500 hover:text-orange-500 shadow-sm'}`}
+                        title="Export to Excel"
+                    >
+                        <Download className="w-4 h-4 mr-2" />
+                        Export
+                    </button>
+                    <button 
+                        onClick={() => setIsImportModalOpen(true)}
+                        className={`flex-1 md:flex-none flex items-center justify-center px-4 py-3 border rounded-2xl transition-all text-[10px] font-black uppercase tracking-widest ${isDark ? 'bg-slate-900/50 border-white/5 text-slate-400 hover:text-emerald-500' : 'bg-white border-slate-200 text-slate-500 hover:text-emerald-500 shadow-sm'}`}
+                        title="Import from Excel"
+                    >
+                        <Upload className="w-4 h-4 mr-2" />
+                        Import
+                    </button>
+                    <button 
+                        onClick={() => {
+                            setEditingReport(null);
+                            setNewReport(initialReportState);
+                            setIsModalOpen(true);
+                        }}
+                        className="flex-1 md:flex-none flex items-center justify-center px-8 py-3 bg-orange-500 rounded-2xl text-white font-black text-xs uppercase shadow-lg shadow-orange-500/20 hover:bg-orange-600 transition-all flex items-center justify-center"
+                    >
+                        <Plus className="w-4 h-4 mr-2" />
+                        New Work Report
+                    </button>
+                </div>
             </div>
 
             {/* Main Table */}
