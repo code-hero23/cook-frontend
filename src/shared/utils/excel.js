@@ -161,7 +161,25 @@ export const downloadTemplate = async (type, options = {}) => {
         fgColor: { argb: 'FFE2E8F0' }
     };
 
-    // Add Data Validations (Dropdowns)
+    // Add a hidden sheet for dropdown lists to avoid character limits in formulae
+    const listsSheet = workbook.addWorksheet('Lists');
+    listsSheet.state = 'hidden';
+
+    // Populate Lists sheet
+    showrooms.forEach((val, index) => {
+        listsSheet.getCell(`A${index + 1}`).value = val;
+    });
+    bhs.forEach((val, index) => {
+        listsSheet.getCell(`B${index + 1}`).value = val;
+    });
+    walkinStatuses.forEach((val, index) => {
+        listsSheet.getCell(`C${index + 1}`).value = val;
+    });
+    statuses.forEach((val, index) => {
+        listsSheet.getCell(`D${index + 1}`).value = val;
+    });
+
+    // Add Data Validations (Dropdowns) using ranges from the Lists sheet
     if (type === 'walkin' || type === 'workreport') {
         const rowCount = 100; // Apply to first 100 rows
         
@@ -170,7 +188,7 @@ export const downloadTemplate = async (type, options = {}) => {
             worksheet.getCell(`D${i}`).dataValidation = {
                 type: 'list',
                 allowBlank: true,
-                formulae: [`"${showrooms.join(',')}"`],
+                formulae: [`Lists!$A$1:$A$${showrooms.length}`],
                 showErrorMessage: true,
                 errorTitle: 'Invalid Showroom',
                 error: 'Please select a showroom from the list'
@@ -181,7 +199,7 @@ export const downloadTemplate = async (type, options = {}) => {
                 worksheet.getCell(`E${i}`).dataValidation = {
                     type: 'list',
                     allowBlank: true,
-                    formulae: [`"${bhs.join(',')}"`],
+                    formulae: [`Lists!$B$1:$B$${bhs.length}`],
                     showErrorMessage: true,
                     errorTitle: 'Invalid BH Name',
                     error: 'Please select a Business Head from the list'
@@ -191,7 +209,7 @@ export const downloadTemplate = async (type, options = {}) => {
                 worksheet.getCell(`F${i}`).dataValidation = {
                     type: 'list',
                     allowBlank: true,
-                    formulae: [`"${walkinStatuses.join(',')}"`],
+                    formulae: [`Lists!$C$1:$C$${walkinStatuses.length}`],
                     showErrorMessage: true,
                     errorTitle: 'Invalid Status',
                     error: 'Please select ACTIVE or COMPLETED'
@@ -203,7 +221,7 @@ export const downloadTemplate = async (type, options = {}) => {
                 worksheet.getCell(`E${i}`).dataValidation = {
                     type: 'list',
                     allowBlank: true,
-                    formulae: [`"${bhs.join(',')}"`],
+                    formulae: [`Lists!$B$1:$B$${bhs.length}`],
                     showErrorMessage: true,
                     errorTitle: 'Invalid BH Name',
                     error: 'Please select a Business Head from the list'
@@ -213,7 +231,7 @@ export const downloadTemplate = async (type, options = {}) => {
                 worksheet.getCell(`F${i}`).dataValidation = {
                     type: 'list',
                     allowBlank: true,
-                    formulae: [`"${statuses.join(',')}"`],
+                    formulae: [`Lists!$D$1:$D$${statuses.length}`],
                     showErrorMessage: true,
                     errorTitle: 'Invalid Status',
                     error: 'Please select Y or N'
