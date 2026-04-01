@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Search, Calendar, BarChart3, TrendingUp, Save, History, DollarSign, PhoneCall, Users, FileText, CheckCircle, Edit2, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { Plus, Search, Calendar, BarChart3, TrendingUp, Save, History, DollarSign, PhoneCall, Users, FileText, CheckCircle, Edit2, ArrowUpRight, ArrowDownRight, RefreshCw } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, AreaChart, Area } from 'recharts';
 import api from '../../../shared/utils/axios';
 import toast from 'react-hot-toast';
@@ -12,6 +12,7 @@ const MonthlyReports = ({ hideHeader = false }) => {
     const [loading, setLoading] = useState(false);
     const [reports, setReports] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [syncing, setSyncing] = useState(false);
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     
     const initialFormState = {
@@ -118,6 +119,24 @@ const MonthlyReports = ({ hideHeader = false }) => {
         setIsModalOpen(true);
     };
 
+    const handleSync = async () => {
+        try {
+            if (!window.confirm("This will automatically calculate your SRV (Visits) and Orders from the Walk-in Hub and Work Reports for this month. Continue?")) return;
+            setSyncing(true);
+            const res = await api.post('/monthly-reports/sync', { 
+                month: new Date().getMonth() + 1, 
+                year: new Date().getFullYear() 
+            });
+            toast.success(res.data.message || "Data synced successfully!");
+            fetchReports();
+        } catch (error) {
+            console.error('[Sync] Error:', error);
+            toast.error(error.response?.data?.error || "Sync failed");
+        } finally {
+            setSyncing(false);
+        }
+    };
+
     return (
         <div className="space-y-8 animate-in fade-in duration-700">
             {!hideHeader && (
@@ -128,15 +147,38 @@ const MonthlyReports = ({ hideHeader = false }) => {
                         </h1>
                         <p className="text-slate-500 text-xs font-bold tracking-[0.2em] mt-1 uppercase">CRE Monthly Performance Input</p>
                     </div>
+                </div>
+            )}
+
+            {/* Quick Actions Bar - Always Visible */}
+            <div className="flex flex-wrap items-center justify-between gap-4 p-6 rounded-[32px] bg-slate-50 border border-slate-100 shadow-inner">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-white flex items-center justify-center shadow-sm border border-slate-100">
+                        <TrendingUp className="w-5 h-5 text-orange-500" />
+                    </div>
+                    <div>
+                        <h4 className="text-xs font-black uppercase tracking-widest text-slate-900">Performance Actions</h4>
+                        <p className="text-[10px] font-black text-slate-400 uppercase">Manage your monthly submission</p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-3">
+                    <button 
+                        onClick={handleSync}
+                        disabled={syncing}
+                        className={`flex items-center px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all bg-white border border-slate-200 text-slate-600 hover:text-orange-500 hover:border-orange-200 shadow-sm ${syncing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                        <RefreshCw className={`w-4 h-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
+                        {syncing ? 'Syncing...' : 'Sync Activities'}
+                    </button>
                     <button 
                         onClick={openNewSubmission}
-                        className="flex items-center px-6 py-3 bg-orange-500 rounded-2xl text-white font-black text-xs uppercase shadow-lg shadow-orange-500/20 hover:bg-orange-600 transition-all font-bold"
+                        className="flex items-center px-6 py-3 bg-orange-500 rounded-2xl text-white font-black text-[10px] uppercase shadow-lg shadow-orange-500/20 hover:bg-orange-600 transition-all font-bold"
                     >
                         <Plus className="w-4 h-4 mr-2" />
                         Submit This Month
                     </button>
                 </div>
-            )}
+            </div>
 
             {/* Performance Analytics Dashboard */}
             {reports.length > 0 && (
