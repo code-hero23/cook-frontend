@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import api from '../../../shared/utils/axios';
+import toast from 'react-hot-toast';
 
 const CREContext = createContext(null);
 
@@ -80,10 +80,13 @@ export const CREProvider = ({ children }) => {
         try {
             const res = await api.post('/walkins/hub', data);
             setWalkins(prev => [res.data, ...prev]);
+            toast.success("Visitor entry created!");
             return { success: true };
         } catch (error) {
             console.error('[CREContext] Add Walkin Error:', error);
-            return { success: false, error: error.response?.data?.error || error.message };
+            const msg = error.response?.data?.error || error.message;
+            toast.error(msg);
+            return { success: false, error: msg };
         }
     };
 
@@ -91,21 +94,27 @@ export const CREProvider = ({ children }) => {
         try {
             const res = await api.patch(`/walkins/hub/${id}`, updates);
             setWalkins(prev => prev.map(w => w.id === id ? res.data : w));
+            toast.success("Visitor updated!");
             return { success: true };
         } catch (error) {
             console.error('[CREContext] Update Walkin Error:', error);
+            toast.error(error.message);
             return { success: false, error: error.message };
         }
     };
 
     const deleteWalkin = async (id) => {
         try {
+            if (!window.confirm("Are you sure you want to delete this visitor entry?")) return { success: false };
             await api.delete(`/walkins/hub/${id}`);
             setWalkins(prev => prev.filter(w => w.id !== id));
+            toast.success("Entry deleted successfully!");
             return { success: true };
         } catch (error) {
             console.error('[CREContext] Delete Walkin Error:', error);
-            return { success: false, error: error.message };
+            const msg = error.response?.status === 403 ? "Access Denied: Super Admin or Manager only" : error.message;
+            toast.error(msg);
+            return { success: false, error: msg };
         }
     };
 
