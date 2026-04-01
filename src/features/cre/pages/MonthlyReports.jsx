@@ -11,6 +11,7 @@ const MonthlyReports = ({ hideHeader = false }) => {
     const [loading, setLoading] = useState(false);
     const [reports, setReports] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
     
     const initialFormState = {
         month: new Date().getMonth() + 1,
@@ -159,13 +160,15 @@ const MonthlyReports = ({ hideHeader = false }) => {
                                         <span className="text-orange-500 font-black text-sm tracking-tight">₹ {r.value.toFixed(2)} L</span>
                                     </td>
                                     <td className="px-10 py-6 text-right">
-                                        <button 
-                                            onClick={() => handleEdit(r)}
-                                            className="p-3 rounded-2xl bg-white text-slate-400 border border-slate-200 hover:text-orange-500 hover:border-orange-200 transition-all shadow-sm"
-                                            title="Edit Data"
-                                        >
-                                            <Edit2 className="w-4 h-4" />
-                                        </button>
+                                        {(user.id === r.creId) && (
+                                            <button 
+                                                onClick={() => handleEdit(r)}
+                                                className="p-3 rounded-2xl bg-white text-slate-400 border border-slate-200 hover:text-orange-500 hover:border-orange-200 transition-all shadow-sm"
+                                                title="Edit Data"
+                                            >
+                                                <Edit2 className="w-4 h-4" />
+                                            </button>
+                                        )}
                                     </td>
                                 </tr>
                             ))}

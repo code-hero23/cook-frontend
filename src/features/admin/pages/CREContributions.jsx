@@ -18,6 +18,7 @@ const CREContributions = ({ hideHeader = false }) => {
     });
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingReport, setEditingReport] = useState(null);
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
     const [formData, setFormData] = useState({
         calls: 0,
         srv: 0,
@@ -206,12 +207,14 @@ const CREContributions = ({ hideHeader = false }) => {
                                         <span className="text-orange-500 font-black text-sm">{r.value.toFixed(2)}</span>
                                     </td>
                                     <td className="px-6 py-5">
-                                        <button 
-                                            onClick={() => handleEdit(r)}
-                                            className="p-2 rounded-xl border border-slate-200 text-slate-400 hover:text-orange-500 hover:border-orange-200 transition-all shadow-sm"
-                                        >
-                                            <Edit2 className="w-4 h-4" />
-                                        </button>
+                                        {(user.id === r.creId) && (
+                                            <button 
+                                                onClick={() => handleEdit(r)}
+                                                className="p-2 rounded-xl border border-slate-200 text-slate-400 hover:text-orange-500 hover:border-orange-200 transition-all shadow-sm"
+                                            >
+                                                <Edit2 className="w-4 h-4" />
+                                            </button>
+                                        )}
                                     </td>
                                 </tr>
                             ))}
