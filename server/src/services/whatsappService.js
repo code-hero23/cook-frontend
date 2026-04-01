@@ -38,6 +38,17 @@ exports.sendReviewTemplate = async (phoneNumber, clientName) => {
             },
             components: [
                 {
+                    type: "header",
+                    parameters: [
+                        {
+                            type: "image",
+                            image: {
+                                link: "https://wa.orbixdesigns.com/media/qr_cookscape.png"
+                            }
+                        }
+                    ]
+                },
+                {
                     type: "body",
                     parameters: [
                         {
