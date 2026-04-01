@@ -326,6 +326,8 @@ model WalkinHubEntry {
   showroom          String
   visitStatusMonday String?
   remarks           String?
+  outTimeMarkedAt   DateTime?
+  whatsappSent      Boolean  @default(false)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 }

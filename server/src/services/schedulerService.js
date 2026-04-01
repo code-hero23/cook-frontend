@@ -2,6 +2,7 @@ const cron = require('node-cron');
 const { sendNotificationEmail, getEmailTemplate } = require('./emailService');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const { sendReviewTemplate } = require('./whatsappService');
 
 // Function to check overdue tasks and send notifications
 const checkOverdueTasks = async () => {
@@ -147,6 +148,49 @@ const resetDailyTasks = async () => {
     }
 };
 
+// --- Check for Pending WhatsApp Review Requests ---
+const checkPendingReviewRequests = async () => {
+    console.log('[Scheduler] Checking for pending WhatsApp review requests...');
+    try {
+        const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
+        
+        // Find COMPLETED walk-ins where outTimeMarkedAt was 2+ hours ago and WhatsApp was NOT sent
+        const pendingRequests = await prisma.walkinHubEntry.findMany({
+            where: {
+                status: 'COMPLETED',
+                whatsappSent: false,
+                outTimeMarkedAt: {
+                    not: null,
+                    lte: twoHoursAgo // Less than or equal to 2 hours ago
+                }
+            }
+        });
+
+        if (pendingRequests.length === 0) {
+            console.log('[Scheduler] No pending WhatsApp review requests found.');
+            return { count: 0 };
+        }
+
+        console.log(`[Scheduler] Found ${pendingRequests.length} pending review requests.`);
+
+        for (const entry of pendingRequests) {
+            const result = await sendReviewTemplate(entry.contactNumber, entry.clientName);
+            if (result.success) {
+                await prisma.walkinHubEntry.update({
+                    where: { id: entry.id },
+                    data: { whatsappSent: true }
+                });
+            }
+        }
+
+        return { count: pendingRequests.length };
+
+    } catch (error) {
+        console.error('[Scheduler] Error in WhatsApp check loop:', error);
+        return { error: error.message };
+    }
+};
+
 // Initialize Scheduler
 const initScheduler = () => {
     // 0 5 * * * = At 05:00 AM everyday (Overdue Check)
@@ -161,11 +205,18 @@ const initScheduler = () => {
         resetDailyTasks();
     });
 
-    console.log('[Scheduler] Jobs Initialized: Overdue Check (5 AM), Daily Reset (Midnight)');
+    // Every 15 minutes (WhatsApp Review Check)
+    cron.schedule('*/15 * * * *', () => {
+        console.log('[Scheduler] Running WhatsApp review request check...');
+        checkPendingReviewRequests();
+    });
+
+    console.log('[Scheduler] Jobs Initialized: Overdue Check (5 AM), Daily Reset (Midnight), WhatsApp Follow-up (15m)');
 };
 
 module.exports = {
     initScheduler,
     checkOverdueTasks,
-    resetDailyTasks
+    resetDailyTasks,
+    checkPendingReviewRequests
 };

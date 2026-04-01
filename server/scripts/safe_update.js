@@ -37,6 +37,8 @@ async function main() {
         ADD COLUMN IF NOT EXISTS "status" TEXT,
         ADD COLUMN IF NOT EXISTS "architectName" TEXT,
         ADD COLUMN IF NOT EXISTS "architectId" TEXT,
+        ADD COLUMN IF NOT EXISTS "whatsappSent" BOOLEAN DEFAULT FALSE,
+        ADD COLUMN IF NOT EXISTS "outTimeMarkedAt" TIMESTAMP,
         ADD COLUMN IF NOT EXISTS "dateOfVisit" TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
       `);
       console.log(`✨ Successfully checked/updated columns in table "${actualTableName}"`);

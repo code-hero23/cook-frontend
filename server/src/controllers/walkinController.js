@@ -145,12 +145,20 @@ exports.createWalkin = async (req, res) => {
 exports.updateWalkin = async (req, res) => {
     try {
         const { id } = req.params;
-        const { dateOfVisit, ...rest } = req.body;
+        const { dateOfVisit, status, ...rest } = req.body;
         
+        // If status is being set to COMPLETED, track the time for WhatsApp follow-up
+        let outTimeMarkedAt = undefined;
+        if (status === 'COMPLETED') {
+            outTimeMarkedAt = new Date();
+        }
+
         const updated = await prisma.walkinHubEntry.update({
             where: { id },
             data: {
                 ...sanitizeData(rest),
+                status,
+                outTimeMarkedAt,
                 dateOfVisit: dateOfVisit ? new Date(dateOfVisit) : undefined
             },
             include: {
