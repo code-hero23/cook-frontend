@@ -586,8 +586,8 @@ const WalkinHub = ({ hideHeader = false }) => {
                                             onChange={(e) => setNewEntry({...newEntry, status: e.target.value})}
                                             className={`w-full border rounded-2xl p-4 text-sm focus:outline-none focus:border-orange-500/50 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M5%207.5L10%2012.5L15%207.5%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%221.66667%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E')] bg-no-repeat bg-[right_1rem_center] ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
                                         >
-                                            <option value="ACTIVE text-slate-900">ACTIVE</option>
-                                            <option value="COMPLETED text-slate-900">COMPLETED</option>
+                                            <option value="ACTIVE">ACTIVE</option>
+                                            <option value="COMPLETED">COMPLETED</option>
                                         </select>
                                     </div>
                                     <div className="space-y-1.5 col-span-2">
@@ -740,7 +740,7 @@ const WalkinHub = ({ hideHeader = false }) => {
                                 <div className="p-5 rounded-[24px] bg-orange-50 border border-orange-100">
                                     <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-3">Download Sample Sheet</p>
                                     <button 
-                                        onClick={() => downloadTemplate('walkin')}
+                                        onClick={() => downloadTemplate('walkin', { bhs: (bhs || []).map(b => b.name) })}
                                         className="w-full py-3 bg-white border border-orange-200 rounded-xl text-[10px] font-black uppercase text-orange-500 shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
                                     >
                                         <Calendar className="w-4 h-4" />

@@ -543,19 +543,13 @@ const WorkReports = ({ hideHeader = false }) => {
                                         </div>
                                         <div className="space-y-1.5">
                                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Lead Source</label>
-                                            <select 
+                                            <input 
+                                                type="text" 
+                                                placeholder="e.g. Social Media, Referral"
                                                 value={newReport.source}
                                                 onChange={(e) => setNewReport({...newReport, source: e.target.value})}
-                                                className={`w-full border rounded-2xl p-4 text-sm focus:outline-none focus:border-orange-500/50 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M5%207.5L10%2012.5L15%207.5%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%221.66667%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E')] bg-no-repeat bg-[right_1rem_center] ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
-                                            >
-                                                <option value="DIRECT LEAD">DIRECT LEAD</option>
-                                                <option value="REFERRAL">REFERRAL</option>
-                                                <option value="SOCIAL MEDIA">SOCIAL MEDIA</option>
-                                                <option value="WALK-IN">WALK-IN</option>
-                                                <option value="WEBSITE">WEBSITE</option>
-                                                <option value="CAMPAIGN">CAMPAIGN</option>
-                                                <option value="OTHER">OTHER</option>
-                                            </select>
+                                                className={`w-full border rounded-2xl p-4 text-sm focus:outline-none focus:border-orange-500/50 ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                                            />
                                         </div>
                                     </div>
 
@@ -753,7 +747,7 @@ const WorkReports = ({ hideHeader = false }) => {
                                 <div className="p-5 rounded-[24px] bg-blue-50 border border-blue-100">
                                     <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-3">Download Sample Sheet</p>
                                     <button 
-                                        onClick={() => downloadTemplate('workreport')}
+                                        onClick={() => downloadTemplate('workreport', { bhs: (bhs || []).map(b => b.name) })}
                                         className="w-full py-3 bg-white border border-blue-200 rounded-xl text-[10px] font-black uppercase text-blue-500 shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
                                     >
                                         <Download className="w-4 h-4" />

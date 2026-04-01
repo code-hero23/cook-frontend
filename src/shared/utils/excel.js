@@ -51,47 +51,93 @@ export const readExcel = (file) => {
     });
 };
 
+import ExcelJS from 'exceljs';
+
 /**
- * Downloads a sample Excel template for data import
+ * Downloads a sample Excel template for data import with dropdown menus
  * @param {String} type - 'walkin', 'workreport', or 'monthly'
+ * @param {Object} options - { bhs: Array of names, showrooms: Array of strings }
  */
-export const downloadTemplate = (type) => {
+export const downloadTemplate = async (type, options = {}) => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Template');
+    
     let headers = [];
-    let sampleData = [];
+    let sampleData = {};
     let fileName = '';
+    
+    // Default options
+    const showrooms = options.showrooms || ['MTRS', 'OMR', 'PORUR', 'COIMBATORE'];
+    const bhs = options.bhs && options.bhs.length > 0 ? options.bhs : ['Leo Jenison', 'Sanghatamizh', 'Rajkumar', 'Pughazh', 'Shanmugham'];
+    const statuses = ['Y', 'N'];
+    const walkinStatuses = ['ACTIVE', 'COMPLETED'];
 
     switch (type) {
         case 'walkin':
-            headers = ['clientName', 'contactNumber', 'project', 'showroom', 'dateOfVisit', 'inTime', 'outTime', 'remarks'];
-            sampleData = [{
+            headers = [
+                { header: 'clientName', key: 'clientName', width: 20 },
+                { header: 'contactNumber', key: 'contactNumber', width: 15 },
+                { header: 'project', key: 'project', width: 20 },
+                { header: 'showroom', key: 'showroom', width: 15 },
+                { header: 'bhName', key: 'bhName', width: 20 },
+                { header: 'status', key: 'status', width: 15 },
+                { header: 'dateOfVisit', key: 'dateOfVisit', width: 15 },
+                { header: 'inTime', key: 'inTime', width: 10 },
+                { header: 'outTime', key: 'outTime', width: 10 },
+                { header: 'remarks', key: 'remarks', width: 30 }
+            ];
+            sampleData = {
                 clientName: 'Rahul Sharma',
                 contactNumber: '9876543210',
                 project: 'Villas',
                 showroom: 'MTRS',
+                bhName: bhs[0],
+                status: 'ACTIVE',
                 dateOfVisit: '2026-04-01',
-                inTime: '10:00 AM',
-                outTime: '11:30 AM',
+                inTime: '10:00',
+                outTime: '11:30',
                 remarks: 'Walk-in for modular kitchen'
-            }];
-            fileName = 'walkin_template';
+            };
+            fileName = 'walkin_template.xlsx';
             break;
+            
         case 'workreport':
-            headers = ['date', 'clientName', 'contact', 'showroom', 'status', 'site', 'star', 'remarks'];
-            sampleData = [{
+            headers = [
+                { header: 'date', key: 'date', width: 15 },
+                { header: 'clientName', key: 'clientName', width: 20 },
+                { header: 'contact', key: 'contact', width: 15 },
+                { header: 'showroom', key: 'showroom', width: 15 },
+                { header: 'bhName', key: 'bhName', width: 20 },
+                { header: 'status', key: 'status', width: 10 },
+                { header: 'site', key: 'site', width: 20 },
+                { header: 'star', key: 'star', width: 8 },
+                { header: 'remarks', key: 'remarks', width: 30 }
+            ];
+            sampleData = {
                 date: '2026-04-01',
                 clientName: 'Anjali Gupta',
                 contact: '8765432109',
                 showroom: 'MTRS',
+                bhName: bhs[0],
                 status: 'Y',
                 site: 'MG Road',
                 star: 5,
                 remarks: 'Client interested in wardrobes'
-            }];
-            fileName = 'workreport_template';
+            };
+            fileName = 'workreport_template.xlsx';
             break;
+            
         case 'monthly':
-            headers = ['month', 'year', 'calls', 'srv', 'proposals', 'orders', 'value'];
-            sampleData = [{
+            headers = [
+                { header: 'month', key: 'month', width: 10 },
+                { header: 'year', key: 'year', width: 10 },
+                { header: 'calls', key: 'calls', width: 10 },
+                { header: 'srv', key: 'srv', width: 10 },
+                { header: 'proposals', key: 'proposals', width: 10 },
+                { header: 'orders', key: 'orders', width: 10 },
+                { header: 'value', key: 'value', width: 10 }
+            ];
+            sampleData = {
                 month: 4,
                 year: 2026,
                 calls: 150,
@@ -99,13 +145,103 @@ export const downloadTemplate = (type) => {
                 proposals: 20,
                 orders: 12,
                 value: 45.5
-            }];
-            fileName = 'monthly_performance_template';
+            };
+            fileName = 'monthly_performance_template.xlsx';
             break;
     }
 
-    const worksheet = XLSX.utils.json_to_sheet(sampleData, { header: headers });
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Template");
-    XLSX.writeFile(workbook, `${fileName}.xlsx`);
+    worksheet.columns = headers;
+    worksheet.addRow(sampleData);
+
+    // Style the header
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(1).fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFE2E8F0' }
+    };
+
+    // Add Data Validations (Dropdowns)
+    if (type === 'walkin' || type === 'workreport') {
+        const rowCount = 100; // Apply to first 100 rows
+        
+        for (let i = 2; i <= rowCount; i++) {
+            // Showroom Dropdown (Column D in both)
+            worksheet.getCell(`D${i}`).dataValidation = {
+                type: 'list',
+                allowBlank: true,
+                formulae: [`"${showrooms.join(',')}"`],
+                showErrorMessage: true,
+                errorTitle: 'Invalid Showroom',
+                error: 'Please select a showroom from the list'
+            };
+
+            if (type === 'walkin') {
+                // BH Name Dropdown (Column E for Walkin)
+                worksheet.getCell(`E${i}`).dataValidation = {
+                    type: 'list',
+                    allowBlank: true,
+                    formulae: [`"${bhs.join(',')}"`],
+                    showErrorMessage: true,
+                    errorTitle: 'Invalid BH Name',
+                    error: 'Please select a Business Head from the list'
+                };
+
+                // Status Dropdown (Column F for Walkin)
+                worksheet.getCell(`F${i}`).dataValidation = {
+                    type: 'list',
+                    allowBlank: true,
+                    formulae: [`"${walkinStatuses.join(',')}"`],
+                    showErrorMessage: true,
+                    errorTitle: 'Invalid Status',
+                    error: 'Please select ACTIVE or COMPLETED'
+                };
+            }
+
+            if (type === 'workreport') {
+                // BH Name Dropdown (Column E for WorkReport)
+                worksheet.getCell(`E${i}`).dataValidation = {
+                    type: 'list',
+                    allowBlank: true,
+                    formulae: [`"${bhs.join(',')}"`],
+                    showErrorMessage: true,
+                    errorTitle: 'Invalid BH Name',
+                    error: 'Please select a Business Head from the list'
+                };
+                
+                // Status Dropdown (Column F for WorkReport)
+                worksheet.getCell(`F${i}`).dataValidation = {
+                    type: 'list',
+                    allowBlank: true,
+                    formulae: [`"${statuses.join(',')}"`],
+                    showErrorMessage: true,
+                    errorTitle: 'Invalid Status',
+                    error: 'Please select Y or N'
+                };
+
+                // Quality Rating (Column H for WorkReport)
+                worksheet.getCell(`H${i}`).dataValidation = {
+                    type: 'whole',
+                    operator: 'between',
+                    allowBlank: true,
+                    showInputMessage: true,
+                    formulae: [1, 10],
+                    promptTitle: 'Rating',
+                    prompt: 'Enter a value between 1 and 10',
+                    errorTitle: 'Invalid Rating',
+                    error: 'Rating must be between 1 and 10'
+                };
+            }
+        }
+    }
+
+    // Write to buffer and download
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = window.URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = fileName;
+    anchor.click();
+    window.URL.revokeObjectURL(url);
 };
