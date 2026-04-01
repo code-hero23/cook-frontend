@@ -27,11 +27,10 @@ exports.login = async (req, res) => {
             return res.status(403).json({ message: 'Account is inactive' });
         }
 
-        // 4. Generate Token
         const token = jwt.sign(
             { id: user.id, role: user.role, name: user.name },
             JWT_SECRET,
-            { expiresIn: '8h' }
+            { expiresIn: '30d' }
         );
 
         // 5. Respond
@@ -85,7 +84,7 @@ exports.googleLogin = async (req, res) => {
         const jwtToken = jwt.sign(
             { id: user.id, role: user.role, name: user.name },
             JWT_SECRET,
-            { expiresIn: '8h' }
+            { expiresIn: '30d' }
         );
 
         res.json({
