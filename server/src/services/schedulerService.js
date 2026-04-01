@@ -154,15 +154,21 @@ const checkPendingReviewRequests = async () => {
     try {
         const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
         
-        // Find COMPLETED walk-ins where outTimeMarkedAt was 2+ hours ago and WhatsApp was NOT sent
+        // Find eligible walk-ins:
+        // 1. Status is COMPLETED (Send immediately)
+        // 2. OR outTimeMarkedAt was 2+ hours ago (Auto-follow up)
         const pendingRequests = await prisma.walkinHubEntry.findMany({
             where: {
-                status: 'COMPLETED',
                 whatsappSent: false,
-                outTimeMarkedAt: {
-                    not: null,
-                    lte: twoHoursAgo // Less than or equal to 2 hours ago
-                }
+                OR: [
+                    { status: 'COMPLETED' },
+                    { 
+                        outTimeMarkedAt: {
+                            not: null,
+                            lte: twoHoursAgo
+                        }
+                    }
+                ]
             }
         });
 
