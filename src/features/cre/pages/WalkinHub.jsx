@@ -121,6 +121,7 @@ const WalkinHub = ({ hideHeader = false }) => {
             'Contact': w.contactNumber,
             'Project': w.project,
             'Showroom': w.showroom,
+            'BH Name': w.bh?.name || w.bhName || 'Unassigned',
             'Date of Visit': new Date(w.dateOfVisit).toLocaleDateString(),
             'In Time': w.inTime,
             'Out Time': w.outTime,

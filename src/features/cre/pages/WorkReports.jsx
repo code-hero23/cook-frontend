@@ -104,6 +104,7 @@ const WorkReports = ({ hideHeader = false }) => {
             'Client Name': r.clientName,
             'Contact': r.contact,
             'Showroom': r.showroom || 'MTRS',
+            'BH Name': r.bh?.name || r.bhName || 'Unassigned',
             'Status': r.status === 'Y' ? 'Completed' : 'Pending',
             'Site': r.site || 'N/A',
             'Rating': r.star,
