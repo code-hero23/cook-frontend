@@ -3,11 +3,13 @@ const prisma = new PrismaClient();
 
 exports.upsertReport = async (req, res) => {
     try {
-        const { month, year, calls, srv, proposals, orders, value } = req.body;
-        const { id: userId } = req.user;
+        const { month, year, calls, srv, proposals, orders, value, creId } = req.body;
+        const { id: userId, role } = req.user;
         
-        // Strictly use logged in user id - only consent CRE can edit their own data
-        const targetCreId = userId;
+        // If Admin/Manager, allow creId from body. Otherwise, strictly use logged in user id.
+        const targetCreId = (['SUPER_ADMIN', 'MANAGER', 'BUSINESS_HEAD'].includes(role) && creId) 
+            ? creId 
+            : userId;
 
         // Ensure these are integers/floats
         const data = {

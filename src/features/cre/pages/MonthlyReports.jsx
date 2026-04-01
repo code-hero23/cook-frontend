@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Search, Calendar, BarChart3, TrendingUp, Save, History, DollarSign, PhoneCall, Users, FileText, CheckCircle, Edit2 } from 'lucide-react';
+import { Plus, Search, Calendar, BarChart3, TrendingUp, Save, History, DollarSign, PhoneCall, Users, FileText, CheckCircle, Edit2, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, AreaChart, Area } from 'recharts';
 import api from '../../../shared/utils/axios';
 import toast from 'react-hot-toast';
 
@@ -57,6 +58,35 @@ const MonthlyReports = ({ hideHeader = false }) => {
 
     const closingRatio = totals.srv > 0 ? ((totals.orders / totals.srv) * 100).toFixed(1) : 0;
 
+    // Prepare Chart Data (Sorted Chronologically)
+    const chartData = [...reports].sort((a, b) => {
+        if (a.year !== b.year) return a.year - b.year;
+        return a.month - b.month;
+    }).map(r => ({
+        name: `${months[r.month - 1].slice(0, 3)} ${r.year.toString().slice(2)}`,
+        Calls: r.calls,
+        Visits: r.srv,
+        Orders: r.orders,
+        Value: r.value
+    }));
+
+    const CustomTooltip = ({ active, payload, label }) => {
+        if (active && payload && payload.length) {
+            return (
+                <div className="bg-white/90 backdrop-blur-md p-4 border border-slate-200 rounded-2xl shadow-xl">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{label}</p>
+                    {payload.map((entry, index) => (
+                        <div key={index} className="flex items-center justify-between gap-4 mb-1">
+                            <span className="text-[10px] font-black text-slate-600 uppercase">{entry.name}:</span>
+                            <span className="text-xs font-black text-slate-900">{entry.value}</span>
+                        </div>
+                    ))}
+                </div>
+            );
+        }
+        return null;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -108,27 +138,96 @@ const MonthlyReports = ({ hideHeader = false }) => {
                 </div>
             )}
 
-            {/* Cumulative Performance Overview */}
+            {/* Performance Analytics Dashboard */}
             {reports.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-                    {[
-                        { label: 'Total Calls', val: totals.calls, icon: PhoneCall, color: 'text-blue-500' },
-                        { label: 'Total SRV', val: totals.srv, icon: Users, color: 'text-orange-500' },
-                        { label: 'Proposals', val: totals.proposals, icon: FileText, color: 'text-purple-500' },
-                        { label: 'Orders', val: totals.orders, icon: CheckCircle, color: 'text-emerald-500' },
-                        { label: 'Total Value', val: `₹${totals.value.toFixed(1)}L`, icon: DollarSign, color: 'text-yellow-500' },
-                        { label: 'Closing %', val: `${closingRatio}%`, icon: TrendingUp, color: 'text-indigo-500' }
-                    ].map((stat, i) => (
-                        <div key={i} className={`p-5 rounded-[32px] border transition-all duration-300 hover:shadow-lg ${isDark ? 'bg-slate-900/40 border-white/5' : 'bg-white border-slate-200 shadow-sm'}`}>
-                            <div className="flex items-center justify-between mb-3">
-                                <div className={`p-2 rounded-xl ${stat.color.replace('text-', 'bg-')}/10`}>
-                                    <stat.icon className={`w-4 h-4 ${stat.color}`} />
-                                </div>
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{stat.label}</span>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Trend Chart */}
+                    <div className="lg:col-span-2 p-8 rounded-[40px] border border-slate-200 bg-white shadow-sm overflow-hidden relative group">
+                        <div className="absolute top-0 right-0 p-8">
+                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-50 border border-orange-100">
+                                <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+                                <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest">Live Analysis</span>
                             </div>
-                            <p className={`text-2xl font-black tracking-tighter ${isDark ? 'text-white' : 'text-slate-900'}`}>{stat.val}</p>
                         </div>
-                    ))}
+                        
+                        <div className="mb-8">
+                            <h3 className="text-sm font-black uppercase tracking-[0.2em] text-slate-900">Lead Conversion Funnel</h3>
+                            <p className="text-[10px] font-black text-slate-400 uppercase mt-1">Monthly progression of Calls vs Visits vs Orders</p>
+                        </div>
+
+                        <div className="h-[300px] w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={chartData} margin={{ top: 20, right: 30, left: -20, bottom: 0 }}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                                    <XAxis 
+                                        dataKey="name" 
+                                        axisLine={false} 
+                                        tickLine={false} 
+                                        tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 900 }}
+                                        dy={10}
+                                    />
+                                    <YAxis 
+                                        axisLine={false} 
+                                        tickLine={false} 
+                                        tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 900 }}
+                                    />
+                                    <Tooltip content={<CustomTooltip />} />
+                                    <Bar dataKey="Calls" fill="#3b82f6" radius={[6, 6, 0, 0]} barSize={20} />
+                                    <Bar dataKey="Visits" fill="#f97316" radius={[6, 6, 0, 0]} barSize={20} />
+                                    <Bar dataKey="Orders" fill="#10b981" radius={[6, 6, 0, 0]} barSize={20} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+
+                    {/* Revenue Trend */}
+                    <div className="p-8 rounded-[40px] border border-slate-200 bg-white shadow-sm flex flex-col">
+                        <div className="mb-8">
+                            <h3 className="text-sm font-black uppercase tracking-[0.2em] text-slate-900">Revenue History</h3>
+                            <p className="text-[10px] font-black text-slate-400 uppercase mt-1">Total Project Value (Lakhs)</p>
+                        </div>
+
+                        <div className="flex-1 h-[200px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={chartData}>
+                                    <defs>
+                                        <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.1}/>
+                                            <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
+                                        </linearGradient>
+                                    </defs>
+                                    <Tooltip content={<CustomTooltip />} />
+                                    <Area 
+                                        type="monotone" 
+                                        dataKey="Value" 
+                                        stroke="#f59e0b" 
+                                        strokeWidth={4}
+                                        fillOpacity={1} 
+                                        fill="url(#colorValue)" 
+                                    />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        </div>
+
+                        <div className="mt-8 pt-8 border-t border-slate-50">
+                            <div className="flex items-center justify-between mb-4">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Efficiency Benchmarking</span>
+                                <span className="px-2 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-[8px] font-black uppercase">Good</span>
+                            </div>
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs font-black text-slate-600 uppercase tracking-tighter">Capture Rate (SRV/Calls)</span>
+                                    <span className="text-xs font-black text-slate-900">{totals.calls > 0 ? ((totals.srv / totals.calls) * 100).toFixed(1) : 0}%</span>
+                                </div>
+                                <div className="w-full h-1.5 bg-slate-50 rounded-full overflow-hidden">
+                                    <div 
+                                        className="h-full bg-blue-500 rounded-full" 
+                                        style={{ width: `${totals.calls > 0 ? (totals.srv / totals.calls) * 100 : 0}%` }}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             )}
 
