@@ -236,17 +236,28 @@ exports.deleteWorkReport = async (req, res) => {
 
 exports.bulkImportWalkins = async (req, res) => {
     try {
-        const data = req.body; // Array of objects
+        const data = req.body;
         if (!Array.isArray(data)) return res.status(400).json({ error: "Expected an array" });
 
+        const sanitized = data.map(item => ({
+            clientName: item.clientName || 'Unnamed Client',
+            contactNumber: item.contactNumber || '0000000000', // Provide default to avoid Prisma error
+            showroom: item.showroom || 'MTRS',
+            project: item.project || '',
+            dateOfVisit: item.dateOfVisit ? new Date(item.dateOfVisit) : new Date(),
+            inTime: item.inTime || '',
+            outTime: item.outTime || '',
+            remarks: item.remarks || '',
+            creId: item.creId || req.user.id,
+            status: item.status || 'ACTIVE'
+        }));
+
         const result = await prisma.walkinHubEntry.createMany({
-            data: data.map(item => ({
-                ...item,
-                creId: item.creId || req.user.id
-            }))
+            data: sanitized
         });
         res.json({ success: true, count: result.count });
     } catch (error) {
+        console.error('[BulkImportWalkins] Error:', error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -256,14 +267,24 @@ exports.bulkImportWorkReports = async (req, res) => {
         const data = req.body;
         if (!Array.isArray(data)) return res.status(400).json({ error: "Expected an array" });
 
+        const sanitized = data.map(item => ({
+            clientName: item.clientName || 'Unnamed Client',
+            contact: item.contact || '0000000000',
+            showroom: item.showroom || 'MTRS',
+            site: item.site || '',
+            status: item.status || 'Y',
+            star: parseInt(item.star) || 0,
+            remarks: item.remarks || '',
+            date: item.date ? new Date(item.date) : new Date(),
+            creId: item.creId || req.user.id
+        }));
+
         const result = await prisma.workReport.createMany({
-            data: data.map(item => ({
-                ...item,
-                creId: item.creId || req.user.id
-            }))
+            data: sanitized
         });
         res.json({ success: true, count: result.count });
     } catch (error) {
+        console.error('[BulkImportWorkReports] Error:', error);
         res.status(500).json({ error: error.message });
     }
 };

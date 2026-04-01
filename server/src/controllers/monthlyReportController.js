@@ -215,12 +215,19 @@ exports.bulkImportReports = async (req, res) => {
 
         const results = [];
         for (const item of data) {
+            // Basic sanitization
+            const month = parseInt(item.month);
+            const year = parseInt(item.year);
+            const creId = item.creId || req.user.id;
+
+            if (!month || !year) continue;
+
             const report = await prisma.cREMonthlyReport.upsert({
                 where: {
                     creId_month_year: {
-                        creId: item.creId || req.user.id,
-                        month: parseInt(item.month),
-                        year: parseInt(item.year)
+                        creId,
+                        month,
+                        year
                     }
                 },
                 update: {
@@ -231,9 +238,9 @@ exports.bulkImportReports = async (req, res) => {
                     value: parseFloat(item.value) || 0
                 },
                 create: {
-                    creId: item.creId || req.user.id,
-                    month: parseInt(item.month),
-                    year: parseInt(item.year),
+                    creId,
+                    month,
+                    year,
                     calls: parseInt(item.calls) || 0,
                     srv: parseInt(item.srv) || 0,
                     proposals: parseInt(item.proposals) || 0,
