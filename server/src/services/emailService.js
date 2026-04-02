@@ -58,6 +58,11 @@ const sendBackupEmail = async (filePath, filename) => {
     const recipient = process.env.BACKUP_EMAIL_RECIPIENT || process.env.SMTP_USER;
 
     try {
+        if (!recipient) {
+            console.error('[EmailService] Backup failed: No recipient defined (BACKUP_EMAIL_RECIPIENT or SMTP_USER).');
+            return { success: false, error: "No recipient defined" };
+        }
+
         console.log(`[EmailService] Sending backup email to ${recipient}...`);
 
         const info = await transporter.sendMail({
@@ -89,8 +94,11 @@ const sendNotificationEmail = async (to, subject, text, html = null, cc = null, 
     }
 
     try {
-        if (!to) {
-            console.warn('[EmailService] Abandoned sending email: No recipient (to) defined for subject:', subject);
+        // Robust check for string, array, or null/undefined
+        const hasRecipient = to && (typeof to === 'string' ? to.trim().length > 0 : (Array.isArray(to) ? to.length > 0 : true));
+        
+        if (!hasRecipient) {
+            console.warn(`[EmailService] Abandoned sending email: No valid recipient (to) defined for subject: "${subject}". Value:`, to);
             return { success: false, error: "No recipient defined" };
         }
         console.log(`[EmailService v4-FINAL] Sending notification to ${to} (CC: ${cc || 'None'})...`);
