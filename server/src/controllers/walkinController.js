@@ -172,8 +172,11 @@ exports.createWalkin = async (req, res) => {
             );
         }
 
-        // 4. IMMEDIATE WHATSAPP TRIGGER (At In-Time / Arrival)
-        const finalEntry = await processWhatsAppReview(entry.id) || entry;
+        // 4. IMMEDIATE WHATSAPP TRIGGER (Only if In-Time / Arrival is marked)
+        let finalEntry = entry;
+        if (entry.inTime) {
+            finalEntry = await processWhatsAppReview(entry.id) || entry;
+        }
 
         res.status(201).json(finalEntry);
     } catch (error) {
