@@ -207,27 +207,9 @@ const ClientLogin = () => {
                             initial={{ scale: 0.8, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             transition={{ delay: 0.2, type: "spring" }}
-                            className="flex items-center justify-center gap-3 sm:gap-6 md:gap-10 mb-4 md:mb-6"
+                            className="flex items-center justify-center mb-4 md:mb-6"
                         >
-                            <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => { setActiveTab('signup'); formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }); trigger('light'); }}
-                                className={`px-4 md:px-8 py-2 md:py-3.5 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest shadow-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-pink-200/50 border border-white/20 ${activeTab === 'signup' ? 'ring-4 ring-pink-500/30' : 'opacity-80 hover:opacity-100'}`}
-                            >
-                                Sign Up
-                            </motion.button>
-                            
                             <img src="/FINAL_LOGO.png" alt="Cookscape" className="h-10 sm:h-12 md:h-16 drop-shadow-2xl" />
-
-                            <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => { setActiveTab('signin'); formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }); trigger('light'); }}
-                                className={`px-4 md:px-8 py-2 md:py-3.5 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest shadow-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-indigo-200/50 border border-white/20 ${activeTab === 'signin' ? 'ring-4 ring-indigo-500/30' : 'opacity-80 hover:opacity-100'}`}
-                            >
-                                Sign In
-                            </motion.button>
                         </motion.div>
                         <h1 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter mb-3 md:mb-4">
                             Welcome to <span className="text-indigo-600">Cookscape</span>
