@@ -1,6 +1,42 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const { sendUserPushNotification } = require('../services/notificationService');
+const { sendReviewTemplate } = require('../services/whatsappService');
+
+/**
+ * Helper to trigger WhatsApp Review Request immediately
+ * Used for In-Time / Arrival triggers
+ */
+async function processWhatsAppReview(entryId) {
+    try {
+        const entry = await prisma.walkinHubEntry.findUnique({ where: { id: entryId } });
+        if (!entry || entry.whatsappSent || !entry.contactNumber) {
+            return entry;
+        }
+
+        const result = await sendReviewTemplate(entry.contactNumber, entry.clientName);
+        
+        const updateData = {
+            whatsappSent: true,
+            whatsappStatus: result.success ? 'SENT' : 'FAILED',
+            whatsappSentAt: new Date(),
+            whatsappError: result.success ? null : (typeof result.error === 'string' ? result.error : (result.error?.message || 'WhatsApp Error'))
+        };
+
+        return await prisma.walkinHubEntry.update({
+            where: { id: entryId },
+            data: updateData,
+            include: {
+                cre: { select: { id: true, name: true } },
+                bh: { select: { id: true, name: true } },
+                architect: { select: { id: true, name: true } }
+            }
+        });
+    } catch (error) {
+        console.error('[WhatsApp Trigger] Error:', error);
+        return null;
+    }
+}
 
 const sanitizeTime = (timeStr) => {
     if (!timeStr || typeof timeStr !== 'string') return '';
@@ -136,7 +172,10 @@ exports.createWalkin = async (req, res) => {
             );
         }
 
-        res.status(201).json(entry);
+        // 4. IMMEDIATE WHATSAPP TRIGGER (At In-Time / Arrival)
+        const finalEntry = await processWhatsAppReview(entry.id) || entry;
+
+        res.status(201).json(finalEntry);
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
@@ -153,7 +192,7 @@ exports.updateWalkin = async (req, res) => {
             outTimeMarkedAt = new Date();
         }
 
-        const updated = await prisma.walkinHubEntry.update({
+        let updated = await prisma.walkinHubEntry.update({
             where: { id },
             data: {
                 ...sanitizeData(rest),
@@ -167,6 +206,13 @@ exports.updateWalkin = async (req, res) => {
                 architect: { select: { id: true, name: true } }
             }
         });
+
+        // Trigger WhatsApp if newly provided inTime and not sent yet
+        if (!updated.whatsappSent && updated.inTime) {
+            const triggered = await processWhatsAppReview(id);
+            if (triggered) updated = triggered;
+        }
+
         res.json(updated);
     } catch (error) {
         console.error('[Walkin] Update Error:', error);
