@@ -89,6 +89,10 @@ const sendNotificationEmail = async (to, subject, text, html = null, cc = null, 
     }
 
     try {
+        if (!to) {
+            console.warn('[EmailService] Abandoned sending email: No recipient (to) defined for subject:', subject);
+            return { success: false, error: "No recipient defined" };
+        }
         console.log(`[EmailService v4-FINAL] Sending notification to ${to} (CC: ${cc || 'None'})...`);
 
         const mailOptions = {
