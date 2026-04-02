@@ -80,7 +80,7 @@ const checkOverdueTasks = async () => {
                             </tr>
                          </table>
                          <div style="text-align: center; margin-top: 24px;">
-                            <a href="#" style="background-color: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">View Task Immediately</a>
+                            <a href="${process.env.FRONTEND_URL || 'https://projects.orbixdesigns.com'}/dashboard" style="background-color: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">View Task Immediately</a>
                          </div>`
                     ),
                     null

@@ -85,7 +85,7 @@ exports.createTask = async (req, res) => {
                                  <p style="font-weight: bold; margin-bottom: 5px;">Description:</p>
                                  <p style="background-color: #fff; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-style: italic;">${task.description || 'No description provided.'}</p>
                                  <div style="text-align: center; margin-top: 24px;">
-                                    <a href="#" style="background-color: #ea580c; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">View Task in Dashboard</a>
+                                    <a href="${process.env.FRONTEND_URL || 'https://projects.orbixdesigns.com'}/dashboard" style="background-color: #ea580c; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">View Task in Dashboard</a>
                                  </div>`
                             ),
                             null
@@ -270,7 +270,7 @@ exports.updateTask = async (req, res) => {
                                             </tr>
                                          </table>
                                          <div style="text-align: center;">
-                                            <a href="#" style="background-color: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Review Task</a>
+                                            <a href="${process.env.FRONTEND_URL || 'https://projects.orbixdesigns.com'}/admin/tasks" style="background-color: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Review Task</a>
                                          </div>`
                                     ),
                                     null // Removed CC to prevent header mismatch
