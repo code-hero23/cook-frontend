@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import RefreshButton from "../../../shared/components/RefreshButton";
+import { formatDate } from "../../../shared/utils/dateFormatter";
 
 
 const ProjectTasks = () => {
@@ -192,7 +193,7 @@ const ProjectTasks = () => {
                                         <Calendar size={10} /> Deadline
                                     </p>
                                     <p className="text-slate-800 font-bold text-sm">
-                                        {project.deadline ? new Date(project.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'TBD'}
+                                        {project.deadline ? formatDate(project.deadline) : 'TBD'}
                                     </p>
                                 </div>
                             </div>
@@ -251,7 +252,7 @@ const ProjectTasks = () => {
                                         <div className="flex items-center gap-2">
                                             <Calendar className="w-4 h-4 text-slate-300" />
                                             <span className="text-xs font-bold text-slate-500">
-                                                {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : '--'}
+                                                {task.dueDate ? formatDate(task.dueDate) : '--'}
                                             </span>
                                         </div>
                                         <div className="hidden md:block">

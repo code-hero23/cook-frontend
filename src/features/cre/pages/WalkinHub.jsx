@@ -7,6 +7,7 @@ import ShowroomMonitor from '../components/ShowroomMonitor';
 import toast from 'react-hot-toast';
 import { exportToExcel, readExcel, downloadTemplate } from '../../../shared/utils/excel';
 import api from '../../../shared/utils/axios';
+import { formatDate } from '../../../shared/utils/dateFormatter';
 
 const WalkinHub = ({ hideHeader = false }) => {
     const { walkins, stats, loading, bhs, cres, employees, addWalkin, updateWalkin, deleteWalkin } = useCRE();
@@ -122,7 +123,7 @@ const WalkinHub = ({ hideHeader = false }) => {
             'Project': w.project,
             'Showroom': w.showroom,
             'BH Name': w.bh?.name || w.bhName || 'Unassigned',
-            'Date of Visit': new Date(w.dateOfVisit).toLocaleDateString(),
+            'Date of Visit': formatDate(w.dateOfVisit),
             'In Time': w.inTime,
             'Out Time': w.outTime,
             'Remarks': w.remarks,

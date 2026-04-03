@@ -4,6 +4,7 @@ import { useApp } from '../context/AppContext';
 import axios from "../../../shared/utils/axios";
 import { ArrowLeft, Upload, Trash2, FileText, Image as ImageIcon, Calendar, Eye, X, CheckCircle, MapPin, Clock, Folder, Download } from 'lucide-react';
 import RefreshButton from "../../../shared/components/RefreshButton.jsx";
+import { formatDate } from "../../../shared/utils/dateFormatter";
 
 const ProjectManager = () => {
     const { id } = useParams();
@@ -108,8 +109,8 @@ const ProjectDetails = ({ project }) => {
                     </DetailCard>
 
                     <DetailCard title="Timeline & Financials">
-                        <DetailField label="Start Date" value={project.startDate ? new Date(project.startDate).toLocaleDateString() : null} />
-                        <DetailField label="Deadline" value={project.deadline ? new Date(project.deadline).toLocaleDateString() : null} />
+                        <DetailField label="Start Date" value={project.startDate ? formatDate(project.startDate) : null} />
+                        <DetailField label="Deadline" value={project.deadline ? formatDate(project.deadline) : null} />
                         <DetailField label="Timeline Duration" value={`${project.timelineDuration} Days`} />
                         <DetailField label="Budget" value={project.budget ? `₹${project.budget.toLocaleString()}` : null} />
                         <DetailField label="Payment Earned" value={`${project.paymentPercentage || 0}%`} />
@@ -362,7 +363,7 @@ const DocumentManager = ({ projectId }) => {
                             </div>
                             <div>
                                 <p className="font-semibold text-sm text-slate-800">{doc.name}</p>
-                                <p className="text-xs text-slate-400">{new Date(doc.createdAt).toLocaleDateString()}</p>
+                                <p className="text-xs text-slate-400">{formatDate(doc.createdAt)}</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
@@ -529,8 +530,8 @@ const TimelineManager = ({ projectId }) => {
                                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Time</p>
                                         <p className="font-bold text-slate-800">
                                             {selectedEvidence.evidence[0]
-                                                ? new Date(selectedEvidence.evidence[0].capturedAt).toLocaleDateString()
-                                                : new Date().toLocaleDateString()}
+                                                ? formatDate(selectedEvidence.evidence[0].capturedAt)
+                                                : formatDate(new Date())}
                                         </p>
                                     </div>
                                 </div>
@@ -858,7 +859,7 @@ const PaymentHistoryTable = ({ projectId, reloadTrigger }) => {
                         <tr key={tx.id}>
                             <td className="py-2 pl-2 font-bold text-indigo-600">{tx.percentage}%</td>
                             <td className="py-2 text-slate-600">
-                                {new Date(tx.date).toLocaleDateString()}
+                                {formatDate(tx.date)}
                                 <span className="block text-[10px] text-slate-400">{tx.time}</span>
                             </td>
                             <td className="py-2 text-slate-600">

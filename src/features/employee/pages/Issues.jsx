@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { Bug, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Calendar } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import RefreshButton from "../../../shared/components/RefreshButton";
+import { formatDate } from "../../../shared/utils/dateFormatter";
 
 
 const Issues = () => {
@@ -51,7 +52,7 @@ const Issues = () => {
         if (!issueToResolve || !issueContext.trim() || !isConfirmed) return;
 
         // Construct final display time
-        const formattedTime = `${new Date(resolutionDate).toLocaleDateString()}, ${resHour}:${resMinute} ${resPeriod}`;
+        const formattedTime = `${formatDate(resolutionDate)}, ${resHour}:${resMinute} ${resPeriod}`;
 
         updateIssueStatus(issueToResolve.id, "Completed", {
             resolverName,

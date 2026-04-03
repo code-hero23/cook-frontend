@@ -1,5 +1,6 @@
 import React from "react";
 import { User, Phone, Mail, MapPin, Calendar, CreditCard, Heart, Briefcase, ShieldCheck } from "lucide-react";
+import { formatDate } from '../../../shared/utils/dateFormatter';
 import { motion } from "framer-motion";
 
 const Profile = () => {
@@ -83,8 +84,8 @@ const Profile = () => {
                 {/* Schedule */}
                 <Section title="Timeframe" icon={Calendar} colorClass="bg-amber-500 text-white" delay={0.4}>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-                        <DetailItem label="Kick-off Date" value={project.startDate ? new Date(project.startDate).toLocaleDateString() : 'Pending'} />
-                        <DetailItem label="Delivery Goal" value={project.deadline ? new Date(project.deadline).toLocaleDateString() : 'TBD'} />
+                        <DetailItem label="Kick-off Date" value={project.startDate ? formatDate(project.startDate) : 'Pending'} />
+                        <DetailItem label="Delivery Goal" value={project.deadline ? formatDate(project.deadline) : 'TBD'} />
                     </div>
                     <div className="pt-6 border-t border-slate-100 mt-2">
                         <DetailItem label="Forecasted Handover" value={`${project.handingOverMonth || ""} ${project.handingOverYear || ""}`} icon={ShieldCheck} />

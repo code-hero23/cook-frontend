@@ -12,6 +12,7 @@ import {
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import CountUp from "react-countup";
 import RefreshButton from "../../../shared/components/RefreshButton";
+import { formatDate } from "../../../shared/utils/dateFormatter";
 
 
 const Dashboard = () => {
@@ -81,7 +82,7 @@ const Dashboard = () => {
           <div className="bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm flex items-center gap-2">
 
             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-            <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</span>
+            <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">{formatDate(new Date())}</span>
           </div>
         </div>
       </div>
@@ -190,7 +191,7 @@ const Dashboard = () => {
                           </div>
                         </td>
                         <td className="px-6 py-5 text-right font-bold text-sm text-slate-600">
-                          {new Date(project.endDate || project.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          {formatDate(project.endDate || project.deadline)}
                         </td>
                       </motion.tr>
                     );

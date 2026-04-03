@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from '../utils/axios';
+import { useApp } from "../../features/admin/context/AppContext";
+import { formatDate, formatTime, formatDateTime } from "../utils/dateFormatter";
 import { Mail, Send, Plus, Inbox, FileText, Search, User, Paperclip, X, Menu, ChevronLeft, ArrowLeft, Trash2, ArchiveRestore } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -272,7 +274,7 @@ const EmailPage = () => {
                             </button>
                             <h2 className="font-bold text-gray-800 text-lg truncate flex-1">{selectedEmail.subject}</h2>
                             <span className="text-xs text-gray-500 font-medium bg-gray-50 px-3 py-1 rounded-full whitespace-nowrap">
-                                {new Date(selectedEmail.createdAt).toLocaleDateString()} • {new Date(selectedEmail.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                {formatDateTime(selectedEmail.createdAt)}
                             </span>
 
                             {/* Detail View Actions */}
@@ -399,7 +401,7 @@ const EmailPage = () => {
                                                         {activeTab === 'sent' ? `To: ${email.receiver?.name || 'Unknown'}` : (email.sender?.name || 'Unknown')}
                                                     </p>
                                                     <p className="text-[11px] font-medium text-gray-400">
-                                                        {new Date(email.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} • {new Date(email.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                        {formatDateTime(email.createdAt)}
                                                     </p>
                                                 </div>
                                             </div>

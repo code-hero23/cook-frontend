@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { MapPin, Calendar, CheckCircle2 } from "lucide-react";
+import { formatDate } from '../../../shared/utils/dateFormatter';
 
 const ProjectCard = ({ project }) => {
   const navigate = useNavigate();
@@ -27,7 +28,7 @@ const ProjectCard = ({ project }) => {
           </div>
           <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500">
             <Calendar size={14} className="text-indigo-400" />
-            <span>Ends: {new Date(project.deadline).toLocaleDateString()}</span>
+            <span>Ends: {formatDate(project.deadline)}</span>
           </div>
         </div>
 

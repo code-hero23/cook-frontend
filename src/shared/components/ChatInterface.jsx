@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "../utils/axios";
-import {
-    MessageSquare, Send, Search, User, MoreVertical,
-    Phone, Video, Info, Paperclip, Smile, Check, CheckCheck, ArrowLeft, X, FileText, Image as ImageIcon, Download
-} from "lucide-react";
+import { Send, Image as ImageIcon, FileText, Check, CheckCheck, Phone, MoreVertical, Search, MessageSquare, ArrowLeft, Download, ShieldIcon, LockIcon } from 'lucide-react';
+import { formatDate, formatTime } from '../utils/dateFormatter';
 import toast from "react-hot-toast";
 
 const ChatInterface = ({ projects = [], currentUser, role, initialProjectId }) => {
@@ -99,22 +97,8 @@ const ChatInterface = ({ projects = [], currentUser, role, initialProjectId }) =
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 
-            // Server returns [{name, url, type, size}] - URL is relative /uploads/...
-            // We need to prepend base URL if needed, but relative usually works if served from same domain or handled by axios baseID
-            // Actually axios base URL is set, so we might need full URL if showing in img tag?
-            // "url": "/uploads/..."
-            // If API base is http://localhost:5000/api, and uploads are at http://localhost:5000/uploads
-            // Then the Image src should be "http://localhost:5000/uploads/..."
-            // Let's adjust the URL on frontend if needed, or backend.
-            // Backend returns "/uploads/filename".
-            // Let's assume axios.defaults.baseURL is "http://localhost:5000/api".
-            // So we need to go up one level.
-
             const uploadedFiles = res.data.map(f => ({
                 ...f,
-                // If we are developing locally, we might need the full URL for the image tag to work if frontend/backend are on different ports (usually vite 5173 vs 5000)
-                // Let's prepend the server origin.
-                // We'll rely on a helper or just assume localhost:5000 for now or extract from axios config.
                 url: `${axios.defaults.baseURL.replace('/api', '')}${f.url}`
             }));
 
@@ -139,9 +123,7 @@ const ChatInterface = ({ projects = [], currentUser, role, initialProjectId }) =
 
     // Group messages by date
     const groupedMessages = messages.reduce((groups, message) => {
-        const date = new Date(message.createdAt).toLocaleDateString(undefined, {
-            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-        });
+        const date = formatDate(message.createdAt);
         if (!groups[date]) {
             groups[date] = [];
         }
@@ -194,7 +176,7 @@ const ChatInterface = ({ projects = [], currentUser, role, initialProjectId }) =
                                             {project.name}
                                         </h3>
                                         <span className="text-[10px] text-gray-400 font-medium">
-                                            {project.updatedAt ? new Date(project.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                                            {project.updatedAt ? formatTime(project.updatedAt) : ''}
                                         </span>
                                     </div>
                                     <p className="text-xs text-gray-500 truncate flex items-center gap-1">
@@ -317,7 +299,7 @@ const ChatInterface = ({ projects = [], currentUser, role, initialProjectId }) =
                                                             {msg.content}
                                                             <div className={`flex items-center justify-end gap-1 mt-1 ${isMe ? 'text-indigo-200' : 'text-gray-400'}`}>
                                                                 <span className="text-[10px] font-medium">
-                                                                    {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                    {formatTime(msg.createdAt)}
                                                                 </span>
                                                                 {isMe && <CheckCheck size={12} />}
                                                             </div>

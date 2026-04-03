@@ -9,12 +9,13 @@ import {
   Clock,
   Layout
 } from "lucide-react";
+import { formatDate, formatTime } from '../../../shared/utils/dateFormatter';
 
 const formatDateTime = (isoString) => {
   const date = new Date(isoString);
   return {
-    date: date.toLocaleDateString("en-IN", { day: '2-digit', month: 'short' }),
-    time: date.toLocaleTimeString("en-IN", { hour: '2-digit', minute: '2-digit' })
+    date: formatDate(date),
+    time: formatTime(date)
   };
 };
 

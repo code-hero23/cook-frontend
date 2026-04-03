@@ -1,5 +1,6 @@
 import React from "react";
 import { MapPin, Calendar, MoreVertical, Building2, MessageSquare } from "lucide-react";
+import { formatDate as centralFormatDate } from '../../../shared/utils/dateFormatter';
 import { Link } from "react-router-dom";
 import StatusBadge from "../components/common/StatusBadge";
 import { isProjectOverdue } from "../utils/dateUtils";
@@ -11,7 +12,7 @@ const ProjectCard = ({ project, onEdit }) => {
     // Once backend supports task aggregation, replace this. For now, visual placeholder or payment %
     const progress = project.paymentPercentage || 0;
 
-    const formatDate = (d) => d ? new Date(d).toLocaleDateString([], { month: 'short', day: 'numeric', year: '2-digit' }) : 'N/A';
+    const formatDate = (d) => centralFormatDate(d);
 
     return (
         <div className="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden flex flex-col h-full">

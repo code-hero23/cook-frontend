@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../../../shared/utils/axios';
+import { formatDate } from '../../../shared/utils/dateFormatter';
 import toast from 'react-hot-toast';
 
 const CREContext = createContext(null);
@@ -68,9 +69,9 @@ export const CREProvider = ({ children }) => {
 
     // Derived Stats
     useEffect(() => {
-        const today = new Date().toLocaleDateString();
+        const today = formatDate(new Date());
         const active = walkins.filter(w => w.status === 'ACTIVE').length;
-        const totalToday = walkins.filter(w => new Date(w.createdAt).toLocaleDateString() === today).length;
+        const totalToday = walkins.filter(w => formatDate(w.createdAt) === today).length;
         const pendingReports = reports.filter(r => !r.status || r.status === 'N').length;
 
         setStats({ activeVisitors: active, totalToday, pendingReports });

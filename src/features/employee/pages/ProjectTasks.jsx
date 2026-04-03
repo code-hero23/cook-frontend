@@ -14,6 +14,7 @@ import {
   Hash
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { formatDate } from "../../../shared/utils/dateFormatter";
 
 const ProjectTasks = () => {
   const { projectId } = useParams();
@@ -147,7 +148,7 @@ const ProjectTasks = () => {
                       <Calendar size={10} /> Deadline
                     </p>
                     <p className="text-slate-800 font-bold  text-sm">
-                      {project.deadline ? new Date(project.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'TBD'}
+                      {project.deadline ? formatDate(project.deadline) : 'TBD'}
                     </p>
                   </div>
                 </div>

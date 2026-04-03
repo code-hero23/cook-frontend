@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { formatDate, formatTime } from "../../../../shared/utils/dateFormatter";
 import { CheckCheck, Check, ArrowLeft } from "lucide-react";
 import MessageInput from "./MessageInput";
 import axios from "../../../../shared/utils/axios.js";
@@ -51,7 +52,7 @@ const ChatBody = ({ chat, setActiveChat }) => {
     const diff = Math.floor((today - new Date(date.setHours(0, 0, 0, 0))) / (1000 * 60 * 60 * 24));
     if (diff === 0) return "Today";
     if (diff === 1) return "Yesterday";
-    return date.toLocaleDateString();
+    return formatDate(date);
   };
 
   // Render messages with date separators and nicer bubbles
@@ -88,7 +89,7 @@ const ChatBody = ({ chat, setActiveChat }) => {
           {!isMe && <div className="text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">{m.sender}</div>}
           <div className="whitespace-pre-line leading-relaxed">{m.text}</div>
           <div className={`flex items-center gap-1 text-[10px] mt-1.5 ${isMe ? 'justify-end text-orange-100' : 'justify-start text-slate-400'}`}>
-            <span>{new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+            <span>{formatTime(m.timestamp)}</span>
             {isMe && (
               m.read ? <CheckCheck size={12} className="opacity-70" /> : <Check size={12} className="opacity-70" />
             )}

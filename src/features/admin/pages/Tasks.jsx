@@ -4,6 +4,7 @@ import { useApp } from "../context/AppContext.jsx";
 import StatusBadge from "../components/common/StatusBadge.jsx";
 import { Plus, Pencil, Mail, Eye, X, MapPin, Folder, ChevronRight, ChevronLeft, ArrowLeft, CheckCircle2, Clock, AlertCircle, Download } from "lucide-react";
 import RefreshButton from "../../../shared/components/RefreshButton.jsx";
+import { formatDate } from "../../../shared/utils/dateFormatter";
 import { isTaskOverdue } from "../utils/dateUtils.js";
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -384,11 +385,11 @@ const Tasks = () => {
                   <div className="space-y-1">
                     <div className="flex items-center gap-1.5">
                       <div className="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>
-                      <span className="text-slate-500 font-medium">{t.startDate ? new Date(t.startDate).toLocaleDateString() : '—'}</span>
+                      <span className="text-slate-500 font-medium">{t.startDate ? formatDate(t.startDate) : '—'}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <div className="w-1.5 h-1.5 rounded-full bg-rose-400"></div>
-                      <span className="text-slate-500 font-medium font-bold">{t.dueDate ? new Date(t.dueDate).toLocaleDateString() : '—'}</span>
+                      <span className="text-slate-500 font-medium font-bold">{t.dueDate ? formatDate(t.dueDate) : '—'}</span>
                     </div>
                   </div>
 
@@ -406,7 +407,7 @@ const Tasks = () => {
                   <div><StatusBadge status={status} /></div>
 
                   <div className="text-slate-400 font-medium italic">
-                    {new Date(t.updatedAt).toLocaleDateString()}
+                    {formatDate(t.updatedAt)}
                   </div>
 
                   <div className="text-right flex justify-end gap-1.5">
@@ -726,7 +727,7 @@ const Tasks = () => {
                     </div>
                     <div>
                       <p className="text-[10px] font-bold text-slate-400 uppercase">Time</p>
-                      <p className="text-sm font-bold text-slate-700">{new Date(viewingTask.updatedAt).toLocaleDateString()}</p>
+                      <p className="text-sm font-bold text-slate-700">{formatDate(viewingTask.updatedAt)}</p>
                     </div>
                   </div>
                 </div>

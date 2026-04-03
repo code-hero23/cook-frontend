@@ -4,6 +4,7 @@ import { useApp } from "../context/AppContext.jsx";
 import StatusBadge from "../components/common/StatusBadge.jsx";
 import { Plus, Pencil, Mail, Filter, Search as SearchIcon, X, Folder, MapPin, ArrowLeft, Eye, AlertTriangle, Upload } from "lucide-react";
 import RefreshButton from "../../../shared/components/RefreshButton.jsx";
+import { formatDate } from "../../../shared/utils/dateFormatter";
 import { isTaskOverdue } from "../utils/dateUtils.js";
 
 import IssueStats from "../components/IssueStats.jsx";
@@ -356,11 +357,11 @@ const Issues = () => {
                     <div>
                       <div className="flex items-center gap-1.5 mb-1">
                         <MapPin size={10} className="text-emerald-500" />
-                        <span className="text-xs text-slate-600 font-medium">{t.startDate ? new Date(t.startDate).toLocaleDateString() : 'TBD'}</span>
+                        <span className="text-xs text-slate-600 font-medium">{t.startDate ? formatDate(t.startDate) : 'TBD'}</span>
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <AlertTriangle size={10} className="text-rose-500" />
-                        <span className="text-xs text-slate-600 font-medium">{t.dueDate ? new Date(t.dueDate).toLocaleDateString() : 'TBD'}</span>
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-black uppercase text-slate-400">Deadline</span>
+                        <span className="text-xs text-slate-600 font-medium">{t.dueDate ? formatDate(t.dueDate) : 'TBD'}</span>
                       </div>
                     </div>
 

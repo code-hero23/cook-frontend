@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../../../shared/utils/axios';
+import { formatDate } from "../../../shared/utils/dateFormatter";
 import { ArrowLeft, MapPin, Calendar, CheckCircle2, AlertTriangle, Clock, Shield, RefreshCw } from 'lucide-react';
 import LiveCameraCapture from '../components/LiveCameraCapture';
 import ConsentModal from '../components/ConsentModal';
@@ -196,7 +197,7 @@ const TaskDetail = () => {
                             </div>
                             <div>
                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Due Date</p>
-                                <p className="text-sm font-bold text-slate-700">{task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'ASAP'}</p>
+                                <p className="text-sm font-bold text-slate-700">{task.dueDate ? formatDate(task.dueDate) : 'ASAP'}</p>
                             </div>
                         </div>
                     </div>

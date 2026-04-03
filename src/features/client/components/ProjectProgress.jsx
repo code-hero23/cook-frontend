@@ -8,7 +8,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, Unlock, CheckCircle, Clock, Zap, Target, Calendar, ChevronRight } from "lucide-react";
+import { CheckCircle2, Circle, Clock, ChevronRight, Calendar, ArrowRight, Zap, Target } from 'lucide-react';
+import { formatDate } from '../../../shared/utils/dateFormatter';
 import useHaptics from "../../../shared/hooks/useHaptics";
 
 const ProjectProgress = ({ tasks = [] }) => {
@@ -181,7 +182,7 @@ const ProjectProgress = ({ tasks = [] }) => {
             </div>
             <div>
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Status Date</p>
-              <p className="text-sm font-black text-slate-700">{new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+              <p className="text-sm font-black text-slate-700">{formatDate(new Date())}</p>
             </div>
           </div>
         </div>

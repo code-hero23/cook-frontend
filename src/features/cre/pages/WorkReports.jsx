@@ -6,6 +6,7 @@ import { useCRE } from '../context/CREContext';
 import toast from 'react-hot-toast';
 import api from '../../../shared/utils/axios';
 import { exportToExcel, readExcel, downloadTemplate } from '../../../shared/utils/excel';
+import { formatDate } from '../../../shared/utils/dateFormatter';
 
 const WorkReports = ({ hideHeader = false }) => {
     const { reports, stats, loading, addReport, updateReport, deleteWorkReport, bhs, cres } = useCRE();
@@ -100,7 +101,7 @@ const WorkReports = ({ hideHeader = false }) => {
 
     const handleExport = () => {
         const exportData = filteredReports.map(r => ({
-            'Date': new Date(r.date).toLocaleDateString(),
+            'Date': formatDate(r.date),
             'Client Name': r.clientName,
             'Contact': r.contact,
             'Showroom': r.showroom || 'MTRS',
@@ -375,7 +376,7 @@ const WorkReports = ({ hideHeader = false }) => {
                                             </span>
                                             <div className="flex items-center text-[9px] text-slate-500 mt-2 font-black uppercase tracking-[0.2em]">
                                                 <Calendar className="w-3.5 h-3.5 mr-2 text-slate-300" /> 
-                                                {new Date(r.date).toLocaleDateString()}
+                                                {formatDate(r.date)}
                                             </div>
                                         </div>
                                     </td>

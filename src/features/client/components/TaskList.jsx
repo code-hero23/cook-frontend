@@ -126,7 +126,7 @@ const TaskList = ({ tasks = [] }) => {
                                 {task.dueDate && (
                                   <div className="flex items-center gap-1.5 text-slate-400">
                                     <Calendar size={10} />
-                                    <span className="text-[9px] font-black uppercase tracking-widest">{new Date(task.dueDate).toLocaleDateString()}</span>
+                                    <span className="text-[9px] font-black uppercase tracking-widest">{formatDate(task.dueDate)}</span>
                                   </div>
                                 )}
                               </div>

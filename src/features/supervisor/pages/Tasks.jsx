@@ -13,6 +13,7 @@ import {
     MapPin
 } from 'lucide-react';
 import RefreshButton from '../../../shared/components/RefreshButton';
+import { formatDate } from "../../../shared/utils/dateFormatter";
 
 
 const Tasks = () => {
@@ -151,7 +152,7 @@ const Tasks = () => {
                                 <div className="flex items-center gap-6 text-sm text-slate-500 font-medium">
                                     <div className="flex items-center gap-2">
                                         <Calendar className="w-4 h-4 text-slate-400" />
-                                        <span>{task.dueDate ? new Date(task.dueDate).toLocaleDateString() : '--'}</span>
+                                        <span>{task.dueDate ? formatDate(task.dueDate) : '--'}</span>
                                     </div>
                                     <div className="md:border-l md:border-slate-100 md:pl-6">
                                         <ChevronDown className="w-4 h-4 -rotate-90 text-slate-300 group-hover:text-indigo-500" />

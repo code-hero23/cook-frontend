@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import RefreshButton from '../../../shared/components/RefreshButton';
+import { formatDate } from "../../../shared/utils/dateFormatter";
 
 
 const Dashboard = () => {
@@ -195,7 +196,7 @@ const Dashboard = () => {
                                         )}
                                         <div className="flex items-center gap-1.5 md:hidden">
                                             <Calendar className="w-3.5 h-3.5" />
-                                            <span>{task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No Date'}</span>
+                                            <span>{task.dueDate ? formatDate(task.dueDate) : 'No Date'}</span>
                                         </div>
                                     </div>
                                 </div>

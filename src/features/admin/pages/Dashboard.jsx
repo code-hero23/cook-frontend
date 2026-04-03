@@ -5,6 +5,7 @@ import { useApp } from "../context/AppContext.jsx";
 import StatCard from "../components/common/StatCard.jsx";
 import StatusBadge from "../components/common/StatusBadge.jsx";
 import RefreshButton from "../../../shared/components/RefreshButton.jsx";
+import { formatDate } from "../../../shared/utils/dateFormatter";
 
 
 
@@ -191,8 +192,8 @@ const Dashboard = () => {
 
                     <p>{p.clientFirstName} {p.clientLastName}</p>
                     <p>{p.location}</p>
-                    <p className="text-center">{p.startDate ? new Date(p.startDate).toLocaleDateString() : '-'}</p>
-                    <p className="text-center">{p.deadline ? new Date(p.deadline).toLocaleDateString() : '-'}</p>
+                    <p className="text-center">{p.startDate ? formatDate(p.startDate) : '-'}</p>
+                    <p className="text-center">{p.deadline ? formatDate(p.deadline) : '-'}</p>
 
                     <div className="text-center">
                       <StatusBadge status={overdue ? "Overdue" : "Active"} />
@@ -284,7 +285,7 @@ const Dashboard = () => {
                   <div>
                     <p className="text-gray-400 text-xs">Start</p>
                     <p className="font-semibold text-gray-700 mt-1">
-                      {p.startDate ? new Date(p.startDate).toLocaleDateString() : '-'}
+                      {p.startDate ? formatDate(p.startDate) : '-'}
                     </p>
                   </div>
                   <div className="text-right">
@@ -293,7 +294,7 @@ const Dashboard = () => {
                       className={`font-semibold mt-1 ${due < today ? "text-red-600" : "text-gray-700"
                         }`}
                     >
-                      {p.deadline ? new Date(p.deadline).toLocaleDateString() : '-'}
+                      {p.deadline ? formatDate(p.deadline) : '-'}
                     </p>
                   </div>
                 </div>

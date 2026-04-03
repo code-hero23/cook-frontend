@@ -93,7 +93,7 @@ export const downloadTemplate = async (type, options = {}) => {
                 showroom: 'MTRS',
                 bhName: bhs[0],
                 status: 'ACTIVE',
-                dateOfVisit: '2026-04-01',
+                dateOfVisit: '01/04/2026',
                 inTime: '10:00',
                 outTime: '11:30',
                 remarks: 'Walk-in for modular kitchen'
@@ -114,7 +114,7 @@ export const downloadTemplate = async (type, options = {}) => {
                 { header: 'remarks', key: 'remarks', width: 30 }
             ];
             sampleData = {
-                date: '2026-04-01',
+                date: '01/04/2026',
                 clientName: 'Anjali Gupta',
                 contact: '8765432109',
                 showroom: 'MTRS',

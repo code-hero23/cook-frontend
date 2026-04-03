@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "../../../shared/utils/axios";
 import { FileText, Download, Loader2, File } from "lucide-react";
+import { formatDate } from '../../../shared/utils/dateFormatter';
 import { motion } from "framer-motion";
 import useHaptics from "../../../shared/hooks/useHaptics";
 
@@ -93,7 +94,7 @@ const Documents = () => {
                                     <div className="flex items-center gap-2 mt-0.5">
                                         <span className="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-500 rounded-md">PDF</span>
                                         <span className="text-[10px] font-medium text-slate-400">
-                                            {new Date(doc.createdAt).toLocaleDateString()}
+                                            {formatDate(doc.createdAt)}
                                         </span>
                                     </div>
                                 </div>

@@ -15,6 +15,7 @@ import {
   Calendar,
   ChevronRight
 } from "lucide-react";
+import { formatDate } from '../../../shared/utils/dateFormatter';
 import { motion, AnimatePresence } from "framer-motion";
 import TicketDetailModal from "./TicketDetailModal";
 import useHaptics from "../../../shared/hooks/useHaptics";
@@ -320,7 +321,7 @@ const RaiseTicket = () => {
                   <div className="flex items-center gap-4 mt-3">
                     <div className="flex items-center gap-1.5 text-slate-400">
                       <Calendar size={12} />
-                      <span className="text-[9px] font-black uppercase tracking-widest">{new Date(t.createdAt).toLocaleDateString()}</span>
+                      <span className="text-[9px] font-black uppercase tracking-widest">{formatDate(t.createdAt)}</span>
                     </div>
                     <div className="w-1 h-1 bg-slate-200 rounded-full"></div>
                     <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">{t.category}</span>

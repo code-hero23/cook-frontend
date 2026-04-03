@@ -4,6 +4,7 @@ import { useApp } from "../context/AppContext.jsx";
 import StatusBadge from "../components/common/StatusBadge.jsx";
 import { Plus, Pencil, LayoutGrid, List, Search as SearchIcon, Filter } from "lucide-react";
 import RefreshButton from "../../../shared/components/RefreshButton.jsx";
+import { formatDate } from "../../../shared/utils/dateFormatter";
 import { isProjectOverdue } from "../utils/dateUtils.js";
 
 import ProjectStats from "../components/ProjectStats.jsx";
@@ -275,8 +276,8 @@ const Projects = () => {
                   </td>
                   <td className="py-4 px-6 text-slate-600">
                     <div className="flex flex-col text-xs">
-                      <span>Start: {p.startDate ? new Date(p.startDate).toLocaleDateString() : '-'}</span>
-                      <span>End: {p.deadline ? new Date(p.deadline).toLocaleDateString() : '-'}</span>
+                      <span>Start: {p.startDate ? formatDate(p.startDate) : '-'}</span>
+                      <span>End: {p.deadline ? formatDate(p.deadline) : '-'}</span>
                     </div>
                   </td>
                   <td className="py-4 px-6">

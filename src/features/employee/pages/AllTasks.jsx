@@ -6,6 +6,7 @@ import { useSearchParams } from "react-router-dom";
 import { ChevronDown, ChevronUp, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import RefreshButton from "../../../shared/components/RefreshButton";
+import { formatDate } from "../../../shared/utils/dateFormatter";
 
 
 const AllTasks = () => {
@@ -296,7 +297,7 @@ const AllTasks = () => {
                                     }`}>
                                     {task.priority || 'Normal'} Priority
                                   </span>
-                                  <span className="text-[10px] text-gray-400 font-medium whitespace-nowrap">Due: {new Date(task.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
+                                  <span className="text-[10px] text-gray-400 font-medium whitespace-nowrap">Due: {formatDate(task.dueDate)}</span>
                                 </div>
                               </div>
                             </div>
