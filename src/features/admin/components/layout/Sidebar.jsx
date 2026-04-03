@@ -23,19 +23,18 @@ import {
 
 const navItems = [
   { to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/admin/employees", label: "Employees", icon: Users },
   { to: "/admin/projects", label: "Projects", icon: FolderKanban },
   { to: "/admin/tasks", label: "Tasks", icon: CheckSquare },
   { to: "/admin/issues", label: "Issues", icon: Bug },
   { to: "/admin/chat", label: "Chat", icon: MessageSquare },
   { to: "/admin/email", label: "Email", icon: Mail },
   { to: "/admin/helpdesk", label: "Helpdesk", icon: LifeBuoy },
-  { to: "/admin/reports", label: "Reports", icon: FileSpreadsheet },
-  { to: "/admin/cre-contributions", label: "CRE Contributions", icon: BarChart3 },
   { to: "/admin/cre-reports", label: "CRE Reports", icon: LayoutDashboard },
-  { to: "/admin/client-access", label: "Client Access", icon: Link2 },
-  { to: "/admin/settings", label: "Data & Backups", icon: ShieldCheck },
   { to: "/admin/dev-panel", label: "System Control", icon: ShieldCheck },
+  { to: "/admin/client-access", label: "Client Access", icon: Link2 },
+  { to: "/admin/employees", label: "Employees", icon: Users },
+  { to: "/admin/settings", label: "Data & Backups", icon: ShieldCheck },
+  { to: "/admin/reports", label: "Reports", icon: FileSpreadsheet },
 ];
 
 const Sidebar = ({ open, onClose }) => {
