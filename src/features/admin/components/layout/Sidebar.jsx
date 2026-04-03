@@ -29,11 +29,11 @@ const navItems = [
   { to: "/admin/chat", label: "Chat", icon: MessageSquare },
   { to: "/admin/email", label: "Email", icon: Mail },
   { to: "/admin/helpdesk", label: "Helpdesk", icon: LifeBuoy },
-  { to: "/admin/cre-reports", label: "CRE Reports", icon: LayoutDashboard },
+  { to: "/admin/cre-reports", label: "CRE Reports", icon: BarChart3 },
   { to: "/admin/dev-panel", label: "System Control", icon: ShieldCheck },
   { to: "/admin/client-access", label: "Client Access", icon: Link2 },
   { to: "/admin/employees", label: "Employees", icon: Users },
-  { to: "/admin/settings", label: "Data & Backups", icon: ShieldCheck },
+  { to: "/admin/settings", label: "Data & Backups", icon: History },
   { to: "/admin/reports", label: "Reports", icon: FileSpreadsheet },
 ];
 

@@ -18,6 +18,7 @@ const WorkReports = ({ hideHeader = false }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [editingReport, setEditingReport] = useState(null);
+    const [viewingReport, setViewingReport] = useState(null);
     const [importing, setImporting] = useState(false);
     
     const initialReportState = {
@@ -366,7 +367,8 @@ const WorkReports = ({ hideHeader = false }) => {
                                     initial={{ opacity: 0, x: -10 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: idx * 0.03 }}
-                                    className="hover:bg-white/[0.02] group"
+                                    onClick={() => setViewingReport(r)}
+                                    className="hover:bg-slate-50/50 transition-colors group cursor-pointer"
                                 >
                                     <td className="px-8 py-6">
                                         <div className="flex flex-col">
@@ -439,14 +441,14 @@ const WorkReports = ({ hideHeader = false }) => {
                                     </td>
                                     <td className="px-8 py-6 text-right flex justify-end gap-2 text-right">
                                         <button 
-                                            onClick={() => handleEdit(r)}
+                                            onClick={(e) => { e.stopPropagation(); handleEdit(r); }}
                                             className="p-3 text-slate-400 hover:text-orange-500 bg-slate-50 hover:bg-orange-50 rounded-2xl transition-all border border-transparent hover:border-orange-100 shadow-sm"
                                         >
                                             <Edit2 className="w-5 h-5" />
                                         </button>
                                         {isPrivileged && (
                                             <button 
-                                                onClick={() => deleteWorkReport(r.id)}
+                                                onClick={(e) => { e.stopPropagation(); deleteWorkReport(r.id); }}
                                                 className="p-3 text-red-400 hover:text-white bg-slate-50 hover:bg-red-500 rounded-2xl transition-all border border-transparent shadow-sm"
                                                 title="Delete Report"
                                             >
@@ -768,10 +770,158 @@ const WorkReports = ({ hideHeader = false }) => {
                     </div>
                 )}
             </AnimatePresence>
+            {/* Modal for viewing details (Read-Only) */}
+            <AnimatePresence>
+                {viewingReport && (
+                    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+                        <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setViewingReport(null)}
+                            className="absolute inset-0 bg-slate-900/40 backdrop-blur-md"
+                        />
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="relative w-full max-w-2xl bg-white rounded-[40px] shadow-2xl overflow-hidden border border-slate-200"
+                        >
+                            {/* Modal Header */}
+                            <div className="bg-slate-50 border-b border-slate-100 p-8 flex justify-between items-center bg-gradient-to-br from-slate-50 to-white">
+                                <div>
+                                    <h2 className="text-2xl font-black text-slate-900 tracking-tight uppercase tracking-widest flex items-center">
+                                        Work <span className="text-orange-500 ml-2">Detail</span>
+                                    </h2>
+                                    <p className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase mt-1">Full Work Report Record</p>
+                                </div>
+                                <button 
+                                    onClick={() => setViewingReport(null)}
+                                    className="w-12 h-12 rounded-2xl bg-white border border-slate-200 text-slate-400 hover:text-orange-500 hover:border-orange-500 transition-all flex items-center justify-center shadow-sm"
+                                >
+                                    <Plus className="w-6 h-6 rotate-45" />
+                                </button>
+                            </div>
+
+                            <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto detail-scroll custom-scrollbar">
+                                {/* Lead Info Grid */}
+                                <div className="grid grid-cols-2 gap-8 pb-8 border-b border-slate-100">
+                                    <div className="space-y-4">
+                                        <div>
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Client Name</p>
+                                            <div className="flex items-center text-lg font-black text-slate-900 tracking-tight">
+                                                <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-orange-500 mr-3 border border-orange-100">
+                                                    <User className="w-5 h-5" />
+                                                </div>
+                                                {viewingReport.clientName}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Contact</p>
+                                            <div className="flex items-center text-slate-600 font-bold tracking-widest">
+                                                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 mr-3 border border-slate-100">
+                                                    <Phone className="w-5 h-5" />
+                                                </div>
+                                                {viewingReport.contact}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Report Date</p>
+                                            <div className="flex items-center text-slate-600 font-bold tracking-widest">
+                                                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 mr-3 border border-slate-100">
+                                                    <Calendar className="w-5 h-5" />
+                                                </div>
+                                                {formatDate(viewingReport.date)}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <div>
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Showroom / Site</p>
+                                            <div className="inline-flex items-center px-4 py-2 rounded-2xl bg-orange-500 text-white font-black text-xs uppercase tracking-widest shadow-md shadow-orange-200">
+                                                <MapPin className="w-3.5 h-3.5 mr-2" />
+                                                {viewingReport.showroom} / {viewingReport.site || 'N/A'}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Lead Source</p>
+                                            <div className="flex items-center text-slate-600 font-bold uppercase tracking-widest">
+                                                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 mr-3 border border-slate-100">
+                                                    <Briefcase className="w-5 h-5" />
+                                                </div>
+                                                {viewingReport.source || 'N/A'}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Lead Status</p>
+                                            <div className={`inline-flex items-center px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest ${viewingReport.status === 'Y' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-orange-50 text-orange-600 border border-orange-200'}`}>
+                                                {viewingReport.status === 'Y' ? 'SUCCESSFUL' : 'PENDING'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Quality & Assignments */}
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pb-8 border-b border-slate-100">
+                                    <div className="p-5 rounded-[28px] bg-slate-50/50 border border-slate-100 relative group overflow-hidden md:col-span-2">
+                                        <div className="absolute top-0 right-0 w-16 h-16 bg-orange-50 rounded-bl-full translate-x-4 -translate-y-4 transition-transform group-hover:scale-125" />
+                                        <p className="relative z-10 text-[8px] font-black text-slate-400 uppercase tracking-widest mb-3">Lead Quality (1-10)</p>
+                                        <div className="relative z-10 flex gap-0.5">
+                                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((star) => (
+                                                <Star 
+                                                    key={star} 
+                                                    className={`w-4 h-4 ${star <= viewingReport.star ? 'fill-orange-500 text-orange-500' : 'text-slate-200'}`} 
+                                                />
+                                            ))}
+                                            <span className="ml-3 text-xs font-black text-slate-900">{viewingReport.star}/10</span>
+                                        </div>
+                                    </div>
+                                    <div className="p-5 rounded-[28px] bg-slate-50/50 border border-slate-100 relative group overflow-hidden">
+                                        <div className="absolute top-0 right-0 w-16 h-16 bg-orange-50 rounded-bl-full translate-x-4 -translate-y-4 transition-transform group-hover:scale-125" />
+                                        <p className="relative z-10 text-[8px] font-black text-slate-400 uppercase tracking-widest mb-2">CRE Name</p>
+                                        <div className="relative z-10 flex items-center text-xs font-black text-orange-600 uppercase">
+                                            {viewingReport.cre?.name || 'SYSTEM'}
+                                        </div>
+                                    </div>
+                                    <div className="p-5 rounded-[28px] bg-slate-50/50 border border-slate-100 relative group overflow-hidden md:col-span-1">
+                                        <p className="relative z-10 text-[8px] font-black text-slate-400 uppercase tracking-widest mb-2">FA Assigned</p>
+                                        <div className="relative z-10 flex items-center text-xs font-black text-slate-900 uppercase">
+                                            {viewingReport.faName || 'NOT ASSIGNED'}
+                                        </div>
+                                    </div>
+                                    <div className="p-5 rounded-[28px] bg-slate-50/50 border border-slate-100 relative group overflow-hidden md:col-span-2">
+                                        <p className="relative z-10 text-[8px] font-black text-slate-400 uppercase tracking-widest mb-2">Business Head</p>
+                                        <div className="relative z-10 flex items-center text-xs font-black text-slate-900 uppercase">
+                                            {viewingReport.bh?.name || viewingReport.bhName || 'UNASSIGNED'}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Full Remarks */}
+                                <div className="p-6 rounded-[32px] bg-slate-50/80 border border-slate-100">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Remarks & Meeting Notes</p>
+                                    <p className="text-sm text-slate-600 font-medium leading-relaxed italic">
+                                        {viewingReport.remarks || 'No specific remarks or meeting notes recorded for this lead.'}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Footer Actions */}
+                            <div className="p-8 bg-slate-50/50 border-t border-slate-100 flex justify-end">
+                                <button 
+                                    onClick={() => setViewingReport(null)}
+                                    className="px-10 py-4 bg-slate-900 text-white rounded-[20px] text-xs font-black uppercase tracking-widest shadow-xl shadow-slate-200 hover:bg-black transition-all active:scale-95"
+                                >
+                                    Close Record
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
-
-// Reusable icons
 
 export default WorkReports;

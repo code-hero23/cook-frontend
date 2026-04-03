@@ -19,6 +19,7 @@ const WalkinHub = ({ hideHeader = false }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [editingWalkin, setEditingWalkin] = useState(null);
+    const [viewingWalkin, setViewingWalkin] = useState(null);
     const [importing, setImporting] = useState(false);
     
     const initialEntryState = {
@@ -356,7 +357,8 @@ const WalkinHub = ({ hideHeader = false }) => {
                                         animate={{ opacity: 1, y: 0 }}
                                         exit={{ opacity: 0, scale: 0.95 }}
                                         transition={{ delay: idx * 0.05 }}
-                                        className="hover:bg-slate-50/50 transition-colors group"
+                                        onClick={() => setViewingWalkin(w)}
+                                        className="hover:bg-slate-50/50 transition-colors group cursor-pointer"
                                     >
                                             <td className="px-8 py-6">
                                                 <div className="flex items-center">
@@ -452,21 +454,21 @@ const WalkinHub = ({ hideHeader = false }) => {
                                             <td className="px-8 py-6 text-right">
                                                 <div className="flex items-center justify-end gap-3">
                                                     <button 
-                                                        onClick={() => handleEdit(w)}
+                                                        onClick={(e) => { e.stopPropagation(); handleEdit(w); }}
                                                         className="p-3 rounded-2xl bg-white text-slate-400 border border-slate-200 hover:text-orange-500 hover:border-orange-500 transition-all shadow-sm"
                                                         title="Edit Entry"
                                                     >
                                                         <Edit2 className="w-4 h-4" />
                                                     </button>
                                                     <button 
-                                                        onClick={() => handleStatusToggle(w.id, w.status)}
+                                                        onClick={(e) => { e.stopPropagation(); handleStatusToggle(w.id, w.status); }}
                                                         className={`p-3 rounded-2xl border transition-all ${w.status === 'ACTIVE' ? 'bg-slate-900 text-white border-slate-800 hover:bg-black shadow-lg shadow-slate-200' : 'bg-white text-slate-400 border-slate-200 hover:text-slate-900 hover:border-slate-900 shadow-sm'}`}
                                                         title={w.status === 'ACTIVE' ? "Mark as Out" : "Mark as Active"}
                                                     >
                                                         <LogOut className="w-4 h-4" />
                                                     </button>
                                                     <button 
-                                                        onClick={() => deleteWalkin(w.id)}
+                                                        onClick={(e) => { e.stopPropagation(); deleteWalkin(w.id); }}
                                                         className="p-3 rounded-2xl bg-red-50 text-red-500 border border-red-100 hover:bg-red-500 hover:text-white transition-all shadow-sm"
                                                     >
                                                         <Plus className="w-4 h-4 rotate-45" />
@@ -784,6 +786,180 @@ const WalkinHub = ({ hideHeader = false }) => {
                                     className="w-full py-4 text-xs font-black uppercase text-slate-400 hover:text-slate-900 transition-all"
                                 >
                                     Cancel
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+            {/* Modal for viewing details (Read-Only) */}
+            <AnimatePresence>
+                {viewingWalkin && (
+                    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+                        <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setViewingWalkin(null)}
+                            className="absolute inset-0 bg-slate-900/40 backdrop-blur-md"
+                        />
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="relative w-full max-w-2xl bg-white rounded-[40px] shadow-2xl overflow-hidden border border-slate-200"
+                        >
+                            {/* Modal Header */}
+                            <div className="bg-slate-50 border-b border-slate-100 p-8 flex justify-between items-center bg-gradient-to-br from-slate-50 to-white">
+                                <div>
+                                    <h2 className="text-2xl font-black text-slate-900 tracking-tight uppercase tracking-widest flex items-center">
+                                        Visitor <span className="text-orange-500 ml-2">Detail</span>
+                                    </h2>
+                                    <p className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase mt-1">Full Entry Data Record</p>
+                                </div>
+                                <button 
+                                    onClick={() => setViewingWalkin(null)}
+                                    className="w-12 h-12 rounded-2xl bg-white border border-slate-200 text-slate-400 hover:text-orange-500 hover:border-orange-500 transition-all flex items-center justify-center shadow-sm"
+                                >
+                                    <Plus className="w-6 h-6 rotate-45" />
+                                </button>
+                            </div>
+
+                            <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto detail-scroll custom-scrollbar">
+                                {/* Basic Info Grid */}
+                                <div className="grid grid-cols-2 gap-8 pb-8 border-b border-slate-100">
+                                    <div className="space-y-4">
+                                        <div>
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Client Name</p>
+                                            <div className="flex items-center text-lg font-black text-slate-900 tracking-tight">
+                                                <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-orange-500 mr-3 border border-orange-100">
+                                                    <User className="w-5 h-5" />
+                                                </div>
+                                                {viewingWalkin.clientName}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Contact</p>
+                                            <div className="flex items-center text-slate-600 font-bold tracking-widest">
+                                                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 mr-3 border border-slate-100">
+                                                    <Phone className="w-5 h-5" />
+                                                </div>
+                                                {viewingWalkin.contactNumber}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Date of Visit</p>
+                                            <div className="flex items-center text-slate-600 font-bold tracking-widest">
+                                                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 mr-3 border border-slate-100">
+                                                    <Calendar className="w-5 h-5" />
+                                                </div>
+                                                {formatDate(viewingWalkin.dateOfVisit)}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <div>
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Showroom</p>
+                                            <div className="inline-flex items-center px-4 py-2 rounded-2xl bg-orange-500 text-white font-black text-xs uppercase tracking-widest shadow-md shadow-orange-200">
+                                                <MapPin className="w-3.5 h-3.5 mr-2" />
+                                                {viewingWalkin.showroom}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Project Location</p>
+                                            <div className="flex items-center text-slate-600 font-bold uppercase tracking-widest">
+                                                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 mr-3 border border-slate-100">
+                                                    <Briefcase className="w-5 h-5" />
+                                                </div>
+                                                {viewingWalkin.project || 'N/A'}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Status</p>
+                                            <div className={`inline-flex items-center px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest ${viewingWalkin.status === 'ACTIVE' ? 'bg-orange-50 text-orange-600 border border-orange-200' : 'bg-emerald-50 text-emerald-600 border border-emerald-200'}`}>
+                                                {viewingWalkin.status}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Detailed Assignments Section */}
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pb-8 border-b border-slate-100">
+                                    <div className="p-5 rounded-[28px] bg-slate-50/50 border border-slate-100 relative group overflow-hidden">
+                                        <div className="absolute top-0 right-0 w-16 h-16 bg-orange-50 rounded-bl-full translate-x-4 -translate-y-4 transition-transform group-hover:scale-125" />
+                                        <p className="relative z-10 text-[8px] font-black text-slate-400 uppercase tracking-widest mb-2">CRE Assigned</p>
+                                        <div className="relative z-10 flex items-center">
+                                            <Star className="w-4 h-4 text-orange-500 mr-2" />
+                                            <span className="text-xs font-black text-slate-900 uppercase">{viewingWalkin.cre?.name || 'MANUAL SYSTEM'}</span>
+                                        </div>
+                                    </div>
+                                    <div className="p-5 rounded-[28px] bg-slate-50/50 border border-slate-100 relative group overflow-hidden">
+                                        <div className="absolute top-0 right-0 w-16 h-16 bg-blue-50 rounded-bl-full translate-x-4 -translate-y-4 transition-transform group-hover:scale-125" />
+                                        <p className="relative z-10 text-[8px] font-black text-slate-400 uppercase tracking-widest mb-2">Business Head</p>
+                                        <div className="relative z-10 flex items-center">
+                                            <User className="w-4 h-4 text-blue-500 mr-2" />
+                                            <span className="text-xs font-black text-slate-900 uppercase">{viewingWalkin.bh?.name || viewingWalkin.bhName || 'UNASSIGNED'}</span>
+                                        </div>
+                                    </div>
+                                    <div className="p-5 rounded-[28px] bg-slate-50/50 border border-slate-100 relative group overflow-hidden">
+                                        <div className="absolute top-0 right-0 w-16 h-16 bg-purple-50 rounded-bl-full translate-x-4 -translate-y-4 transition-transform group-hover:scale-125" />
+                                        <p className="relative z-10 text-[8px] font-black text-slate-400 uppercase tracking-widest mb-2">Architect / Employee</p>
+                                        <div className="relative z-10 flex items-center">
+                                            <Briefcase className="w-4 h-4 text-purple-500 mr-2" />
+                                            <span className="text-xs font-black text-slate-900 uppercase">{viewingWalkin.architect?.name || viewingWalkin.architectName || 'NONE'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Timings & Review */}
+                                <div className="grid grid-cols-2 gap-8">
+                                    <div className="space-y-4">
+                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center">
+                                            <Clock className="w-3 h-3 mr-2" /> Showroom Timings
+                                        </h3>
+                                        <div className="flex gap-4">
+                                            <div className="flex-1 p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                                                <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest mb-1">In Time</p>
+                                                <p className="text-sm font-black text-slate-700">{viewingWalkin.inTime || '--:--'}</p>
+                                            </div>
+                                            <div className="flex-1 p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                                                <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest mb-1">Out Time</p>
+                                                <p className="text-sm font-black text-slate-700">{viewingWalkin.outTime || '--:--'}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center">
+                                            <MessageSquare className="w-3 h-3 mr-2" /> WhatsApp Review
+                                        </h3>
+                                        <div className={`p-4 rounded-2xl border flex items-center justify-between ${viewingWalkin.whatsappStatus === 'SENT' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : viewingWalkin.whatsappStatus === 'FAILED' ? 'bg-red-50 border-red-100 text-red-600' : 'bg-slate-50 border-slate-100 text-slate-400'}`}>
+                                            <span className="text-[10px] font-black uppercase tracking-widest">{viewingWalkin.whatsappStatus || 'PENDING'}</span>
+                                            {viewingWalkin.whatsappStatus === 'SENT' ? <CheckCircle className="w-4 h-4" /> : viewingWalkin.whatsappStatus === 'FAILED' ? <AlertCircle className="w-4 h-4" /> : <Loader2 className="w-4 h-4 animate-spin" />}
+                                        </div>
+                                        {viewingWalkin.whatsappError && (
+                                            <p className="text-[9px] font-bold text-red-400 uppercase italic tracking-wider px-2">* {viewingWalkin.whatsappError}</p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Full Remarks */}
+                                <div className="p-6 rounded-[32px] bg-slate-50/80 border border-slate-100">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Remarks & Observations</p>
+                                    <p className="text-sm text-slate-600 font-medium leading-relaxed italic">
+                                        {viewingWalkin.remarks || 'No specific remarks recorded for this visitor.'}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Footer Actions */}
+                            <div className="p-8 bg-slate-50/50 border-t border-slate-100 flex justify-end">
+                                <button 
+                                    onClick={() => setViewingWalkin(null)}
+                                    className="px-10 py-4 bg-slate-900 text-white rounded-[20px] text-xs font-black uppercase tracking-widest shadow-xl shadow-slate-200 hover:bg-black transition-all active:scale-95"
+                                >
+                                    Close Record
                                 </button>
                             </div>
                         </motion.div>
