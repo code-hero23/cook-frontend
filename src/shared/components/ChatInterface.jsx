@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "../utils/axios";
-import { Send, Image as ImageIcon, FileText, Check, CheckCheck, Phone, MoreVertical, Search, MessageSquare, ArrowLeft, Download } from 'lucide-react';
+import { Send, Image as ImageIcon, FileText, Check, CheckCheck, Phone, Video, MoreVertical, Search, MessageSquare, ArrowLeft, Download, Paperclip, Smile, X } from 'lucide-react';
 import { formatDate, formatTime } from '../utils/dateFormatter';
 import toast from "react-hot-toast";
 
