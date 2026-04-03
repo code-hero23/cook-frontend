@@ -517,64 +517,114 @@ const ProjectDrawer = ({ isOpen, onClose, onSubmit, initialData, isEditing }) =>
 
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <div className="col-span-1">
-                                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Freezing Amount (₹)</label>
+                                                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Project Name (FM)</label>
+                                                    <input
+                                                        name="name"
+                                                        value={form.name || ""}
+                                                        onChange={handleChange}
+                                                        className="w-full px-3 py-1.5 rounded-lg border border-slate-100 bg-white shadow-sm focus:ring-1 focus:ring-amber-400 outline-none text-sm"
+                                                        placeholder="Suryanarayanan Project"
+                                                    />
+                                                </div>
+                                                <div className="col-span-1">
+                                                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Contact Number (FM)</label>
+                                                    <input
+                                                        name="clientPhone"
+                                                        value={form.clientPhone || ""}
+                                                        onChange={handleChange}
+                                                        className="w-full px-3 py-1.5 rounded-lg border border-slate-100 bg-white shadow-sm outline-none text-sm"
+                                                        placeholder="9600..."
+                                                    />
+                                                </div>
+                                                <div className="col-span-1">
+                                                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Mail ID (FM)</label>
+                                                    <input
+                                                        name="clientEmail"
+                                                        value={form.clientEmail || ""}
+                                                        onChange={handleChange}
+                                                        className="w-full px-3 py-1.5 rounded-lg border border-slate-100 bg-white shadow-sm outline-none text-sm"
+                                                        placeholder="subanth..."
+                                                    />
+                                                </div>
+                                                <div className="col-span-1">
+                                                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Project / Location (FM)</label>
+                                                    <input
+                                                        name="location"
+                                                        value={form.location || ""}
+                                                        onChange={handleChange}
+                                                        className="w-full px-3 py-1.5 rounded-lg border border-slate-100 bg-white shadow-sm outline-none text-sm"
+                                                        placeholder="Windmare..."
+                                                    />
+                                                </div>
+                                                <div className="col-span-1">
+                                                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Lead Source (FM)</label>
+                                                    <input
+                                                        name="leadSource"
+                                                        list="leadSourceOptions"
+                                                        value={form.leadSource || ""}
+                                                        onChange={handleChange}
+                                                        className="w-full px-3 py-1.5 rounded-lg border border-slate-100 bg-white shadow-sm outline-none text-sm"
+                                                    />
+                                                </div>
+                                                <div className="col-span-1">
+                                                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Freezing Amount (₹)</label>
                                                     <input
                                                         type="number"
                                                         name="freezingAmount"
                                                         value={form.freezingAmount || ""}
                                                         onChange={handleChange}
-                                                        className="w-full px-4 py-2 rounded-xl border border-slate-200 bg-white shadow-sm focus:ring-2 focus:ring-amber-500 outline-none"
+                                                        className="w-full px-3 py-1.5 rounded-lg border border-slate-100 bg-white shadow-sm focus:ring-1 focus:ring-amber-400 outline-none text-sm"
                                                         placeholder="e.g. 30000"
                                                     />
                                                 </div>
                                                 <div className="col-span-1">
-                                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Variant</label>
+                                                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Variant</label>
                                                     <input
                                                         name="variant"
                                                         value={form.variant || ""}
                                                         onChange={handleChange}
-                                                        className="w-full px-4 py-2 rounded-xl border border-slate-200 bg-white shadow-sm focus:ring-2 focus:ring-amber-500 outline-none"
+                                                        className="w-full px-3 py-1.5 rounded-lg border border-slate-100 bg-white shadow-sm outline-none text-sm"
                                                         placeholder="e.g. 4x Tuff Gloss"
                                                     />
                                                 </div>
                                                 <div className="col-span-1">
-                                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Woodwork Amount (₹)</label>
+                                                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Woodwork Amount (₹)</label>
                                                     <input
                                                         type="number"
                                                         name="woodworkAmount"
                                                         value={form.woodworkAmount || ""}
                                                         onChange={handleChange}
-                                                        className="w-full px-4 py-2 rounded-xl border border-slate-200 bg-white shadow-sm outline-none"
+                                                        className="w-full px-3 py-1.5 rounded-lg border border-slate-100 bg-white shadow-sm outline-none text-sm"
                                                     />
                                                 </div>
                                                 <div className="col-span-1">
-                                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Add ons Amount (₹)</label>
+                                                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Add ons Amount (₹)</label>
                                                     <input
                                                         type="number"
                                                         name="addOnsAmount"
                                                         value={form.addOnsAmount || ""}
                                                         onChange={handleChange}
-                                                        className="w-full px-4 py-2 rounded-xl border border-slate-200 bg-white shadow-sm outline-none"
+                                                        className="w-full px-3 py-1.5 rounded-lg border border-slate-100 bg-white shadow-sm outline-none text-sm"
                                                     />
                                                 </div>
                                                 <div className="col-span-2">
-                                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Quote Spreadsheet Link</label>
+                                                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Quote Spreadsheet Link</label>
                                                     <input
                                                         name="quoteLink"
                                                         value={form.quoteLink || ""}
                                                         onChange={handleChange}
-                                                        className="w-full px-4 py-2 rounded-xl border border-slate-200 bg-white shadow-sm outline-none"
+                                                        className="w-full px-3 py-1.5 rounded-lg border border-slate-100 bg-white shadow-sm outline-none text-sm"
                                                         placeholder="https://docs.google.com/..."
                                                     />
                                                 </div>
                                                 <div className="col-span-2">
-                                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">NOTES (FM & PDI)</label>
+                                                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">NOTES (FM & PDI)</label>
                                                     <textarea
                                                         name="freezingMailNote"
                                                         value={form.freezingMailNote || ""}
                                                         onChange={handleChange}
                                                         rows="3"
-                                                        className="w-full px-4 py-2 rounded-xl border border-slate-200 bg-white shadow-sm outline-none resize-none"
+                                                        className="w-full px-3 py-1.5 rounded-lg border border-slate-100 bg-white shadow-sm outline-none resize-none text-sm"
                                                         placeholder="Add instructions or specific requirements..."
                                                     />
                                                 </div>
