@@ -69,10 +69,15 @@ exports.createProject = async (req, res) => {
 
         // Handle Recipients (might be sent as JSON string or comma list)
         let recipients = data.recipients;
+        console.log(`[DEBUG] Raw recipients from body: ${JSON.stringify(recipients)}`); // DIAGNOSTIC LOG
+
         if (typeof recipients === 'string') {
             try { recipients = JSON.parse(recipients); }
             catch (e) { recipients = recipients.split(',').map(r => r.trim()); }
         }
+        
+        console.log(`[DEBUG] Parsed recipients: ${JSON.stringify(recipients)}`); // DIAGNOSTIC LOG
+        
         delete data.recipients; // Clean from Prisma data
         delete data.attachments; // Clean from Prisma data (handled by req.files)
 
@@ -169,6 +174,8 @@ exports.createProject = async (req, res) => {
         // await seedProjectTasks(project.id);
 
         // --- NEW: Handle Freezing Mail Trigger ---
+        console.log(`[DEBUG] Final check - recipients:`, recipients, "type:", typeof recipients);
+        
         if (recipients && Array.isArray(recipients) && recipients.length > 0) {
             try {
                 // Attachments handling (from multer req.files)
@@ -176,7 +183,9 @@ exports.createProject = async (req, res) => {
                     filename: file.originalname,
                     path: path.join(__dirname, '../../uploads', file.filename)
                 }));
-
+                
+                console.log(`[DEBUG] Triggering mail with ${emailAttachments.length} attachments...`);
+                
                 await sendFreezingMail({
                     project: project,
                     recipients: recipients,
