@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import axios from "../../../shared/utils/axios";
-import { ArrowLeft, Upload, Trash2, FileText, Image as ImageIcon, Calendar, Eye, X, CheckCircle, MapPin, Clock, Folder, Download } from 'lucide-react';
+import { ArrowLeft, Upload, Trash2, FileText, Image as ImageIcon, Calendar, Eye, X, CheckCircle, MapPin, Clock, Folder, Download, ExternalLink } from 'lucide-react';
 import RefreshButton from "../../../shared/components/RefreshButton.jsx";
 import { formatDate } from "../../../shared/utils/dateFormatter";
 
@@ -115,6 +115,32 @@ const ProjectDetails = ({ project }) => {
                         <DetailField label="Budget" value={project.budget ? `₹${project.budget.toLocaleString()}` : null} />
                         <DetailField label="Payment Earned" value={`${project.paymentPercentage || 0}%`} />
                     </DetailCard>
+
+                    {/* NEW: Freezing Mail Details Card */}
+                    {(project.freezingAmount || project.variant || project.quoteLink) && (
+                        <DetailCard title="Freezing Mail Details">
+                            <DetailField label="Freezing Amount" value={project.freezingAmount ? `₹${project.freezingAmount.toLocaleString()}` : null} />
+                            <DetailField label="Variant" value={project.variant} />
+                            <DetailField label="Woodwork Amount" value={project.woodworkAmount ? `₹${project.woodworkAmount.toLocaleString()}` : null} />
+                            <DetailField label="Add ons Amount" value={project.addOnsAmount ? `₹${project.addOnsAmount.toLocaleString()}` : null} />
+                            <div className="col-span-1 sm:col-span-2">
+                                <dt className="text-[10px] text-slate-400 font-bold uppercase mb-1">Quote Link</dt>
+                                <dd className="text-sm font-medium">
+                                    {project.quoteLink ? (
+                                        <a href={project.quoteLink} target="_blank" rel="noreferrer" className="text-brand-600 hover:underline flex items-center gap-1">
+                                            View Spreadsheet <ExternalLink size={14} />
+                                        </a>
+                                    ) : <span className="text-slate-300 italic">No link provided</span>}
+                                </dd>
+                            </div>
+                            {project.freezingMailNote && (
+                                <div className="col-span-1 sm:col-span-2 mt-2 p-3 bg-amber-50 rounded-xl border border-amber-100">
+                                    <dt className="text-[10px] text-amber-600 font-bold uppercase mb-1">Freezing Mail Note / PHI</dt>
+                                    <dd className="text-xs text-amber-900 leading-relaxed whitespace-pre-wrap">{project.freezingMailNote}</dd>
+                                </div>
+                            )}
+                        </DetailCard>
+                    )}
                 </div>
 
                 {/* People Info */}

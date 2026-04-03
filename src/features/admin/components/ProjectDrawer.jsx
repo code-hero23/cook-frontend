@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { X, Check, Trash2 } from "lucide-react";
+import { X, Check, Trash2, CloudUpload } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "../../../shared/utils/axios";
 import { useApp } from "../context/AppContext";
@@ -478,13 +478,14 @@ const ProjectDrawer = ({ isOpen, onClose, onSubmit, initialData, isEditing }) =>
                                                 />
                                             </div>
                                             <div className="col-span-1">
-                                                <label className="block text-sm font-medium text-slate-700 mb-1">Total Budget (₹)</label>
+                                                <label className="block text-sm font-medium text-slate-700 mb-1">Total Project Budget (₹)</label>
                                                 <input
                                                     type="number"
                                                     name="budget"
                                                     value={form.budget}
                                                     onChange={handleChange}
                                                     className="w-full px-4 py-2 rounded-xl border border-slate-200 outline-none"
+                                                    placeholder="e.g. 1000000"
                                                 />
                                             </div>
                                             <div className="col-span-1">
@@ -503,6 +504,162 @@ const ProjectDrawer = ({ isOpen, onClose, onSubmit, initialData, isEditing }) =>
                                             </div>
                                         </div>
                                     </section>
+
+                                    {/* Section: Freezing Mail Details (Only for Create) */}
+                                    {!isEditing && (
+                                        <section className="bg-amber-50/50 p-6 rounded-3xl border border-amber-100/50 space-y-6">
+                                            <div className="flex items-center justify-between">
+                                                <h3 className="text-xs font-bold uppercase tracking-wider text-amber-600 flex items-center gap-2">
+                                                    <span className="w-8 h-[1px] bg-amber-200"></span> Freezing Mail Info
+                                                </h3>
+                                                <span className="px-2 py-1 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-lg uppercase">Auto-Notify Team</span>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div className="col-span-1">
+                                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Freezing Amount (₹)</label>
+                                                    <input
+                                                        type="number"
+                                                        name="freezingAmount"
+                                                        value={form.freezingAmount || ""}
+                                                        onChange={handleChange}
+                                                        className="w-full px-4 py-2 rounded-xl border border-slate-200 bg-white shadow-sm focus:ring-2 focus:ring-amber-500 outline-none"
+                                                        placeholder="e.g. 30000"
+                                                    />
+                                                </div>
+                                                <div className="col-span-1">
+                                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Variant</label>
+                                                    <input
+                                                        name="variant"
+                                                        value={form.variant || ""}
+                                                        onChange={handleChange}
+                                                        className="w-full px-4 py-2 rounded-xl border border-slate-200 bg-white shadow-sm focus:ring-2 focus:ring-amber-500 outline-none"
+                                                        placeholder="e.g. 4x Tuff Gloss"
+                                                    />
+                                                </div>
+                                                <div className="col-span-1">
+                                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Woodwork Amount (₹)</label>
+                                                    <input
+                                                        type="number"
+                                                        name="woodworkAmount"
+                                                        value={form.woodworkAmount || ""}
+                                                        onChange={handleChange}
+                                                        className="w-full px-4 py-2 rounded-xl border border-slate-200 bg-white shadow-sm outline-none"
+                                                    />
+                                                </div>
+                                                <div className="col-span-1">
+                                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Add ons Amount (₹)</label>
+                                                    <input
+                                                        type="number"
+                                                        name="addOnsAmount"
+                                                        value={form.addOnsAmount || ""}
+                                                        onChange={handleChange}
+                                                        className="w-full px-4 py-2 rounded-xl border border-slate-200 bg-white shadow-sm outline-none"
+                                                    />
+                                                </div>
+                                                <div className="col-span-2">
+                                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Quote Spreadsheet Link</label>
+                                                    <input
+                                                        name="quoteLink"
+                                                        value={form.quoteLink || ""}
+                                                        onChange={handleChange}
+                                                        className="w-full px-4 py-2 rounded-xl border border-slate-200 bg-white shadow-sm outline-none"
+                                                        placeholder="https://docs.google.com/..."
+                                                    />
+                                                </div>
+                                                <div className="col-span-2">
+                                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">NOTES (FM & PDI)</label>
+                                                    <textarea
+                                                        name="freezingMailNote"
+                                                        value={form.freezingMailNote || ""}
+                                                        onChange={handleChange}
+                                                        rows="3"
+                                                        className="w-full px-4 py-2 rounded-xl border border-slate-200 bg-white shadow-sm outline-none resize-none"
+                                                        placeholder="Add instructions or specific requirements..."
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            {/* Recipients & Attachments UI can go here or below */}
+                                            <div className="space-y-4 pt-4 border-t border-amber-100">
+                                                <div>
+                                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Send Freezing Mail to:</label>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {employees.map(emp => {
+                                                            const isSelected = (form.recipients || []).includes(emp.email);
+                                                            return (
+                                                                <button
+                                                                    key={emp.id}
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        const current = form.recipients || [];
+                                                                        const next = isSelected 
+                                                                            ? current.filter(e => e !== emp.email) 
+                                                                            : [...current, emp.email];
+                                                                        setForm(prev => ({ ...prev, recipients: next }));
+                                                                    }}
+                                                                    className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-all border ${isSelected 
+                                                                        ? 'bg-amber-500 text-white border-amber-600 shadow-sm' 
+                                                                        : 'bg-white text-slate-600 border-slate-200 hover:border-amber-300'}`}
+                                                                >
+                                                                    {emp.name}
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Attachments (Files/Photos)</label>
+                                                    <div 
+                                                        className="border-2 border-dashed border-slate-200 rounded-2xl p-6 bg-white hover:border-amber-400 hover:bg-amber-50/30 transition-all text-center group cursor-pointer relative"
+                                                        onClick={() => document.getElementById('project-attachments').click()}
+                                                    >
+                                                        <input 
+                                                            type="file" 
+                                                            id="project-attachments" 
+                                                            multiple 
+                                                            hidden 
+                                                            onChange={(e) => {
+                                                                const files = Array.from(e.target.files);
+                                                                setForm(prev => ({ ...prev, attachments: [...(prev.attachments || []), ...files] }));
+                                                            }}
+                                                        />
+                                                        <div className="space-y-2">
+                                                            <div className="mx-auto w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-amber-100 text-slate-400 group-hover:text-amber-600 transition-colors">
+                                                                <CloudUpload size={24} />
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-sm font-bold text-slate-700">Click to upload files</p>
+                                                                <p className="text-xs text-slate-400">PDFs, Images, Excel sheets supported</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    {/* File List */}
+                                                    {form.attachments?.length > 0 && (
+                                                        <div className="mt-3 flex flex-wrap gap-2">
+                                                            {form.attachments.map((file, idx) => (
+                                                                <div key={idx} className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs shadow-sm">
+                                                                    <span className="max-w-[150px] truncate">{file.name}</span>
+                                                                    <button 
+                                                                        type="button"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            setForm(prev => ({ ...prev, attachments: prev.attachments.filter((_, i) => i !== idx) }));
+                                                                        }}
+                                                                        className="text-red-500 hover:text-red-700"
+                                                                    >
+                                                                        <Trash2 size={14} />
+                                                                    </button>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </section>
+                                    )}
 
                                 </fieldset>
                             </form>

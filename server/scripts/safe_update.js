@@ -13,11 +13,57 @@ async function findTableName(baseName) {
   return result[0]?.tablename;
 }
 
+// Configuration for tables and their new columns
+const SCHEMA_UPDATES = {
+  'WalkinHubEntry': [
+    'ADD COLUMN IF NOT EXISTS "bhName" TEXT',
+    'ADD COLUMN IF NOT EXISTS "inTime" TEXT',
+    'ADD COLUMN IF NOT EXISTS "outTime" TEXT',
+    'ADD COLUMN IF NOT EXISTS "remarks" TEXT',
+    'ADD COLUMN IF NOT EXISTS "status" TEXT',
+    'ADD COLUMN IF NOT EXISTS "architectName" TEXT',
+    'ADD COLUMN IF NOT EXISTS "architectId" TEXT',
+    'ADD COLUMN IF NOT EXISTS "whatsappStatus" TEXT DEFAULT \'PENDING\'',
+    'ADD COLUMN IF NOT EXISTS "whatsappError" TEXT',
+    'ADD COLUMN IF NOT EXISTS "whatsappSentAt" TIMESTAMP',
+    'ADD COLUMN IF NOT EXISTS "whatsappSent" BOOLEAN DEFAULT FALSE',
+    'ADD COLUMN IF NOT EXISTS "outTimeMarkedAt" TIMESTAMP',
+    'ADD COLUMN IF NOT EXISTS "source" TEXT',
+    'ADD COLUMN IF NOT EXISTS "site" TEXT',
+    'ADD COLUMN IF NOT EXISTS "star" INTEGER DEFAULT 0',
+    'ADD COLUMN IF NOT EXISTS "dateOfVisit" TIMESTAMP DEFAULT CURRENT_TIMESTAMP'
+  ],
+  'WorkReport': [
+    'ADD COLUMN IF NOT EXISTS "bhName" TEXT',
+    'ADD COLUMN IF NOT EXISTS "inTime" TEXT',
+    'ADD COLUMN IF NOT EXISTS "outTime" TEXT',
+    'ADD COLUMN IF NOT EXISTS "remarks" TEXT',
+    'ADD COLUMN IF NOT EXISTS "status" TEXT',
+    'ADD COLUMN IF NOT EXISTS "architectName" TEXT',
+    'ADD COLUMN IF NOT EXISTS "architectId" TEXT',
+    'ADD COLUMN IF NOT EXISTS "whatsappStatus" TEXT DEFAULT \'PENDING\'',
+    'ADD COLUMN IF NOT EXISTS "whatsappError" TEXT',
+    'ADD COLUMN IF NOT EXISTS "whatsappSentAt" TIMESTAMP',
+    'ADD COLUMN IF NOT EXISTS "whatsappSent" BOOLEAN DEFAULT FALSE',
+    'ADD COLUMN IF NOT EXISTS "outTimeMarkedAt" TIMESTAMP',
+    'ADD COLUMN IF NOT EXISTS "source" TEXT',
+    'ADD COLUMN IF NOT EXISTS "site" TEXT',
+    'ADD COLUMN IF NOT EXISTS "star" INTEGER DEFAULT 0',
+    'ADD COLUMN IF NOT EXISTS "dateOfVisit" TIMESTAMP DEFAULT CURRENT_TIMESTAMP'
+  ],
+  'Project': [
+    'ADD COLUMN IF NOT EXISTS "freezingAmount" DOUBLE PRECISION',
+    'ADD COLUMN IF NOT EXISTS "variant" TEXT',
+    'ADD COLUMN IF NOT EXISTS "woodworkAmount" DOUBLE PRECISION',
+    'ADD COLUMN IF NOT EXISTS "addOnsAmount" DOUBLE PRECISION',
+    'ADD COLUMN IF NOT EXISTS "quoteLink" TEXT',
+    'ADD COLUMN IF NOT EXISTS "freezingMailNote" TEXT'
+  ]
+};
+
 async function main() {
   try {
-    const tablesToUpdate = ['WalkinHubEntry', 'WorkReport'];
-    
-    for (const modelName of tablesToUpdate) {
+    for (const [modelName, columns] of Object.entries(SCHEMA_UPDATES)) {
       const actualTableName = await findTableName(modelName);
       
       if (!actualTableName) {
@@ -27,26 +73,10 @@ async function main() {
       
       console.log(`✅ Found table: "${actualTableName}" for model "${modelName}"`);
       
+      const alterStatement = `ALTER TABLE "${actualTableName}" ${columns.join(', ')}`;
+      
       // Use double quotes for safety in PostgreSQL to preserve exact case
-      await prisma.$executeRawUnsafe(`
-        ALTER TABLE "${actualTableName}" 
-        ADD COLUMN IF NOT EXISTS "bhName" TEXT,
-        ADD COLUMN IF NOT EXISTS "inTime" TEXT,
-        ADD COLUMN IF NOT EXISTS "outTime" TEXT,
-        ADD COLUMN IF NOT EXISTS "remarks" TEXT,
-        ADD COLUMN IF NOT EXISTS "status" TEXT,
-        ADD COLUMN IF NOT EXISTS "architectName" TEXT,
-        ADD COLUMN IF NOT EXISTS "architectId" TEXT,
-        ADD COLUMN IF NOT EXISTS "whatsappStatus" TEXT DEFAULT 'PENDING',
-        ADD COLUMN IF NOT EXISTS "whatsappError" TEXT,
-        ADD COLUMN IF NOT EXISTS "whatsappSentAt" TIMESTAMP,
-        ADD COLUMN IF NOT EXISTS "whatsappSent" BOOLEAN DEFAULT FALSE,
-        ADD COLUMN IF NOT EXISTS "outTimeMarkedAt" TIMESTAMP,
-        ADD COLUMN IF NOT EXISTS "source" TEXT,
-        ADD COLUMN IF NOT EXISTS "site" TEXT,
-        ADD COLUMN IF NOT EXISTS "star" INTEGER DEFAULT 0,
-        ADD COLUMN IF NOT EXISTS "dateOfVisit" TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
-      `);
+      await prisma.$executeRawUnsafe(alterStatement);
       console.log(`✨ Successfully checked/updated columns in table "${actualTableName}"`);
     }
     

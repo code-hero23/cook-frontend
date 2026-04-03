@@ -41,7 +41,16 @@ const emptyProject = {
   salesRep: "",
   faId: "",
   laId: "",
-  createdBy: ""
+  createdBy: "",
+  // Freezing Mail Fields
+  freezingAmount: "",
+  variant: "",
+  woodworkAmount: "",
+  addOnsAmount: "",
+  quoteLink: "",
+  freezingMailNote: "",
+  recipients: [],
+  attachments: []
 };
 
 const Projects = () => {
@@ -157,7 +166,32 @@ const Projects = () => {
         alert("Client Password is required for new projects.");
         return;
       }
-      addProject(secureForm);
+
+      // Check if it's a "Freezing Mail" creation (has attachments or recipients)
+      const hasAttachments = secureForm.attachments?.length > 0;
+      const hasRecipients = secureForm.recipients?.length > 0;
+
+      if (hasAttachments || hasRecipients) {
+        // Use FormData for file support
+        const formData = new FormData();
+        
+        // Add all base fields
+        Object.keys(secureForm).forEach(key => {
+          if (key === 'attachments') {
+            secureForm.attachments.forEach(file => {
+              formData.append('attachments', file);
+            });
+          } else if (key === 'recipients') {
+             formData.append('recipients', JSON.stringify(secureForm.recipients));
+          } else if (secureForm[key] !== undefined && secureForm[key] !== null) {
+            formData.append(key, secureForm[key]);
+          }
+        });
+
+        addProject(formData);
+      } else {
+        addProject(secureForm);
+      }
     }
     setDrawerOpen(false);
   };

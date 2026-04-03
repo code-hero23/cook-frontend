@@ -1,5 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const { sendFreezingMail } = require('../services/emailService');
+const path = require('path');
 
 // Get all projects
 // Get all projects (Optional: Filter by employee)
@@ -60,12 +62,25 @@ exports.createProject = async (req, res) => {
         if (data.latitude) data.latitude = parseFloat(data.latitude);
         if (data.longitude) data.longitude = parseFloat(data.longitude);
 
+        // --- NEW: Freezing Mail Specific Sanitization ---
+        if (data.freezingAmount) data.freezingAmount = parseFloat(data.freezingAmount);
+        if (data.woodworkAmount) data.woodworkAmount = parseFloat(data.woodworkAmount);
+        if (data.addOnsAmount) data.addOnsAmount = parseFloat(data.addOnsAmount);
+
+        // Handle Recipients (might be sent as JSON string or comma list)
+        let recipients = data.recipients;
+        if (typeof recipients === 'string') {
+            try { recipients = JSON.parse(recipients); }
+            catch (e) { recipients = recipients.split(',').map(r => r.trim()); }
+        }
+        delete data.recipients; // Clean from Prisma data
+
         // Handle Dates
         if (data.startDate) data.startDate = new Date(data.startDate);
         if (data.deadline) data.deadline = new Date(data.deadline);
 
         // Clean up empty/whitespace strings for optional fields to avoid Unique Constraint errors
-        ['cpNumber', 'gstin', 'spouseName', 'spousePhone', 'location', 'businessHeadId', 'propertyType', 'scopeOfWork', 'leadSource', 'salesRep', 'faId', 'laId', 'unitNumber', 'block', 'floor', 'area', 'createdBy'].forEach(field => {
+        ['cpNumber', 'gstin', 'spouseName', 'spousePhone', 'location', 'businessHeadId', 'propertyType', 'scopeOfWork', 'leadSource', 'salesRep', 'faId', 'laId', 'unitNumber', 'block', 'floor', 'area', 'createdBy', 'variant', 'quoteLink', 'freezingMailNote'].forEach(field => {
             if (!data[field] || (typeof data[field] === 'string' && data[field].trim() === "") || data[field] === "null" || data[field] === "undefined") {
                 data[field] = null; // Explicitly set to null to avoid Prisma unique constraint errors for empty strings
             } else if (typeof data[field] === 'string') {
@@ -131,6 +146,27 @@ exports.createProject = async (req, res) => {
 
         // Seed Predefined Tasks
         // await seedProjectTasks(project.id);
+
+        // --- NEW: Handle Freezing Mail Trigger ---
+        if (recipients && Array.isArray(recipients) && recipients.length > 0) {
+            try {
+                // Attachments handling (from multer req.files)
+                const emailAttachments = (req.files || []).map(file => ({
+                    filename: file.originalname,
+                    path: path.join(__dirname, '../../uploads', file.filename)
+                }));
+
+                await sendFreezingMail({
+                    project: project,
+                    recipients: recipients,
+                    attachments: emailAttachments
+                });
+                console.log(`[ProjectManager] Freezing Mail sent to ${recipients.join(', ')}`);
+            } catch (err) {
+                console.error("[ProjectManager] Failed to send freezing mail:", err);
+                // We don't fail the project creation, just log the error
+            }
+        }
 
         res.status(201).json(project);
     } catch (error) {
