@@ -129,22 +129,25 @@ const sendNotificationEmail = async (to, subject, text, html = null, cc = null, 
     }
 };
 
-// Standard HTML Template
+// Standard HTML Template (Optimized for Clean UI)
 const getEmailTemplate = (title, content) => {
     return `
-    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background-color: #ffffff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-        <div style="background-color: #ea580c; padding: 24px; text-align: center;">
-            <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: 0.5px;">Orbix Projects</h1>
+    <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #edf2f7; border-radius: 16px; overflow: hidden; background-color: #ffffff; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);">
+        <!-- Logos/Branding Section (Clean White) -->
+        <div style="padding: 32px 32px 20px; text-align: left; border-bottom: 1px solid #f7fafc;">
+            <img src="cid:logo" alt="Cookscape" style="height: 50px; width: auto; display: block;">
         </div>
-        <div style="padding: 32px; color: #334155; line-height: 1.6;">
-            <h2 style="color: #0f172a; margin-top: 0; margin-bottom: 24px; font-size: 20px; font-weight: 600; border-bottom: 2px solid #ea580c; display: inline-block; padding-bottom: 8px;">${title}</h2>
-            <div style="font-size: 16px;">
+        
+        <div style="padding: 32px; color: #4a5568; line-height: 1.6;">
+            <h2 style="color: #1a202c; margin-top: 0; margin-bottom: 24px; font-size: 22px; font-weight: 700; letter-spacing: -0.5px;">${title}</h2>
+            <div style="font-size: 15px; color: #4a5568;">
                 ${content}
             </div>
         </div>
-        <div style="background-color: #f1f5f9; padding: 24px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b;">
-            <p style="margin: 0; font-weight: 600;">&copy; ${new Date().getFullYear()} Orbix Projects. All rights reserved.</p>
-            <p style="margin: 8px 0 0;">This is an automated system notification. Please do not reply directly unless specified.</p>
+        
+        <div style="background-color: #f7fafc; padding: 24px 32px; text-align: left; border-top: 1px solid #edf2f7; font-size: 12px; color: #a0aec0;">
+            <p style="margin: 0; font-weight: 600; color: #718096;">&copy; ${new Date().getFullYear()} Cookscape Interiors. All rights reserved.</p>
+            <p style="margin: 4px 0 0;">This is an automated system notification. Please do not reply directly unless specified.</p>
         </div>
     </div>
     `;
@@ -222,7 +225,20 @@ const sendFreezingMail = async ({ project, recipients, attachments = [] }) => {
     `;
 
     const html = getEmailTemplate(title, content);
-    return await sendNotificationEmail(recipients, title, title, html, null, attachments);
+    
+    // Add Branding Logo to every Freezing Mail
+    const logoPath = path.join(__dirname, '../../public/FINAL_LOGO.png');
+    const finalAttachments = [...attachments];
+    
+    if (fs.existsSync(logoPath)) {
+        finalAttachments.push({
+            filename: 'logo.png',
+            path: logoPath,
+            cid: 'logo' // Consistent CID for template
+        });
+    }
+
+    return await sendNotificationEmail(recipients, title, title, html, null, finalAttachments);
 };
 
 module.exports = { createTransporter, sendBackupEmail, sendNotificationEmail, getEmailTemplate, sendFreezingMail };

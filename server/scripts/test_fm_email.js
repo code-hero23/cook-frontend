@@ -44,7 +44,7 @@ async function testEmail() {
     ];
 
     try {
-        console.log("📨 Attempting to send Freezing Mail...");
+        console.log("📨 Attempting to send Freezing Mail (NEW CLEAN UI)...");
         
         await sendFreezingMail({
             project: mockProject,
@@ -52,8 +52,8 @@ async function testEmail() {
             attachments: attachments
         });
 
-        console.log("✅ SUCCESS: The test email has been handed off to the STMP server.");
-        console.log("📩 Please check your inbox (and spam folder) at:", testRecipient);
+        console.log("✅ SUCCESS: The test email has been handed off with the CUSTOM LOGO.");
+        console.log("📩 Please check for the NEW MINIMALIST DESIGN at:", testRecipient);
 
     } catch (error) {
         console.error("❌ ERROR: Failed to send test email.");
