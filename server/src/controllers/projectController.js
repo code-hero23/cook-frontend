@@ -134,8 +134,28 @@ exports.createProject = async (req, res) => {
         if (data.clientPassword) {
             data.clientPassword = await bcrypt.hash(data.clientPassword, 10);
         }
+
+        // --- FINAL SANITIZATION: Strict field whitelist for Prisma ---
+        const validProjectFields = [
+            'name', 'clientFirstName', 'clientLastName', 'clientEmail', 'clientPhone', 
+            'clientPassword', 'projectCode', 'location', 'budget', 'startDate', 'deadline', 
+            'timelineDuration', 'leadSource', 'status', 'priority', 'faId', 'businessHeadId', 
+            'laId', 'spouseName', 'spousePhone', 'billingName', 'billingAddress', 
+            'billingPhone', 'handingOverMonth', 'handingOverYear', 'propertyType', 
+            'scopeOfWork', 'area', 'block', 'floor', 'unitNumber', 'createdBy', 
+            'freezingAmount', 'variant', 'woodworkAmount', 'addOnsAmount', 
+            'quoteLink', 'freezingMailNote', 'cpNumber', 'gstin'
+        ];
+
+        const prismaData = Object.keys(data)
+            .filter(key => validProjectFields.includes(key))
+            .reduce((obj, key) => {
+                obj[key] = data[key];
+                return obj;
+            }, {});
+
         const project = await prisma.project.create({
-            data: data,
+            data: prismaData,
             include: {
                 tasks: true,
                 assignedEmployees: true,

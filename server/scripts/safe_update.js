@@ -57,7 +57,26 @@ const SCHEMA_UPDATES = {
     'ADD COLUMN IF NOT EXISTS "woodworkAmount" DOUBLE PRECISION',
     'ADD COLUMN IF NOT EXISTS "addOnsAmount" DOUBLE PRECISION',
     'ADD COLUMN IF NOT EXISTS "quoteLink" TEXT',
-    'ADD COLUMN IF NOT EXISTS "freezingMailNote" TEXT'
+    'ADD COLUMN IF NOT EXISTS "freezingMailNote" TEXT',
+    'ADD COLUMN IF NOT EXISTS "billingName" TEXT',
+    'ADD COLUMN IF NOT EXISTS "billingAddress" TEXT',
+    'ADD COLUMN IF NOT EXISTS "billingPhone" TEXT',
+    'ADD COLUMN IF NOT EXISTS "handingOverMonth" TEXT',
+    'ADD COLUMN IF NOT EXISTS "handingOverYear" TEXT',
+    'ADD COLUMN IF NOT EXISTS "cpNumber" TEXT',
+    'ADD COLUMN IF NOT EXISTS "gstin" TEXT',
+    'ADD COLUMN IF NOT EXISTS "spouseName" TEXT',
+    'ADD COLUMN IF NOT EXISTS "spousePhone" TEXT',
+    'ADD COLUMN IF NOT EXISTS "propertyType" TEXT',
+    'ADD COLUMN IF NOT EXISTS "scopeOfWork" TEXT',
+    'ADD COLUMN IF NOT EXISTS "leadSource" TEXT',
+    'ADD COLUMN IF NOT EXISTS "salesRep" TEXT',
+    'ADD COLUMN IF NOT EXISTS "unitNumber" TEXT',
+    'ADD COLUMN IF NOT EXISTS "block" TEXT',
+    'ADD COLUMN IF NOT EXISTS "floor" TEXT',
+    'ADD COLUMN IF NOT EXISTS "area" TEXT',
+    'ADD COLUMN IF NOT EXISTS "createdBy" TEXT',
+    'ADD COLUMN IF NOT EXISTS "handoverDate" TIMESTAMP'
   ]
 };
 
