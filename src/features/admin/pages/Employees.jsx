@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useApp } from "../context/AppContext.jsx";
 import StatusBadge from "../components/common/StatusBadge.jsx";
-import { Plus, Pencil, Upload } from "lucide-react";
+import { Plus, Pencil, Upload, Trash2 } from "lucide-react";
 import RefreshButton from "../../../shared/components/RefreshButton.jsx";
 import BulkEmployeeImport from "../components/BulkEmployeeImport.jsx";
 
@@ -17,7 +17,7 @@ const emptyForm = {
 };
 
 const Employees = () => {
-  const { employees, addEmployee, updateEmployee, refreshData, loading } = useApp();
+  const { employees, addEmployee, updateEmployee, deleteEmployee, refreshData, loading } = useApp();
   const [searchParams] = useSearchParams();
   const [search, setSearch] = useState(searchParams.get("q") || "");
   const [modalOpen, setModalOpen] = useState(false);
@@ -51,6 +51,12 @@ const Employees = () => {
     });
     setEditingId(emp.id);
     setModalOpen(true);
+  };
+  
+  const handleSoftDelete = (emp) => {
+    if (window.confirm(`Are you sure you want to delete ${emp.name}? This will remove them from all active lists.`)) {
+      deleteEmployee(emp.id);
+    }
   };
 
   const handleSubmit = (e) => {
@@ -164,13 +170,22 @@ const Employees = () => {
                   </td>
                   <td className="py-2 pr-4 text-right">
                     {((user || {}).role !== "VIEW_ONLY_ADMIN") && (
-                      <button
-                        onClick={() => openEdit(e)}
-                        className="inline-flex items-center gap-1 text-xs text-orange-600 hover:underline transition"
-                      >
-                        <Pencil size={14} />
-                        Edit
-                      </button>
+                      <div className="flex items-center justify-end gap-3">
+                        <button
+                          onClick={() => openEdit(e)}
+                          className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline transition"
+                        >
+                          <Pencil size={14} />
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleSoftDelete(e)}
+                          className="inline-flex items-center gap-1 text-xs text-red-600 hover:underline transition"
+                        >
+                          <Trash2 size={14} />
+                          Delete
+                        </button>
+                      </div>
                     )}
                   </td>
                 </tr>

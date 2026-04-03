@@ -3,6 +3,7 @@ const router = express.Router();
 const { listBackups, createBackup, deleteBackup, BACKUP_DIR } = require('../services/backupService');
 const path = require('path');
 const fs = require('fs');
+const employeeController = require('../controllers/employeeController');
 
 // GET /api/admin/backups - List all backups
 router.get('/backups', (req, res) => {
@@ -47,5 +48,10 @@ router.delete('/backups/:filename', (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
+// User Management compatibility (Required for Frontend Admin UI)
+// Maps /api/admin/users/:id -> employeeController.deleteEmployee
+router.delete('/users/:id', employeeController.deleteEmployee);
+router.get('/users', employeeController.getEmployees);
 
 module.exports = router;

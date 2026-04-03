@@ -43,10 +43,15 @@ exports.getCREs = async (req, res) => {
     }
 };
 
-// Get all employees
+// Get all employees (excluding deleted)
 exports.getEmployees = async (req, res) => {
     try {
         const employees = await prisma.user.findMany({
+            where: {
+                status: {
+                    not: 'DELETED'
+                }
+            },
             select: {
                 id: true,
                 name: true,
@@ -110,13 +115,14 @@ exports.updateEmployee = async (req, res) => {
     }
 };
 
-// Delete employee
+// Delete employee (Soft Delete)
 exports.deleteEmployee = async (req, res) => {
     try {
-        await prisma.user.delete({
-            where: { id: req.params.id }
+        await prisma.user.update({
+            where: { id: req.params.id },
+            data: { status: 'DELETED' }
         });
-        res.json({ message: 'Employee deleted' });
+        res.json({ message: 'Employee marked as deleted' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
