@@ -74,6 +74,7 @@ exports.createProject = async (req, res) => {
             catch (e) { recipients = recipients.split(',').map(r => r.trim()); }
         }
         delete data.recipients; // Clean from Prisma data
+        delete data.attachments; // Clean from Prisma data (handled by req.files)
 
         // Handle Dates
         if (data.startDate) data.startDate = new Date(data.startDate);
