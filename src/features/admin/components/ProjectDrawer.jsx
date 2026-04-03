@@ -8,6 +8,19 @@ const ProjectDrawer = ({ isOpen, onClose, onSubmit, initialData, isEditing }) =>
     const { employees } = useApp();
     const [form, setForm] = useState(initialData);
 
+    // Auto-Select Superadmins as recipients for NEW projects
+    useEffect(() => {
+        if (!isEditing && isOpen && employees.length > 0) {
+            const superadmins = employees
+                .filter(e => e.role === 'SUPER_ADMIN' && e.status === 'ACTIVE')
+                .map(e => e.email);
+            
+            if (superadmins.length > 0 && (!form.recipients || form.recipients.length === 0)) {
+                setForm(prev => ({ ...prev, recipients: superadmins }));
+            }
+        }
+    }, [isOpen, isEditing, employees, form.recipients]);
+
     useEffect(() => {
         setForm(initialData);
     }, [initialData]);
@@ -634,8 +647,10 @@ const ProjectDrawer = ({ isOpen, onClose, onSubmit, initialData, isEditing }) =>
                                             <div className="space-y-4 pt-4 border-t border-amber-100">
                                                 <div>
                                                     <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Send Freezing Mail to:</label>
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {employees.map(emp => {
+                                                    
+                                                    {/* Recipients List with Auto-Select Logic */}
+                                                    <div className="flex flex-wrap gap-2 mb-4">
+                                                        {employees.filter(e => e.status === 'ACTIVE').map(emp => {
                                                             const isSelected = (form.recipients || []).includes(emp.email);
                                                             return (
                                                                 <button
@@ -648,9 +663,11 @@ const ProjectDrawer = ({ isOpen, onClose, onSubmit, initialData, isEditing }) =>
                                                                             : [...current, emp.email];
                                                                         setForm(prev => ({ ...prev, recipients: next }));
                                                                     }}
-                                                                    className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-all border ${isSelected 
-                                                                        ? 'bg-amber-500 text-white border-amber-600 shadow-sm' 
-                                                                        : 'bg-white text-slate-600 border-slate-200 hover:border-amber-300'}`}
+                                                                    className={`px-3 py-1.5 rounded-full text-[10px] font-bold transition-all border ${
+                                                                        isSelected
+                                                                            ? "bg-amber-100 border-amber-400 text-amber-700 shadow-sm"
+                                                                            : "bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300"
+                                                                    }`}
                                                                 >
                                                                     {emp.name}
                                                                 </button>
