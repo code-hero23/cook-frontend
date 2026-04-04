@@ -180,7 +180,10 @@ exports.createProject = async (req, res) => {
         if (recipients && Array.isArray(recipients) && recipients.length > 0) {
             try {
                 // Attachments handling (from multer req.files)
-                const emailAttachments = (req.files || []).map(file => ({
+                const files = req.files || [];
+                console.log(`[ProjectController] Files count: ${files.length}, Recipients: ${recipients.join(', ')}`);
+                
+                const emailAttachments = files.map(file => ({
                     filename: file.originalname,
                     path: path.join(__dirname, '../../uploads', file.filename)
                 }));
