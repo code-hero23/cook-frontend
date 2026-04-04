@@ -49,6 +49,7 @@ const emptyProject = {
   addOnsAmount: "",
   quoteLink: "",
   freezingMailNote: "",
+  whatsappMessage: "",
   recipients: [],
   attachments: []
 };
@@ -152,6 +153,7 @@ const Projects = () => {
     if (!secureForm.scopeOfWork) delete secureForm.scopeOfWork;
     if (!secureForm.leadSource) delete secureForm.leadSource;
     if (!secureForm.salesRep) delete secureForm.salesRep;
+    if (!secureForm.whatsappMessage) delete secureForm.whatsappMessage;
 
     // Remove empty password on update
     if (editingId && !secureForm.clientPassword) {

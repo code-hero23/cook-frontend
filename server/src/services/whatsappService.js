@@ -84,3 +84,50 @@ exports.sendReviewTemplate = async (phoneNumber, clientName) => {
         return { success: false, error: error.response?.data || error.message };
     }
 };
+
+/**
+ * Sends a plain text message (no template) to a phone number.
+ * @param {string} phoneNumber - Recipient phone number (with country code, no +)
+ * @param {string} message - Message body content
+ */
+exports.sendPlainTextMessage = async (phoneNumber, message) => {
+    if (!WHATSAPP_TOKEN || !PHONE_NUMBER_ID) {
+        console.error('[WhatsApp] Missing credentials in .env');
+        return { success: false, error: 'Missing credentials' };
+    }
+
+    // Clean phone number: remove +, spaces, dashes.
+    let cleanPhone = phoneNumber.replace(/\D/g, '');
+    
+    if (cleanPhone.length === 10) {
+        cleanPhone = '91' + cleanPhone;
+    }
+
+    const url = `https://graph.facebook.com/v17.0/${PHONE_NUMBER_ID}/messages`;
+
+    const data = {
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        to: cleanPhone,
+        type: "text",
+        text: {
+            preview_url: false,
+            body: message
+        }
+    };
+
+    try {
+        const response = await axios.post(url, data, {
+            headers: {
+                'Authorization': `Bearer ${WHATSAPP_TOKEN}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        console.log(`[WhatsApp] Plain text sent to ${cleanPhone}:`, response.data);
+        return { success: true, data: response.data };
+    } catch (error) {
+        console.error(`[WhatsApp] Error sending text to ${cleanPhone}:`, error.response?.data || error.message);
+        return { success: false, error: error.response?.data || error.message };
+    }
+};

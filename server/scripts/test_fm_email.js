@@ -25,6 +25,7 @@ async function testEmail() {
         addOnsAmount: 75000,
         quoteLink: "https://docs.google.com/spreadsheets/d/1yqj9uBxKVznnrDmOGLtX0vBX63BmuQtqR2UM03zAL0s/edit?usp=sharing",
         freezingMailNote: "This is a diagnostic email sent from the VPS to verify SMTP connectivity and attachment delivery.",
+        salesRep: "Julia (Test CRE)",
         fa: { name: "System Admin", email: "admin@cookscape.com" },
         businessHead: { name: "BH Manager", email: "bh@cookscape.com" }
     };

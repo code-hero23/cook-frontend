@@ -208,6 +208,10 @@ const sendFreezingMail = async ({ project, recipients, attachments = [] }) => {
                     <td style="padding: 8px 0; color: #64748b; font-weight: 600;">BH</td>
                     <td style="padding: 8px 0; color: #0f172a;">${project.businessHead?.name || 'Assigned'}</td>
                 </tr>
+                <tr>
+                    <td style="padding: 8px 0; color: #64748b; font-weight: 600;">Order Taken (CRE)</td>
+                    <td style="padding: 8px 0; color: #0f172a; font-weight: 700;">${project.salesRep || 'N/A'}</td>
+                </tr>
                 ${project.quoteLink ? `
                 <tr>
                     <td style="padding: 12px 0; color: #64748b; font-weight: 600;">Quote Link</td>
@@ -228,7 +232,7 @@ const sendFreezingMail = async ({ project, recipients, attachments = [] }) => {
     const html = getEmailTemplate(title, content);
     
     // Add Branding Logo to every Freezing Mail
-    const logoPath = path.join(__dirname, '../../public/FINAL_LOGO.png');
+    const logoPath = path.join(__dirname, '../../../public/FINAL_LOGO.png');
     const finalAttachments = [...attachments];
     
     if (fs.existsSync(logoPath)) {

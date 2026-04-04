@@ -1,6 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const { sendFreezingMail } = require('../services/emailService');
+const { sendPlainTextMessage } = require('../services/whatsappService');
 const path = require('path');
 
 // Get all projects
@@ -195,6 +196,24 @@ exports.createProject = async (req, res) => {
             } catch (err) {
                 console.error("[ProjectManager] Failed to send freezing mail:", err);
                 // We don't fail the project creation, just log the error
+            }
+        }
+
+        // --- WhatsApp Notification to FA ---
+        // Uses the custom message provided from the frontend (Editable in Drawer)
+        if (project.faId && req.body.whatsappMessage) {
+            try {
+                const fa = await prisma.user.findUnique({
+                    where: { id: project.faId },
+                    select: { phone: true, name: true }
+                });
+
+                if (fa && fa.phone) {
+                    console.log(`[ProjectController] Sending CUSTOM WhatsApp to FA ${fa.name} (${fa.phone})...`);
+                    await sendPlainTextMessage(fa.phone, req.body.whatsappMessage);
+                }
+            } catch (waErr) {
+                console.error("[ProjectController] Failed to send WhatsApp to FA:", waErr);
             }
         }
 

@@ -25,6 +25,43 @@ const ProjectDrawer = ({ isOpen, onClose, onSubmit, initialData, isEditing }) =>
         setForm(initialData);
     }, [initialData]);
 
+    // Auto-generate WhatsApp Message whenever relevant fields change
+    useEffect(() => {
+        if (!isEditing && isOpen) {
+            const bhName = employees.find(e => e.id === form.businessHeadId)?.name || "RK";
+            const message = `
+BH ${bhName}
+Name - ${form.clientFirstName || ""} ${form.clientLastName || ""}
+Mob number: ${form.clientPhone || ""}
+Mail id - ${form.clientEmail || ""}
+
+Project Name - ${form.name || ""}
+Location - ${form.location || ""}
+
+Wood work value - Rs.${Number(form.woodworkAmount || 0).toLocaleString()}/-
+Add on - Rs.${Number(form.addOnsAmount || 0).toLocaleString()}/-
+
+Source - ${form.leadSource || "N/A"}
+Payment mode - ONLINE
+
+Freezed amount - Rs.${Number(form.freezingAmount || 0).toLocaleString()}/- ${form.freezingMailNote ? `(${form.freezingMailNote})` : ""}
+
+Variant - ${form.variant || ""}
+
+Order Taken - ${form.salesRep || ""}
+Bh - ${bhName}
+
+Project Created Successfully.
+`.trim();
+            setForm(prev => ({ ...prev, whatsappMessage: message }));
+        }
+    }, [
+        form.name, form.clientFirstName, form.clientLastName, form.clientPhone, 
+        form.clientEmail, form.location, form.woodworkAmount, form.addOnsAmount,
+        form.leadSource, form.freezingAmount, form.freezingMailNote, form.variant,
+        form.salesRep, form.businessHeadId, isEditing, isOpen, employees
+    ]);
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setForm(prev => ({ ...prev, [name]: value }));
@@ -724,6 +761,22 @@ const ProjectDrawer = ({ isOpen, onClose, onSubmit, initialData, isEditing }) =>
                                                         </div>
                                                     )}
                                                 </div>
+                                            </div>
+
+                                            {/* Section: WhatsApp Notification Preview */}
+                                            <div className="pt-4 border-t border-amber-100 italic">
+                                                <h3 className="text-[10px] font-bold uppercase tracking-wider text-green-600 mb-2 flex items-center gap-2">
+                                                    <span className="w-4 h-[1px] bg-green-200"></span> WhatsApp Message to FA (Editable)
+                                                </h3>
+                                                <textarea
+                                                    name="whatsappMessage"
+                                                    value={form.whatsappMessage || ""}
+                                                    onChange={handleChange}
+                                                    rows="12"
+                                                    className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white shadow-inner text-xs font-mono text-slate-700 outline-none focus:ring-2 focus:ring-green-400 transition-all resize-none"
+                                                    placeholder="Message to FA..."
+                                                />
+                                                <p className="text-[9px] text-slate-400 mt-1">This message will be sent automatically to the FA on creation.</p>
                                             </div>
                                         </section>
                                     )}
