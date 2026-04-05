@@ -25,12 +25,8 @@ function ReloadPrompt() {
         updateServiceWorker: () => { }
     };
 
-    // Auto-reload instantly when an update is detected
-    useEffect(() => {
-        if (needUpdate) {
-            updateServiceWorker(true);
-        }
-    }, [needUpdate, updateServiceWorker]);
+    // Auto-update is handled by the plugin's registerType: 'autoUpdate' in vite.config.js
+    // We only need to show the UI if offlineReady or if we want to prompt the user.
 
     const close = () => {
         setOfflineReady(false)

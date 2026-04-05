@@ -12,7 +12,14 @@ let activeRequests = 0;
 api.interceptors.request.use(
     (config) => {
         if (activeRequests === 0) {
-            window.dispatchEvent(new Event('loading-start'));
+            const event = typeof CustomEvent === 'function' 
+                ? new CustomEvent('loading-start') 
+                : (function() {
+                    const e = document.createEvent('CustomEvent');
+                    e.initCustomEvent('loading-start', true, true, {});
+                    return e;
+                })();
+            window.dispatchEvent(event);
         }
         activeRequests++;
 
@@ -34,7 +41,14 @@ api.interceptors.request.use(
     (error) => {
         activeRequests--;
         if (activeRequests === 0) {
-            window.dispatchEvent(new Event('loading-end'));
+            const event = typeof CustomEvent === 'function' 
+                ? new CustomEvent('loading-end') 
+                : (function() {
+                    const e = document.createEvent('CustomEvent');
+                    e.initCustomEvent('loading-end', true, true, {});
+                    return e;
+                })();
+            window.dispatchEvent(event);
         }
         return Promise.reject(error);
     }
@@ -45,14 +59,28 @@ api.interceptors.response.use(
     (response) => {
         activeRequests--;
         if (activeRequests === 0) {
-            window.dispatchEvent(new Event('loading-end'));
+            const event = typeof CustomEvent === 'function' 
+                ? new CustomEvent('loading-end') 
+                : (function() {
+                    const e = document.createEvent('CustomEvent');
+                    e.initCustomEvent('loading-end', true, true, {});
+                    return e;
+                })();
+            window.dispatchEvent(event);
         }
         return response;
     },
     (error) => {
         activeRequests--;
         if (activeRequests === 0) {
-            window.dispatchEvent(new Event('loading-end'));
+            const event = typeof CustomEvent === 'function' 
+                ? new CustomEvent('loading-end') 
+                : (function() {
+                    const e = document.createEvent('CustomEvent');
+                    e.initCustomEvent('loading-end', true, true, {});
+                    return e;
+                })();
+            window.dispatchEvent(event);
         }
 
         // Handle 401 (Unauthorized) - maybe redirect to login or clear storage
