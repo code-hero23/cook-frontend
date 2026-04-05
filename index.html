@@ -13,14 +13,11 @@
   <meta name="theme-color" content="#f97316">
   <meta name="description" content="Elite Project Management & Interior Design Portal">
   <script>
-    // ADVANCED Inheritable Polyfill for Safari/WebView 
+    // DEFINE-PROPERTY Polyfill for Safari/WebView 
     (function () {
-      console.log('[Polyfill] Applying Inheritable Fallbacks...');
+      console.log('[Polyfill] Force-defining constructors...');
       
-      var OriginalEvent = window.Event;
-      var OriginalCustomEvent = window.CustomEvent;
-
-      function fixConstructor(name, Original) {
+      function createSafeConstructor(Original) {
         var Polyfill = function (type, params) {
           if (!(this instanceof Polyfill)) return new Polyfill(type, params);
           params = params || { bubbles: false, cancelable: false, detail: undefined };
@@ -33,11 +30,24 @@
           Polyfill.prototype = Object.create(Original.prototype);
           Polyfill.prototype.constructor = Polyfill;
         }
-        window[name] = Polyfill;
+        return Polyfill;
       }
 
-      fixConstructor('Event', OriginalEvent);
-      fixConstructor('CustomEvent', OriginalCustomEvent);
+      try {
+        Object.defineProperty(window, 'Event', {
+          value: createSafeConstructor(window.Event),
+          configurable: true,
+          writable: true
+        });
+        Object.defineProperty(window, 'CustomEvent', {
+          value: createSafeConstructor(window.CustomEvent),
+          configurable: true,
+          writable: true
+        });
+        console.log('[Polyfill] Constructors Redefined Successfully.');
+      } catch (e) {
+        console.warn('[Polyfill] Error redefining constructors:', e.message);
+      }
 
       // Final safety for Notification
       try {
