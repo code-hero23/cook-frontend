@@ -13,26 +13,33 @@
   <meta name="theme-color" content="#f97316">
   <meta name="description" content="Elite Project Management & Interior Design Portal">
   <script>
-      // 2. Surgical Observer Safeguard (Fixes ResizeObserver/IntersectionObserver Illegal Constructor)
-      (function() {
-        var targets = ['ResizeObserver', 'IntersectionObserver'];
-        targets.forEach(function(name) {
-          var Original = window[name];
-          if (typeof Original === 'function' || typeof Original === 'object') {
-            window[name] = function(callback) {
-              try {
-                // Try to use native with 'new'
-                return new Original(callback);
-              } catch (e) {
-                console.warn('[Fix] Safe fallback used for ' + name);
-                // Return a dummy observer if the native constructor fails
-                return { observe: function() {}, unobserve: function() {}, disconnect: function() {} };
-              }
-            };
-            if (Original.prototype) window[name].prototype = Original.prototype;
+    // [PURGE, PROTECT & SUPPRESS]
+    (function() {
+      // 1. Force-unregister all old Service Workers
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(regs) {
+          for(var i=0; i<regs.length; i++) {
+            regs[i].unregister().then(function() { console.log('[Purge] SW Killed'); });
           }
         });
-      })();
+      }
+
+      // 2. Surgical Observer Safeguard (Fixes ResizeObserver/IntersectionObserver Illegal Constructor)
+      var targets = ['ResizeObserver', 'IntersectionObserver'];
+      targets.forEach(function(name) {
+        var Original = window[name];
+        if (typeof Original === 'function' || typeof Original === 'object') {
+          window[name] = function(callback) {
+            try {
+              return new Original(callback);
+            } catch (e) {
+              console.warn('[Fix] Safe fallback used for ' + name);
+              return { observe: function() {}, unobserve: function() {}, disconnect: function() {} };
+            }
+          };
+          if (Original.prototype) window[name].prototype = Original.prototype;
+        }
+      });
 
       // 3. Suppress specific 'Select' events that trigger the SyntheticEvent crash
       window.addEventListener('select', function(e) {
@@ -42,20 +49,17 @@
         }
       }, true);
 
-      // 3. Global Error Suppressor & Surgical Diagnostic
+      // 4. Global Error Suppressor & Surgical Diagnostic
       var _error = window.onerror;
       window.onerror = function(msg, url, line, col, error) {
         if (msg && msg.indexOf('Illegal constructor') > -1) {
           console.error('🕵️‍♂️ SURGEON: Investigating crash at', url, 'Line:', line);
-          
           fetch(url).then(function(r) { return r.text(); }).then(function(text) {
              var lines = text.split('\n');
-             // Target the specific line from the trace (4090)
              var targetLine = line - 1; 
              var snippet = lines.slice(Math.max(0, targetLine - 5), targetLine + 5).join('\n');
              console.log('%c [CSI] CRASH SITE CODE (UNMINIFIED): \n%c' + snippet, 'background: #000; color: #0f0', 'color: #0f0; font-family: monospace;');
           }).catch(function(e) { console.error('Surgeon failed:', e); });
-          
           return true;
         }
         if (_error) return _error.apply(this, arguments);
