@@ -44,18 +44,6 @@ export default defineConfig({
       }
     }),
   ],
-  build: {
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: false,
-        keep_fnames: true
-      },
-      mangle: {
-        keep_fnames: true
-      }
-    }
-  },
   server: {
     proxy: {
       '/api': {
