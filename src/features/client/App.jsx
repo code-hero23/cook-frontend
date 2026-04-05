@@ -139,6 +139,13 @@ const App = () => {
   }
 
   return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white font-black text-4xl">
+      DASHBOARD ISOLATED: CHECKING FOR STABILITY...
+      <button onClick={handleLogout} className="fixed bottom-4 right-4 text-xs">Logout</button>
+    </div>
+  );
+/*
+  return (
     <div className="min-h-screen flex flex-col bg-[#F1F5F9] font-sans selection:bg-indigo-100 selection:text-indigo-900">
 
       <TopNavbar
@@ -147,39 +154,8 @@ const App = () => {
         setMenuOpen={setMenuOpen}
         handleLogout={handleLogout}
       />
-
-      <div className="bg-white/40 backdrop-blur-md px-4 py-2 border-b border-white/20 flex items-center justify-between md:hidden">
-        <RefreshButton
-          onRefresh={() => window.location.reload()}
-          isLoading={loading}
-          label="Sync"
-          className="border-none bg-transparent shadow-none p-0 h-auto text-indigo-600"
-        />
-        <span className="text-[9px] font-black text-slate-400 tracking-[0.2em] uppercase">
-          Portal Status: Online
-        </span>
-      </div>
-
-
-      <div className="flex-1 flex relative overflow-hidden">
-        {/* Desktop Sidebar - Sticky! */}
-        <div className="hidden md:block w-72 border-r border-slate-200 bg-white/50 backdrop-blur-xl h-[calc(100vh-5rem)] sticky top-20 z-20">
-          <Sidebar selected={selected} setSelected={setSelected} onLogout={handleLogout} />
-        </div>
-
-        {/* Main Content Area - Window Scroll */}
-        <div className="flex-1 bg-slate-50/30 min-w-0 pointer-events-auto overflow-y-auto">
-          <div className="p-3 md:p-6 lg:p-8 pb-32 md:pb-12">
-            {selected === "overview" && <ProjectProgress tasks={tasks} />}
-            {selected === "profile" && <Profile />}
-            {selected === "tasks" && <TaskList tasks={tasks} toggleStatus={toggleStatus} />}
-            {selected === "activity" && <ActivityFeed activity={activity} dummyActivity={[]} />}
-            {selected === "gallery" && <Gallery />}
-            {selected === "documents" && <Documents />}
-            {selected === "timeline" && <Timeline tasks={tasks} />}
-            {selected === "feedback" && <RaiseTicket />}
-          </div>
-        </div>
+...
+*/
 
         {/* Mobile Sidebar Overlay & Sidebar (Bottom of DOM for safety) */}
         {menuOpen && (
