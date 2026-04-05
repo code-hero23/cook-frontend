@@ -12,6 +12,48 @@
   <meta name="apple-mobile-web-app-title" content="Bix Projects">
   <meta name="theme-color" content="#f97316">
   <meta name="description" content="Elite Project Management & Interior Design Portal">
+  <script>
+    // FOOLPROOF Polyfill for Safari and old browsers (Must run before modules)
+    (function () {
+      try {
+        new CustomEvent('test');
+        new Event('test');
+        console.log('[Polyfill] Native constructors OK');
+      } catch (e) {
+        console.warn('[Polyfill] Buggy constructors detected, applying fallback...');
+        var polyfill = function (event, params) {
+          params = params || { bubbles: false, cancelable: false, detail: undefined };
+          var evt = document.createEvent('CustomEvent');
+          evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail);
+          return evt;
+        };
+        polyfill.prototype = window.Event.prototype;
+        window.CustomEvent = polyfill;
+        window.Event = polyfill;
+      }
+      
+      // Also polyfill Notification if illegal
+      try {
+        if ('Notification' in window) {
+          new Notification('test').close();
+        }
+      } catch (e) {
+        console.warn('[Polyfill] Notification constructor restricted, polyfilling...');
+        var OriginalNotification = window.Notification;
+        window.Notification = function (title, options) {
+          console.log('[Notification Polyfill] Intercepted:', title);
+          if (OriginalNotification && OriginalNotification.requestPermission) {
+            return { close: function() {} }; 
+          }
+        };
+        if (OriginalNotification) {
+          window.Notification.prototype = OriginalNotification.prototype;
+          window.Notification.permission = OriginalNotification.permission;
+          window.Notification.requestPermission = OriginalNotification.requestPermission;
+        }
+      }
+    })();
+  </script>
 </head>
 
 <body>
