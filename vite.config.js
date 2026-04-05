@@ -9,8 +9,8 @@ export default defineConfig({
     tailwindcss(),
   ],
   build: {
-    target: 'es6',
-    minify: 'esbuild',
+    minify: false,
+    target: 'es2020',
     rollupOptions: {
       output: {
         manualChunks: undefined
