@@ -40,7 +40,7 @@ const UnifiedLogin = () => {
             const res = await axios.post("/auth/google-login", { token: credential });
             const userRole = res.data.user.role;
 
-            if (activePortal === 'admin' && !['SUPER_ADMIN', 'MANAGER', 'VIEW_ONLY_ADMIN', 'BUSINESS_HEAD'].includes(userRole)) {
+            if (activePortal === 'admin' && !['SUPER_ADMIN', 'MANAGER', 'VIEW_ONLY_ADMIN', 'BUSINESS_HEAD', 'LEAD_OPERATION'].includes(userRole)) {
                 setError("Access denied. Google account not linked to an Admin role.");
                 setLoading(false);
                 return;
@@ -61,7 +61,7 @@ const UnifiedLogin = () => {
                 navigate("/employee");
             } else if (userRole === 'SITE_SUPERVISOR') {
                 navigate("/supervisor");
-            } else if (userRole === 'CLIENT_RELATIONSHIP_EXECUTIVE') {
+            } else if (userRole === 'CLIENT_RELATIONSHIP_EXECUTIVE' || userRole === 'LEAD_OPERATION') {
                 navigate("/cre");
             }
         } catch (err) {
@@ -84,13 +84,13 @@ const UnifiedLogin = () => {
 
             const userRole = res.data.user.role;
 
-            if (activePortal === 'admin' && !['SUPER_ADMIN', 'MANAGER', 'VIEW_ONLY_ADMIN', 'BUSINESS_HEAD'].includes(userRole)) {
+            if (activePortal === 'admin' && !['SUPER_ADMIN', 'MANAGER', 'VIEW_ONLY_ADMIN', 'BUSINESS_HEAD', 'LEAD_OPERATION'].includes(userRole)) {
                 setError("Access denied. Please use the Admin portal.");
                 setLoading(false);
                 return;
             }
 
-            if (activePortal === 'employee' && !['EMPLOYEE', 'SITE_SUPERVISOR', 'CLIENT_RELATIONSHIP_EXECUTIVE'].includes(userRole)) {
+            if (activePortal === 'employee' && !['EMPLOYEE', 'SITE_SUPERVISOR', 'CLIENT_RELATIONSHIP_EXECUTIVE', 'LEAD_OPERATION'].includes(userRole)) {
                 setError("Access denied. Please use the Admin portal.");
                 setLoading(false);
                 return;
@@ -105,7 +105,7 @@ const UnifiedLogin = () => {
                 navigate("/employee");
             } else if (userRole === 'SITE_SUPERVISOR') {
                 navigate("/supervisor");
-            } else if (userRole === 'CLIENT_RELATIONSHIP_EXECUTIVE') {
+            } else if (userRole === 'CLIENT_RELATIONSHIP_EXECUTIVE' || userRole === 'LEAD_OPERATION') {
                 navigate("/cre");
             }
         } catch (err) {
