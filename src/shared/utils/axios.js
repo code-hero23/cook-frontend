@@ -55,8 +55,9 @@ api.interceptors.response.use(
             dispatchSafeEvent('loading-end');
         }
 
-        if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-            console.warn("Unauthorized access - redirecting to login");
+        if (error.response && error.response.status === 401) {
+            dispatchSafeEvent('auth-error', { message: 'Unauthorized' });
+            localStorage.removeItem("token");
         }
         return Promise.reject(error);
     }
