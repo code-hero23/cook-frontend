@@ -57,25 +57,24 @@
         console.log('[Fix] Shadow Events Active');
       } catch (e) { console.error(e); }
 
-      // --- CONSTRUCTOR HUNT SCRIPT ---
+      // --- THE CODE SURGEON --- 
       window.onerror = function (msg, url, line, col, error) {
         if (msg.indexOf('Illegal constructor') > -1) {
-          console.error('🕵️‍♂️ HUNTER: Found Illegal Constructor!');
-          console.error('Location:', url, 'Line:', line, 'Col:', col);
+          console.error('🕵️‍♂️ SURGEON: Investigating crash at', url, line, col);
           
-          if (error && error.stack) {
-             console.log('Stack Trace:', error.stack);
-          }
-
-          // Try to give a hint based on common issues
-          const targets = ['Notification', 'Worker', 'MessageChannel', 'AudioContext', 'SharedWorker', 'Request', 'Response', 'Headers'];
-          targets.forEach(function(t) {
-             try { new window[t](); } catch(e) { 
-               if (e.message.indexOf('Illegal constructor') > -1) {
-                 console.warn('🚩 SUSPECT FOUND:', t);
-               }
-             }
-          });
+          fetch(url).then(function(r) { return r.text(); }).then(function(text) {
+             // Minified files usually have everything on a few lines.
+             // We use the 'col' (column) to find the exact character.
+             var start = Math.max(0, col - 100);
+             var snippet = text.substring(start, col + 100);
+             console.log('%c [CSI] CRASH SITE CODE: %c ' + snippet, 'background: #f00; color: #fff', 'color: #f00; font-weight: bold;');
+             
+             // Check for the most likely culprits in the snippet
+             if (snippet.indexOf('new CustomEvent') > -1) console.warn('DETECTED: CustomEvent call');
+             if (snippet.indexOf('new Event') > -1) console.warn('DETECTED: Event call');
+             if (snippet.indexOf('new MessageChannel') > -1) console.warn('DETECTED: MessageChannel call');
+             if (snippet.indexOf('new Notification') > -1) console.warn('DETECTED: Notification call');
+          }).catch(function(e) { console.error('Surgeon failed to fetch source:', e); });
         }
       };
     })();
