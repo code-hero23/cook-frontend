@@ -12,54 +12,6 @@
   <meta name="apple-mobile-web-app-title" content="Bix Projects">
   <meta name="theme-color" content="#f97316">
   <meta name="description" content="Elite Project Management & Interior Design Portal">
-  <script>
-    // DEFINE-PROPERTY Polyfill for Safari/WebView 
-    (function () {
-      console.log('[Polyfill] Force-defining constructors...');
-      
-      function createSafeConstructor(Original) {
-        var Polyfill = function (type, params) {
-          if (!(this instanceof Polyfill)) return new Polyfill(type, params);
-          params = params || { bubbles: false, cancelable: false, detail: undefined };
-          var evt = document.createEvent('CustomEvent');
-          evt.initCustomEvent(type, params.bubbles, params.cancelable, params.detail);
-          Object.setPrototypeOf(evt, Polyfill.prototype);
-          return evt;
-        };
-        if (Original) {
-          Polyfill.prototype = Object.create(Original.prototype);
-          Polyfill.prototype.constructor = Polyfill;
-        }
-        return Polyfill;
-      }
-
-      try {
-        Object.defineProperty(window, 'Event', {
-          value: createSafeConstructor(window.Event),
-          configurable: true,
-          writable: true
-        });
-        Object.defineProperty(window, 'CustomEvent', {
-          value: createSafeConstructor(window.CustomEvent),
-          configurable: true,
-          writable: true
-        });
-        console.log('[Polyfill] Constructors Redefined Successfully.');
-      } catch (e) {
-        console.warn('[Polyfill] Error redefining constructors:', e.message);
-      }
-
-      // Final safety for Notification
-      try {
-        if ('Notification' in window) new Notification('test').close();
-      } catch (e) {
-        console.warn('[Polyfill] Fixing Notification...');
-        window.Notification = function() { return { close: function() {} }; };
-        window.Notification.requestPermission = function() { return Promise.resolve('denied'); };
-        window.Notification.permission = 'denied';
-      }
-    })();
-  </script>
 </head>
 
 <body>

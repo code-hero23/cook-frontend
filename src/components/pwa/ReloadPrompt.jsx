@@ -1,33 +1,56 @@
-import React, { useEffect } from 'react'
-import { useRegisterSW } from 'virtual:pwa-register/react'
+import React, { useEffect, useState } from 'react'
 import { RefreshCw, X, Info } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { toast } from 'react-hot-toast'
 
 function ReloadPrompt() {
-    const sw = useRegisterSW({
-        onRegistered(r) {
-            console.log('SW Registered: ' + r)
-        },
-        onRegisterError(error) {
-            console.error('SW registration error', error)
-        },
-    })
+    const [needRefresh, setNeedRefresh] = useState(false)
+    const [registration, setRegistration] = useState(null)
 
-    const {
-        offlineReady: [offlineReady, setOfflineReady],
-        needRefresh: [needRefresh, setNeedRefresh],
-        updateServiceWorker,
-    } = sw;
+    useEffect(() => {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js', { scope: '/' })
+                .then((reg) => {
+                    setRegistration(reg)
+
+                    reg.addEventListener('updatefound', () => {
+                        const newWorker = reg.installing;
+                        if (newWorker) {
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    setNeedRefresh(true);
+                                }
+                            });
+                        }
+                    });
+                })
+                .catch((err) => {
+                    console.error('SW Registration Failed:', err)
+                });
+
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) {
+                    refreshing = true;
+                    window.location.reload();
+                }
+            });
+        }
+    }, [])
+
+    const updateServiceWorker = () => {
+        if (registration && registration.waiting) {
+            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+        setNeedRefresh(false);
+    }
 
     const close = () => {
-        setOfflineReady(false)
         setNeedRefresh(false)
     }
 
     return (
         <AnimatePresence>
-            {(offlineReady || needRefresh) && (
+            {needRefresh && (
                 <motion.div
                     initial={{ opacity: 0, y: 100, x: "-50%" }}
                     animate={{ opacity: 1, y: 0, x: "-50%" }}
@@ -35,8 +58,8 @@ function ReloadPrompt() {
                     className="fixed bottom-6 left-1/2 z-[200] w-[calc(100%-1rem)] sm:w-[calc(100%-2rem)] max-w-sm"
                 >
                     <div className="bg-white/90 backdrop-blur-xl border border-slate-200 rounded-[2rem] p-6 shadow-2xl shadow-indigo-100 flex items-start gap-4">
-                        <div className={`p-3 rounded-2xl ${needRefresh ? 'bg-indigo-50 text-indigo-600' : 'bg-green-50 text-green-600'}`}>
-                            {needRefresh ? <RefreshCw size={24} className="animate-spin-slow" /> : <Info size={24} />}
+                        <div className="p-3 rounded-2xl bg-indigo-50 text-indigo-600">
+                            <RefreshCw size={24} className="animate-spin-slow" />
                         </div>
 
                         <div className="flex-1 min-w-0">
