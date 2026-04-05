@@ -27,58 +27,32 @@ const App = () => {
   const [loading, setLoading] = useState(true);
   const { trigger } = useHaptics();
 
+  /*
   const [hasAcceptedTerms, setHasAcceptedTerms] = useState(() => {
     return localStorage.getItem("termsAccepted") === "true";
   });
+  */
 
+  const clientToken = true;
+  /*
   const clientToken = localStorage.getItem("clientToken");
   const project = JSON.parse(localStorage.getItem("clientProject") || "{}");
+  */
 
+  /*
   useEffect(() => {
     if (!clientToken) {
       navigate("/client/login", { replace: true });
     }
   }, [clientToken, navigate]);
+  */
 
+  /*
   useEffect(() => {
     const fetchProjectData = async () => {
-      try {
-        setLoading(true);
-        // FETCH FRESH PROJECT DATA TOO
-        const [taskRes, activityRes, projectRes] = await Promise.all([
-          axios.get("/tasks", { params: { projectId: project.id } }),
-          axios.get(`/activities/${project.id}`),
-          axios.get(`/projects/${project.id}`)
-        ]);
-
-        setTasks(taskRes.data);
-
-        // Update LocalStorage with FRESH Project Data
-        if (projectRes.data) {
-          localStorage.setItem("clientProject", JSON.stringify(projectRes.data));
-          // Dispatch a custom event or force update if needed, but for now app reload handles it mostly.
-          // Ideally, we should use a Context, but this is a quick fix.
-        }
-
-        const formattedActivity = activityRes.data.map(log => ({
-          id: log.id,
-          message: log.message,
-          time: log.createdAt,
-          category: log.category
-        }));
-        setActivity(formattedActivity);
-
-      } catch (err) {
-        console.error("Error fetching client data:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (project.id) {
-      fetchProjectData();
-    }
+    ...
   }, [project.id]);
+  */
 
   const toggleStatus = async (id) => {
     const task = tasks.find(t => t.id === id);
