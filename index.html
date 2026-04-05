@@ -52,15 +52,32 @@
       try {
         var SafeEvent = createSafeEventClass('Event');
         var SafeCustomEvent = createSafeEventClass('CustomEvent');
-        
-        // Use defineProperty to bypass 'read-only' protection
         Object.defineProperty(window, 'Event', { value: SafeEvent, configurable: true, writable: true });
         Object.defineProperty(window, 'CustomEvent', { value: SafeCustomEvent, configurable: true, writable: true });
-        
         console.log('[Fix] Shadow Events Active');
-      } catch (e) {
-        console.error('[Fix] Shadow Event failure:', e);
-      }
+      } catch (e) { console.error(e); }
+
+      // --- CONSTRUCTOR HUNT SCRIPT ---
+      window.onerror = function (msg, url, line, col, error) {
+        if (msg.indexOf('Illegal constructor') > -1) {
+          console.error('🕵️‍♂️ HUNTER: Found Illegal Constructor!');
+          console.error('Location:', url, 'Line:', line, 'Col:', col);
+          
+          if (error && error.stack) {
+             console.log('Stack Trace:', error.stack);
+          }
+
+          // Try to give a hint based on common issues
+          const targets = ['Notification', 'Worker', 'MessageChannel', 'AudioContext', 'SharedWorker', 'Request', 'Response', 'Headers'];
+          targets.forEach(function(t) {
+             try { new window[t](); } catch(e) { 
+               if (e.message.indexOf('Illegal constructor') > -1) {
+                 console.warn('🚩 SUSPECT FOUND:', t);
+               }
+             }
+          });
+        }
+      };
     })();
   </script>
 </head>
