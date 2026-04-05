@@ -13,19 +13,28 @@
   <meta name="theme-color" content="#f97316">
   <meta name="description" content="Elite Project Management & Interior Design Portal">
   <script>
-    // [PURGE & PROTECT] Sterilize environment before React loads
-    (function() {
-      // 1. Force-unregister all old Service Workers
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(regs) {
-          for(var i=0; i<regs.length; i++) {
-            regs[i].unregister().then(function() { console.log('[Purge] SW Killed'); });
+      // 2. Surgical Observer Safeguard (Fixes ResizeObserver/IntersectionObserver Illegal Constructor)
+      (function() {
+        var targets = ['ResizeObserver', 'IntersectionObserver'];
+        targets.forEach(function(name) {
+          var Original = window[name];
+          if (typeof Original === 'function' || typeof Original === 'object') {
+            window[name] = function(callback) {
+              try {
+                // Try to use native with 'new'
+                return new Original(callback);
+              } catch (e) {
+                console.warn('[Fix] Safe fallback used for ' + name);
+                // Return a dummy observer if the native constructor fails
+                return { observe: function() {}, unobserve: function() {}, disconnect: function() {} };
+              }
+            };
+            if (Original.prototype) window[name].prototype = Original.prototype;
           }
         });
-      }
+      })();
 
-      // 2. Suppress the specific 'Select' event trigger if selection is empty/corrupt
-      // This prevents the 'new kf' crash we saw in React's onSelect handler
+      // 3. Suppress specific 'Select' events that trigger the SyntheticEvent crash
       window.addEventListener('select', function(e) {
         var sel = window.getSelection && window.getSelection();
         if (!sel || !sel.anchorNode) {
