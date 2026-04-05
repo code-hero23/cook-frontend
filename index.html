@@ -24,24 +24,32 @@
         });
       }
 
-      // 2. Surgical Safeguards (Fixes Illegal Constructors)
+      // 2. Ultra-Aggressive Surgical Safeguard (Fixes Illegal Constructors)
       (function() {
         var targets = ['ResizeObserver', 'IntersectionObserver', 'MessageChannel'];
         targets.forEach(function(name) {
           var Original = window[name];
           if (typeof Original === 'function' || typeof Original === 'object') {
-            window[name] = function(callback) {
-              try {
-                return new Original(callback);
-              } catch (e) {
-                console.warn('[Fix] Safe fallback used for ' + name);
-                if (name === 'MessageChannel') {
-                  return { port1: { onmessage: null, postMessage: function() {} }, port2: { onmessage: null, postMessage: function() {} } };
+            // Shadow with a safe wrapper that handles internal browser restrictions
+            window[name] = (function() {
+              function SafeObserver(callback) {
+                try {
+                  // Attempt native instantiation
+                  var instance = new Original(callback);
+                  return instance;
+                } catch (e) {
+                  console.warn('[Fix] Safe fallback triggered for ' + name);
+                  if (name === 'MessageChannel') {
+                    return { port1: { onmessage: null, postMessage: function() {} }, port2: { onmessage: null, postMessage: function() {} } };
+                  }
+                  // Standard observer fallback
+                  return { observe: function() {}, unobserve: function() {}, disconnect: function() {} };
                 }
-                return { observe: function() {}, unobserve: function() {}, disconnect: function() {} };
               }
-            };
-            if (Original.prototype) window[name].prototype = Original.prototype;
+              // Preserve prototype chain for framework compatibility
+              if (Original.prototype) SafeObserver.prototype = Original.prototype;
+              return SafeObserver;
+            })();
           }
         });
       })();
