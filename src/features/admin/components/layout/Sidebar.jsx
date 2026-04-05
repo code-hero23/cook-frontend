@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import { dispatchSafeEvent } from "../../../shared/utils/eventUtils";
+// ... existing imports ...
 import { NavLink } from "react-router-dom";
 import axios from "../../../../shared/utils/axios";
 import {
@@ -64,12 +65,7 @@ const Sidebar = ({ open, onClose }) => {
     setIsCollapsed(newState);
     localStorage.setItem('adminSidebarCollapsed', newState);
     // Dispatch custom event for layout transition
-    const event = typeof CustomEvent === 'function' ? new CustomEvent('admin_sidebar_toggle') : (function() {
-        const e = document.createEvent('Event');
-        e.initEvent('admin_sidebar_toggle', true, true);
-        return e;
-    })();
-    window.dispatchEvent(event);
+    dispatchSafeEvent('admin_sidebar_toggle');
   };
 
   const filteredNavItems = navItems.filter(item => {

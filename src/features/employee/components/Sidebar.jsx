@@ -43,12 +43,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     const newState = !isCollapsed;
     setIsCollapsed(newState);
     localStorage.setItem('employeeSidebarCollapsed', newState);
-    const event = typeof CustomEvent === 'function' ? new CustomEvent('employee_sidebar_toggle') : (function() {
-        const e = document.createEvent('Event');
-        e.initEvent('employee_sidebar_toggle', true, true);
-        return e;
-    })();
-    window.dispatchEvent(event);
+    dispatchSafeEvent('employee_sidebar_toggle');
   };
 
   const getInitials = (name) =>

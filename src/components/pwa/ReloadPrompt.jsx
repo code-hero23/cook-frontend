@@ -14,59 +14,48 @@ function ReloadPrompt() {
         },
     })
 
-    // Safety fallback for destructuring
     const {
-        offlineReady: [offlineReady, setOfflineReady] = [false, () => { }],
-        needUpdate: [needUpdate, setNeedUpdate] = [false, () => { }],
+        offlineReady: [offlineReady, setOfflineReady],
+        needRefresh: [needRefresh, setNeedRefresh],
         updateServiceWorker,
-    } = sw || {
-        offlineReady: [false, () => { }],
-        needUpdate: [false, () => { }],
-        updateServiceWorker: () => { }
-    };
-
-    // Auto-update is handled by the plugin's registerType: 'autoUpdate' in vite.config.js
-    // We only need to show the UI if offlineReady or if we want to prompt the user.
+    } = sw;
 
     const close = () => {
         setOfflineReady(false)
-        setNeedUpdate(false)
+        setNeedRefresh(false)
     }
-
-    // Use react-hot-toast for a cleaner look if desired, but a custom floating UI is nice too.
-    // We'll stick with a custom premium UI to match the dashboard.
 
     return (
         <AnimatePresence>
-            {(offlineReady || needUpdate) && (
+            {(offlineReady || needRefresh) && (
                 <motion.div
                     initial={{ opacity: 0, y: 100, x: "-50%" }}
                     animate={{ opacity: 1, y: 0, x: "-50%" }}
                     exit={{ opacity: 0, y: 100, x: "-50%" }}
-                    className="fixed bottom-6 left-1/2 z-[200] w-[calc(100%-2rem)] max-w-sm"
+                    className="fixed bottom-6 left-1/2 z-[200] w-[calc(100%-1rem)] sm:w-[calc(100%-2rem)] max-w-sm"
                 >
                     <div className="bg-white/90 backdrop-blur-xl border border-slate-200 rounded-[2rem] p-6 shadow-2xl shadow-indigo-100 flex items-start gap-4">
-                        <div className={`p-3 rounded-2xl ${needUpdate ? 'bg-indigo-50 text-indigo-600' : 'bg-green-50 text-green-600'}`}>
-                            {needUpdate ? <RefreshCw size={24} className="animate-spin-slow" /> : <Info size={24} />}
+                        <div className={`p-3 rounded-2xl ${needRefresh ? 'bg-indigo-50 text-indigo-600' : 'bg-green-50 text-green-600'}`}>
+                            {needRefresh ? <RefreshCw size={24} className="animate-spin-slow" /> : <Info size={24} />}
                         </div>
 
                         <div className="flex-1 min-w-0">
                             <h4 className="text-sm font-black text-slate-800 uppercase tracking-widest mb-1">
-                                {needUpdate ? 'Update Available' : 'Ready to use offline'}
+                                {needRefresh ? 'Update Available' : 'Ready to use offline'}
                             </h4>
                             <p className="text-xs font-medium text-slate-500 leading-relaxed">
-                                {needUpdate
+                                {needRefresh
                                     ? 'New content available, click on reload button to update.'
                                     : 'App is ready to work offline for consistent performance.'}
                             </p>
 
                             <div className="flex items-center gap-3 mt-4">
-                                {needUpdate && (
+                                {needRefresh && (
                                     <button
                                         onClick={() => updateServiceWorker(true)}
                                         className="px-4 py-2 bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-100"
                                     >
-                                        Reload & Update
+                                        Reload Now
                                     </button>
                                 )}
                                 <button

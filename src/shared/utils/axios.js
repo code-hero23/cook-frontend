@@ -1,4 +1,5 @@
 import axios from "axios";
+import { dispatchSafeEvent } from "./eventUtils";
 
 const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL || (import.meta.env.PROD ? "/api" : "http://localhost:5000/api"),
@@ -12,20 +13,12 @@ let activeRequests = 0;
 api.interceptors.request.use(
     (config) => {
         if (activeRequests === 0) {
-            const event = typeof CustomEvent === 'function' 
-                ? new CustomEvent('loading-start') 
-                : (function() {
-                    const e = document.createEvent('CustomEvent');
-                    e.initCustomEvent('loading-start', true, true, {});
-                    return e;
-                })();
-            window.dispatchEvent(event);
+            dispatchSafeEvent('loading-start');
         }
         activeRequests++;
-
-        // Context-aware Token Selection
+        
+        // ... previous token logic ...
         const isClientRoute = window.location.pathname.startsWith('/client');
-
         let token;
         if (isClientRoute) {
             token = localStorage.getItem("clientToken");
@@ -41,14 +34,7 @@ api.interceptors.request.use(
     (error) => {
         activeRequests--;
         if (activeRequests === 0) {
-            const event = typeof CustomEvent === 'function' 
-                ? new CustomEvent('loading-end') 
-                : (function() {
-                    const e = document.createEvent('CustomEvent');
-                    e.initCustomEvent('loading-end', true, true, {});
-                    return e;
-                })();
-            window.dispatchEvent(event);
+            dispatchSafeEvent('loading-end');
         }
         return Promise.reject(error);
     }
@@ -59,35 +45,18 @@ api.interceptors.response.use(
     (response) => {
         activeRequests--;
         if (activeRequests === 0) {
-            const event = typeof CustomEvent === 'function' 
-                ? new CustomEvent('loading-end') 
-                : (function() {
-                    const e = document.createEvent('CustomEvent');
-                    e.initCustomEvent('loading-end', true, true, {});
-                    return e;
-                })();
-            window.dispatchEvent(event);
+            dispatchSafeEvent('loading-end');
         }
         return response;
     },
     (error) => {
         activeRequests--;
         if (activeRequests === 0) {
-            const event = typeof CustomEvent === 'function' 
-                ? new CustomEvent('loading-end') 
-                : (function() {
-                    const e = document.createEvent('CustomEvent');
-                    e.initCustomEvent('loading-end', true, true, {});
-                    return e;
-                })();
-            window.dispatchEvent(event);
+            dispatchSafeEvent('loading-end');
         }
 
-        // Handle 401 (Unauthorized) - maybe redirect to login or clear storage
         if (error.response && (error.response.status === 401 || error.response.status === 403)) {
             console.warn("Unauthorized access - redirecting to login");
-            // Optional: window.location.href = '/login'; 
-            // But be careful with circular loops or specific client logic
         }
         return Promise.reject(error);
     }

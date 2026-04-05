@@ -49,12 +49,7 @@ const Sidebar = ({ isOpen, setIsOpen, isMobile }) => {
         const newState = !isCollapsed;
         setIsCollapsed(newState);
         localStorage.setItem('supervisorSidebarCollapsed', newState);
-    const event = typeof CustomEvent === 'function' ? new CustomEvent('supervisor_sidebar_toggle') : (function() {
-        const e = document.createEvent('Event');
-        e.initEvent('supervisor_sidebar_toggle', true, true);
-        return e;
-    })();
-    window.dispatchEvent(event);
+        dispatchSafeEvent('supervisor_sidebar_toggle');
     };
 
     const links = [
