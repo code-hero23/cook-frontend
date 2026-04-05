@@ -64,7 +64,12 @@ const Sidebar = ({ open, onClose }) => {
     setIsCollapsed(newState);
     localStorage.setItem('adminSidebarCollapsed', newState);
     // Dispatch custom event for layout transition
-    window.dispatchEvent(new Event('admin_sidebar_toggle'));
+    const event = typeof CustomEvent === 'function' ? new CustomEvent('admin_sidebar_toggle') : (function() {
+        const e = document.createEvent('Event');
+        e.initEvent('admin_sidebar_toggle', true, true);
+        return e;
+    })();
+    window.dispatchEvent(event);
   };
 
   const filteredNavItems = navItems.filter(item => {
