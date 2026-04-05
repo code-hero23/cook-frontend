@@ -12,7 +12,7 @@ import { formatDate } from '../../../shared/utils/dateFormatter';
 const WalkinHub = ({ hideHeader = false }) => {
     const { walkins, stats, loading, bhs, cres, employees, addWalkin, updateWalkin, deleteWalkin } = useCRE();
     const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const isPrivileged = ['SUPER_ADMIN', 'MANAGER', 'BUSINESS_HEAD'].includes(user.role);
+    const isPrivileged = ['SUPER_ADMIN', 'MANAGER', 'BUSINESS_HEAD', 'LEAD_OPERATION'].includes(user.role);
     const location = useLocation();
     const isDark = false; 
     const [searchTerm, setSearchTerm] = useState('');

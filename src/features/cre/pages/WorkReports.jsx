@@ -11,7 +11,7 @@ import { formatDate } from '../../../shared/utils/dateFormatter';
 const WorkReports = ({ hideHeader = false }) => {
     const { reports, stats, loading, addReport, updateReport, deleteWorkReport, bhs, cres } = useCRE();
     const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const isPrivileged = ['SUPER_ADMIN', 'MANAGER', 'BUSINESS_HEAD'].includes(user.role);
+    const isPrivileged = ['SUPER_ADMIN', 'MANAGER', 'BUSINESS_HEAD', 'LEAD_OPERATION'].includes(user.role);
     const location = useLocation();
     const isDark = false; 
     const [searchTerm, setSearchTerm] = useState('');

@@ -403,7 +403,7 @@ const MonthlyReports = ({ hideHeader = false }) => {
                                                     <Edit2 className="w-4 h-4" />
                                                 </button>
                                             )}
-                                            {['SUPER_ADMIN', 'MANAGER', 'BUSINESS_HEAD'].includes(user.role) && (
+                                            {['SUPER_ADMIN', 'MANAGER', 'BUSINESS_HEAD', 'LEAD_OPERATION'].includes(user.role) && (
                                                 <button 
                                                     onClick={() => handleDelete(r.id)}
                                                     className="p-3 rounded-2xl bg-red-50/50 text-red-400 border border-red-100 hover:text-red-600 hover:border-red-200 transition-all shadow-sm"
