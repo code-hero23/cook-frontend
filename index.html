@@ -33,11 +33,20 @@
         }
       }, true);
 
-      // 3. Global Error Suppressor
+      // 3. Global Error Suppressor & Surgical Diagnostic
       var _error = window.onerror;
       window.onerror = function(msg, url, line, col, error) {
         if (msg && msg.indexOf('Illegal constructor') > -1) {
-          console.warn('[Suppressor] Blocked Illegal Constructor at ' + url + ':' + line);
+          console.error('🕵️‍♂️ SURGEON: Investigating crash at', url, 'Line:', line);
+          
+          fetch(url).then(function(r) { return r.text(); }).then(function(text) {
+             var lines = text.split('\n');
+             // Target the specific line from the trace (4090)
+             var targetLine = line - 1; 
+             var snippet = lines.slice(Math.max(0, targetLine - 5), targetLine + 5).join('\n');
+             console.log('%c [CSI] CRASH SITE CODE (UNMINIFIED): \n%c' + snippet, 'background: #000; color: #0f0', 'color: #0f0; font-family: monospace;');
+          }).catch(function(e) { console.error('Surgeon failed:', e); });
+          
           return true;
         }
         if (_error) return _error.apply(this, arguments);
