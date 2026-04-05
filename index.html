@@ -13,60 +13,20 @@
   <meta name="theme-color" content="#f97316">
   <meta name="description" content="Elite Project Management & Interior Design Portal">
   <script>
-    // UNIVERSAL SHADOW EVENT POLYFILL 
-    // Fixes 'Illegal constructor' in Safari/WebViews globally
-    (function () {
-      function createSafeEventClass(originalName) {
-        var Original = window[originalName];
-        var isCustom = originalName === 'CustomEvent';
-        
-        function ShadowEvent(type, params) {
-          params = params || {};
-          var evt;
-          try {
-            evt = document.createEvent(originalName);
-            if (isCustom) {
-              evt.initCustomEvent(type, !!params.bubbles, !!params.cancelable, params.detail);
-            } else {
-              evt.initEvent(type, !!params.bubbles, !!params.cancelable);
-            }
-          } catch (e) {
-            console.error('[Fix] Shadow creation failed for', originalName, e.message);
-            evt = { type: type, bubbles: !!params.bubbles, cancelable: !!params.cancelable, detail: params.detail };
-          }
-          return evt;
-        }
-
-        if (Original) {
-          ShadowEvent.prototype = Original.prototype;
-        }
-        return ShadowEvent;
-      }
-
+    // FINAL STABILITY PATCH
+    (function() {
       try {
-        var SafeEvent = createSafeEventClass('Event');
-        var SafeCustomEvent = createSafeEventClass('CustomEvent');
-        Object.defineProperty(window, 'Event', { value: SafeEvent, configurable: true, writable: true });
-        Object.defineProperty(window, 'CustomEvent', { value: SafeCustomEvent, configurable: true, writable: true });
-        console.log('[Fix] Shadow Events Active');
-      } catch (e) { console.error(e); }
-
-      // --- THE CODE SURGEON --- 
-      window.onerror = function (msg, url, line, col, error) {
-        if (msg.indexOf('Illegal constructor') > -1) {
-          console.error('🕵️‍♂️ SURGEON: Investigating crash at', url, line, col);
-          
-          fetch(url).then(function(r) { return r.text(); }).then(function(text) {
-             var start = Math.max(0, col - 500);
-             var end = Math.min(text.length, col + 500);
-             var snippet = text.substring(start, end);
-             console.log('%c [CSI] CRASH SITE CODE (EXTENDED): %c ' + snippet, 'background: #000; color: #0f0', 'color: #0f0; font-family: monospace;');
-             
-             // Extra diagnostic
-             console.warn('CRASH COORDINATES:', 'Line', line, 'Col', col);
-          }).catch(function(e) { console.error('Surgeon failed to fetch source:', e); });
+        if (typeof window.CustomEvent !== 'function') {
+          function CustomEvent(event, params) {
+            params = params || { bubbles: false, cancelable: false, detail: undefined };
+            var evt = document.createEvent('CustomEvent');
+            evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail);
+            return evt;
+          }
+          CustomEvent.prototype = window.Event.prototype;
+          window.CustomEvent = CustomEvent;
         }
-      };
+      } catch (e) {}
     })();
   </script>
 </head>
