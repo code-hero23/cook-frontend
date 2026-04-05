@@ -77,7 +77,7 @@ exports.getWalkins = async (req, res) => {
         const filter = {};
 
         // Role-based filtering
-        if (!['SUPER_ADMIN', 'MANAGER', 'BUSINESS_HEAD'].includes(role)) {
+        if (!['SUPER_ADMIN', 'MANAGER', 'BUSINESS_HEAD', 'LEAD_OPERATION'].includes(role)) {
             filter.OR = [
                 { creId: userId },
                 { bhId: userId },
@@ -109,8 +109,8 @@ exports.createWalkin = async (req, res) => {
         } = req.body;
         const { role, id: loggedInUserId } = req.user;
 
-        // Allow Admin/Manager/BH to set creId explicitly
-        const creId = (['SUPER_ADMIN', 'MANAGER', 'BUSINESS_HEAD'].includes(role) && bodyCreId) 
+        // Allow Admin/Manager/BH/LeadOperation to set creId explicitly
+        const creId = (['SUPER_ADMIN', 'MANAGER', 'BUSINESS_HEAD', 'LEAD_OPERATION'].includes(role) && bodyCreId) 
             ? bodyCreId 
             : loggedInUserId;
 
@@ -239,7 +239,7 @@ exports.getWorkReports = async (req, res) => {
         const { role, id: userId } = req.user;
         const filter = {};
 
-        if (!['SUPER_ADMIN', 'MANAGER', 'BUSINESS_HEAD'].includes(role)) {
+        if (!['SUPER_ADMIN', 'MANAGER', 'BUSINESS_HEAD', 'LEAD_OPERATION'].includes(role)) {
             filter.OR = [
                 { creId: userId },
                 { bhId: userId }
@@ -265,8 +265,8 @@ exports.createWorkReport = async (req, res) => {
         const { role, id: loggedInUserId } = req.user;
         const { creId: bodyCreId, ...rest } = req.body;
 
-        // Allow Admin/Manager/BH to set creId explicitly
-        const creId = (['SUPER_ADMIN', 'MANAGER', 'BUSINESS_HEAD'].includes(role) && bodyCreId) 
+        // Allow Admin/Manager/BH/LeadOperation to set creId explicitly
+        const creId = (['SUPER_ADMIN', 'MANAGER', 'BUSINESS_HEAD', 'LEAD_OPERATION'].includes(role) && bodyCreId) 
             ? bodyCreId 
             : loggedInUserId;
 

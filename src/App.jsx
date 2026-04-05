@@ -24,6 +24,7 @@ const RootRedirect = () => {
 
     if (token) {
         if (['SUPER_ADMIN', 'MANAGER', 'VIEW_ONLY_ADMIN', 'BUSINESS_HEAD'].includes(user.role)) return <Navigate to="/admin/dashboard" replace />;
+        if (user.role === 'LEAD_OPERATION') return <Navigate to="/cre" replace />;
         if (user.role === 'EMPLOYEE') return <Navigate to="/employee" replace />;
         if (user.role === 'SITE_SUPERVISOR') return <Navigate to="/supervisor" replace />;
         if (user.role === 'CLIENT_RELATIONSHIP_EXECUTIVE') return <Navigate to="/cre" replace />;

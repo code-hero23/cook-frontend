@@ -6,8 +6,8 @@ exports.upsertReport = async (req, res) => {
         const { month, year, calls, srv, proposals, orders, value, creId } = req.body;
         const { id: userId, role } = req.user;
         
-        // If Admin/Manager, allow creId from body. Otherwise, strictly use logged in user id.
-        const targetCreId = (['SUPER_ADMIN', 'MANAGER', 'BUSINESS_HEAD'].includes(role) && creId) 
+        // If Admin/Manager/LeadOp, allow creId from body. Otherwise, strictly use logged in user id.
+        const targetCreId = (['SUPER_ADMIN', 'MANAGER', 'BUSINESS_HEAD', 'LEAD_OPERATION'].includes(role) && creId) 
             ? creId 
             : userId;
 
@@ -53,8 +53,8 @@ exports.getReports = async (req, res) => {
         if (month && !isNaN(parseInt(month))) filter.month = parseInt(month);
         if (year && !isNaN(parseInt(year))) filter.year = parseInt(year);
 
-        // If not admin, only show user's own reports
-        if (!['SUPER_ADMIN', 'MANAGER', 'BUSINESS_HEAD'].includes(role)) {
+        // If not admin/manager/leadop, only show user's own reports
+        if (!['SUPER_ADMIN', 'MANAGER', 'BUSINESS_HEAD', 'LEAD_OPERATION'].includes(role)) {
             filter.creId = userId;
         }
 
@@ -184,8 +184,8 @@ exports.deleteReport = async (req, res) => {
         const { id } = req.params;
         const { role } = req.user;
 
-        // Restriction: Only admin/manager roles can delete
-        if (!['SUPER_ADMIN', 'MANAGER', 'BUSINESS_HEAD'].includes(role)) {
+        // Restriction: Only admin/manager/leadop roles can delete
+        if (!['SUPER_ADMIN', 'MANAGER', 'BUSINESS_HEAD', 'LEAD_OPERATION'].includes(role)) {
             return res.status(403).json({ error: "Unauthorized: Only managers can delete monthly history" });
         }
 
