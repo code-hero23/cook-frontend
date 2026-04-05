@@ -6,6 +6,7 @@ import TopNavbar from "./components/TopNavbar";
 import Sidebar from "./components/Sidebar";
 
 // Content Components
+import ProjectProgress from "./components/ProjectProgress";
 import TaskList from "./components/TaskList";
 import ActivityFeed from "./components/ActivityFeed";
 import Gallery from "./components/Gallery";
@@ -121,11 +122,7 @@ const App = () => {
 
         <div className="flex-1 bg-slate-50/30 min-w-0 pointer-events-auto overflow-y-auto custom-scrollbar">
           <div className="p-3 md:p-6 lg:p-8 pb-32 md:pb-12">
-            {selected === "overview" && (
-              <div className="h-96 flex items-center justify-center bg-slate-900 text-white font-black text-2xl rounded-[3rem]">
-                OVERVIEW (CHARTS ISOLATED)
-              </div>
-            )}
+            {selected === "overview" && <ProjectProgress tasks={tasks} />}
             {selected === "profile" && <Profile />}
             {selected === "tasks" && <TaskList tasks={tasks} toggleStatus={toggleStatus} />}
             {selected === "activity" && <ActivityFeed activity={activity} dummyActivity={[]} />}
