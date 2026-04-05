@@ -24,22 +24,27 @@
         });
       }
 
-      // 2. Surgical Observer Safeguard (Fixes ResizeObserver/IntersectionObserver Illegal Constructor)
-      var targets = ['ResizeObserver', 'IntersectionObserver'];
-      targets.forEach(function(name) {
-        var Original = window[name];
-        if (typeof Original === 'function' || typeof Original === 'object') {
-          window[name] = function(callback) {
-            try {
-              return new Original(callback);
-            } catch (e) {
-              console.warn('[Fix] Safe fallback used for ' + name);
-              return { observe: function() {}, unobserve: function() {}, disconnect: function() {} };
-            }
-          };
-          if (Original.prototype) window[name].prototype = Original.prototype;
-        }
-      });
+      // 2. Surgical Safeguards (Fixes Illegal Constructors)
+      (function() {
+        var targets = ['ResizeObserver', 'IntersectionObserver', 'MessageChannel'];
+        targets.forEach(function(name) {
+          var Original = window[name];
+          if (typeof Original === 'function' || typeof Original === 'object') {
+            window[name] = function(callback) {
+              try {
+                return new Original(callback);
+              } catch (e) {
+                console.warn('[Fix] Safe fallback used for ' + name);
+                if (name === 'MessageChannel') {
+                  return { port1: { onmessage: null, postMessage: function() {} }, port2: { onmessage: null, postMessage: function() {} } };
+                }
+                return { observe: function() {}, unobserve: function() {}, disconnect: function() {} };
+              }
+            };
+            if (Original.prototype) window[name].prototype = Original.prototype;
+          }
+        });
+      })();
 
       // 3. Suppress specific 'Select' events that trigger the SyntheticEvent crash
       window.addEventListener('select', function(e) {
