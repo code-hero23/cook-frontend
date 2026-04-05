@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { dispatchSafeEvent } from '../../../shared/utils/eventUtils';
 import { NavLink, useNavigate } from 'react-router-dom';
 import axios from '../../../shared/utils/axios';
 import {
