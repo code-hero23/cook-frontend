@@ -44,6 +44,16 @@ export default defineConfig({
       }
     }),
   ],
+  build: {
+    target: 'es2020',
+    cssTarget: 'chrome80',
+    minify: 'esbuild',
+    rollupOptions: {
+      output: {
+        manualChunks: undefined
+      }
+    }
+  },
   server: {
     proxy: {
       '/api': {
