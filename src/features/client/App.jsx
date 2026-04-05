@@ -5,6 +5,16 @@ import useHaptics from "../../shared/hooks/useHaptics";
 import TopNavbar from "./components/TopNavbar";
 import Sidebar from "./components/Sidebar";
 
+// Content Components
+import TaskList from "./components/TaskList";
+import ActivityFeed from "./components/ActivityFeed";
+import Gallery from "./components/Gallery";
+import Documents from "./components/Documents";
+import Timeline from "./components/Timeline";
+import RaiseTicket from "./components/RaiseTicket";
+import Profile from "./components/Profile";
+import RefreshButton from "../../shared/components/RefreshButton";
+
 const App = () => {
   const navigate = useNavigate();
   const [tasks, setTasks] = useState([]);
@@ -57,6 +67,20 @@ const App = () => {
     }
   }, [project.id, clientToken]);
 
+  const toggleStatus = async (id) => {
+    const task = tasks.find(t => t.id === id);
+    if (!task) return;
+    trigger('medium');
+    const isCompleted = task.status && task.status.toUpperCase() === "COMPLETED";
+    const newStatus = isCompleted ? "PENDING" : "COMPLETED";
+    try {
+      await axios.put(`/tasks/${id}`, { status: newStatus });
+      setTasks((prev) => prev.map((t) => t.id === id ? { ...t, status: newStatus } : t));
+    } catch (err) {
+      console.error("Error toggling status:", err);
+    }
+  };
+
   const handleLogout = () => {
     trigger('heavy');
     localStorage.removeItem("clientToken");
@@ -78,35 +102,43 @@ const App = () => {
         handleLogout={handleLogout}
       />
       
+      <div className="bg-white/40 backdrop-blur-md px-4 py-2 border-b border-white/20 flex items-center justify-between md:hidden">
+        <RefreshButton
+          onRefresh={() => window.location.reload()}
+          isLoading={loading}
+          label="Sync"
+          className="border-none bg-transparent shadow-none p-0 h-auto text-indigo-600"
+        />
+        <span className="text-[9px] font-black text-slate-400 tracking-[0.2em] uppercase">
+          Portal Status: Online
+        </span>
+      </div>
+
       <div className="flex-1 flex relative overflow-hidden">
-        {/* Desktop Sidebar - Sticky! */}
         <div className="hidden md:block w-72 border-r border-slate-200 bg-white/50 backdrop-blur-xl h-[calc(100vh-5rem)] sticky top-20 z-20">
           <Sidebar selected={selected} setSelected={setSelected} onLogout={handleLogout} />
         </div>
 
-        {/* Diagnostic Content Area */}
-        <div className="flex-1 flex items-center justify-center bg-slate-900 text-white font-black text-2xl p-8 text-center">
-          <div>
-            <div className="mb-4">SIDEBAR STABLE</div>
-            <div className="text-lg text-slate-400 font-medium tracking-tight">
-              Selected View: <span className="text-indigo-400 uppercase">{selected}</span>
-            </div>
-            <button 
-              onClick={handleLogout} 
-              className="mt-12 px-8 py-3 bg-white/10 hover:bg-white/20 rounded-full text-[10px] uppercase tracking-widest transition-colors font-bold"
-            >
-              Logout Account
-            </button>
+        <div className="flex-1 bg-slate-50/30 min-w-0 pointer-events-auto overflow-y-auto custom-scrollbar">
+          <div className="p-3 md:p-6 lg:p-8 pb-32 md:pb-12">
+            {selected === "overview" && (
+              <div className="h-96 flex items-center justify-center bg-slate-900 text-white font-black text-2xl rounded-[3rem]">
+                OVERVIEW (CHARTS ISOLATED)
+              </div>
+            )}
+            {selected === "profile" && <Profile />}
+            {selected === "tasks" && <TaskList tasks={tasks} toggleStatus={toggleStatus} />}
+            {selected === "activity" && <ActivityFeed activity={activity} dummyActivity={[]} />}
+            {selected === "gallery" && <Gallery />}
+            {selected === "documents" && <Documents />}
+            {selected === "timeline" && <Timeline tasks={tasks} />}
+            {selected === "feedback" && <RaiseTicket />}
           </div>
         </div>
       </div>
 
-      {/* Mobile Sidebar Overlay & Sidebar (Bottom of DOM for safety) */}
       {menuOpen && (
-        <div
-          onClick={() => setMenuOpen(false)}
-          className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[2000] md:hidden cursor-pointer"
-        />
+        <div onClick={() => setMenuOpen(false)} className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[2000] md:hidden cursor-pointer" />
       )}
 
       {menuOpen && (
@@ -121,6 +153,13 @@ const App = () => {
           />
         </div>
       )}
+
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #CBD5E1; }
+      `}</style>
     </div>
   );
 };
