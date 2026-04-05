@@ -24,7 +24,6 @@
           params = params || {};
           var evt;
           try {
-            // Try standard creation first
             evt = document.createEvent(originalName);
             if (isCustom) {
               evt.initCustomEvent(type, !!params.bubbles, !!params.cancelable, params.detail);
@@ -32,13 +31,8 @@
               evt.initEvent(type, !!params.bubbles, !!params.cancelable);
             }
           } catch (e) {
-            // Fallback for extreme cases
+            console.error('[Fix] Shadow creation failed for', originalName, e.message);
             evt = { type: type, bubbles: !!params.bubbles, cancelable: !!params.cancelable, detail: params.detail };
-          }
-          
-          // Ensure it can be used with 'instanceof' if possible
-          if (Original && Original.prototype) {
-            Object.setPrototypeOf(evt, Original.prototype);
           }
           return evt;
         }
@@ -63,17 +57,13 @@
           console.error('🕵️‍♂️ SURGEON: Investigating crash at', url, line, col);
           
           fetch(url).then(function(r) { return r.text(); }).then(function(text) {
-             // Minified files usually have everything on a few lines.
-             // We use the 'col' (column) to find the exact character.
-             var start = Math.max(0, col - 100);
-             var snippet = text.substring(start, col + 100);
-             console.log('%c [CSI] CRASH SITE CODE: %c ' + snippet, 'background: #f00; color: #fff', 'color: #f00; font-weight: bold;');
+             var start = Math.max(0, col - 500);
+             var end = Math.min(text.length, col + 500);
+             var snippet = text.substring(start, end);
+             console.log('%c [CSI] CRASH SITE CODE (EXTENDED): %c ' + snippet, 'background: #000; color: #0f0', 'color: #0f0; font-family: monospace;');
              
-             // Check for the most likely culprits in the snippet
-             if (snippet.indexOf('new CustomEvent') > -1) console.warn('DETECTED: CustomEvent call');
-             if (snippet.indexOf('new Event') > -1) console.warn('DETECTED: Event call');
-             if (snippet.indexOf('new MessageChannel') > -1) console.warn('DETECTED: MessageChannel call');
-             if (snippet.indexOf('new Notification') > -1) console.warn('DETECTED: Notification call');
+             // Extra diagnostic
+             console.warn('CRASH COORDINATES:', 'Line', line, 'Col', col);
           }).catch(function(e) { console.error('Surgeon failed to fetch source:', e); });
         }
       };
