@@ -12,6 +12,57 @@
   <meta name="apple-mobile-web-app-title" content="Bix Projects">
   <meta name="theme-color" content="#f97316">
   <meta name="description" content="Elite Project Management & Interior Design Portal">
+  <script>
+    // UNIVERSAL SHADOW EVENT POLYFILL 
+    // Fixes 'Illegal constructor' in Safari/WebViews globally
+    (function () {
+      function createSafeEventClass(originalName) {
+        var Original = window[originalName];
+        var isCustom = originalName === 'CustomEvent';
+        
+        function ShadowEvent(type, params) {
+          params = params || {};
+          var evt;
+          try {
+            // Try standard creation first
+            evt = document.createEvent(originalName);
+            if (isCustom) {
+              evt.initCustomEvent(type, !!params.bubbles, !!params.cancelable, params.detail);
+            } else {
+              evt.initEvent(type, !!params.bubbles, !!params.cancelable);
+            }
+          } catch (e) {
+            // Fallback for extreme cases
+            evt = { type: type, bubbles: !!params.bubbles, cancelable: !!params.cancelable, detail: params.detail };
+          }
+          
+          // Ensure it can be used with 'instanceof' if possible
+          if (Original && Original.prototype) {
+            Object.setPrototypeOf(evt, Original.prototype);
+          }
+          return evt;
+        }
+
+        if (Original) {
+          ShadowEvent.prototype = Original.prototype;
+        }
+        return ShadowEvent;
+      }
+
+      try {
+        var SafeEvent = createSafeEventClass('Event');
+        var SafeCustomEvent = createSafeEventClass('CustomEvent');
+        
+        // Use defineProperty to bypass 'read-only' protection
+        Object.defineProperty(window, 'Event', { value: SafeEvent, configurable: true, writable: true });
+        Object.defineProperty(window, 'CustomEvent', { value: SafeCustomEvent, configurable: true, writable: true });
+        
+        console.log('[Fix] Shadow Events Active');
+      } catch (e) {
+        console.error('[Fix] Shadow Event failure:', e);
+      }
+    })();
+  </script>
 </head>
 
 <body>
