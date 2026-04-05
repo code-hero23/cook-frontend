@@ -13,46 +13,40 @@
   <meta name="theme-color" content="#f97316">
   <meta name="description" content="Elite Project Management & Interior Design Portal">
   <script>
-    // FORCED Polyfill for Safari/WebView (Fixes 'Illegal constructor' during subclassing)
+    // ADVANCED Inheritable Polyfill for Safari/WebView 
     (function () {
-      console.log('[Polyfill] Force-applying safe constructors...');
+      console.log('[Polyfill] Applying Inheritable Fallbacks...');
       
       var OriginalEvent = window.Event;
       var OriginalCustomEvent = window.CustomEvent;
 
-      var createSafeEvent = function (EventClass, name, params) {
-        params = params || { bubbles: false, cancelable: false, detail: undefined };
-        var evt = document.createEvent('CustomEvent');
-        evt.initCustomEvent(name, params.bubbles, params.cancelable, params.detail);
-        return evt;
-      };
-
-      window.Event = function (name, params) {
-        return createSafeEvent(OriginalEvent, name, params);
-      };
-      window.Event.prototype = OriginalEvent.prototype;
-
-      window.CustomEvent = function (name, params) {
-        return createSafeEvent(OriginalCustomEvent, name, params);
-      };
-      window.CustomEvent.prototype = OriginalCustomEvent.prototype;
-
-      // Also polyfill Notification if illegal
-      try {
-        if ('Notification' in window) {
-          new Notification('test').close();
-        }
-      } catch (e) {
-        console.warn('[Polyfill] Notification restricted, applying fallback...');
-        var OriginalNotification = window.Notification;
-        window.Notification = function (title, options) {
-          return { close: function() {} }; 
+      function fixConstructor(name, Original) {
+        var Polyfill = function (type, params) {
+          if (!(this instanceof Polyfill)) return new Polyfill(type, params);
+          params = params || { bubbles: false, cancelable: false, detail: undefined };
+          var evt = document.createEvent('CustomEvent');
+          evt.initCustomEvent(type, params.bubbles, params.cancelable, params.detail);
+          Object.setPrototypeOf(evt, Polyfill.prototype);
+          return evt;
         };
-        if (OriginalNotification) {
-          window.Notification.prototype = OriginalNotification.prototype;
-          window.Notification.permission = OriginalNotification.permission;
-          window.Notification.requestPermission = OriginalNotification.requestPermission;
+        if (Original) {
+          Polyfill.prototype = Object.create(Original.prototype);
+          Polyfill.prototype.constructor = Polyfill;
         }
+        window[name] = Polyfill;
+      }
+
+      fixConstructor('Event', OriginalEvent);
+      fixConstructor('CustomEvent', OriginalCustomEvent);
+
+      // Final safety for Notification
+      try {
+        if ('Notification' in window) new Notification('test').close();
+      } catch (e) {
+        console.warn('[Polyfill] Fixing Notification...');
+        window.Notification = function() { return { close: function() {} }; };
+        window.Notification.requestPermission = function() { return Promise.resolve('denied'); };
+        window.Notification.permission = 'denied';
       }
     })();
   </script>
