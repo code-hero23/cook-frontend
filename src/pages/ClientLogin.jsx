@@ -190,7 +190,7 @@ const ClientLogin = () => {
                     transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
                     className="absolute -bottom-20 -right-20 w-[30rem] h-[30rem] bg-orange-200/20 rounded-full blur-3xl"
                 />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-repeat"></div>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-[0.03] pointer-events-none bg-[radial-gradient(#4b5563_1px,transparent_1px)] bg-[size:20px_20px]"></div>
             </div>
 
             <div className="min-h-[100dvh] w-full flex flex-col items-center py-12 md:py-20 px-4 md:px-8 relative z-10">

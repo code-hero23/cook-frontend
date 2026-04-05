@@ -123,7 +123,8 @@ const UnifiedLogin = () => {
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(255,122,0,0.05),transparent_50%)] pointer-events-none" />
 
             {/* Grid Pattern */}
-            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] pointer-events-none" />
+            {/* Background pattern removed to fix 403 error */}
+            <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(#4b5563_1px,transparent_1px)] bg-[size:20px_20px]" />
 
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
