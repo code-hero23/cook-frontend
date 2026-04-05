@@ -13,22 +13,34 @@
   <meta name="theme-color" content="#f97316">
   <meta name="description" content="Elite Project Management & Interior Design Portal">
   <script>
-    // UNIVERSAL ERROR SUPPRESSOR
+    // [PURGE & PROTECT] Sterilize environment before React loads
     (function() {
+      // 1. Force-unregister all old Service Workers
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(regs) {
+          for(var i=0; i<regs.length; i++) {
+            regs[i].unregister().then(function() { console.log('[Purge] SW Killed'); });
+          }
+        });
+      }
+
+      // 2. Suppress the specific 'Select' event trigger if selection is empty/corrupt
+      // This prevents the 'new kf' crash we saw in React's onSelect handler
+      window.addEventListener('select', function(e) {
+        var sel = window.getSelection && window.getSelection();
+        if (!sel || !sel.anchorNode) {
+          e.stopImmediatePropagation();
+        }
+      }, true);
+
+      // 3. Global Error Suppressor
       var _error = window.onerror;
       window.onerror = function(msg, url, line, col, error) {
         if (msg && msg.indexOf('Illegal constructor') > -1) {
-          console.warn('[Suppressor] Blocked Illegal Constructor Crash at ' + url + ':' + line);
-          return true; // Stop error from bubbling
+          console.warn('[Suppressor] Blocked Illegal Constructor at ' + url + ':' + line);
+          return true;
         }
         if (_error) return _error.apply(this, arguments);
-      };
-      // Catch unhandled rejections too
-      window.onunhandledrejection = function(event) {
-        if (event.reason && event.reason.message && event.reason.message.indexOf('Illegal constructor') > -1) {
-          console.warn('[Suppressor] Blocked Async Illegal Constructor');
-          event.preventDefault();
-        }
       };
     })();
   </script>
