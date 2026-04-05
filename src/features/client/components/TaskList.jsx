@@ -11,6 +11,7 @@ import {
   Layers
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { formatDate } from "../../../shared/utils/dateFormatter";
 import useHaptics from "../../../shared/hooks/useHaptics";
 
 const TaskList = ({ tasks = [] }) => {

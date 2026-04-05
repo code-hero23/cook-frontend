@@ -162,7 +162,7 @@ const Employees = () => {
                   </td>
                   <td className="py-2 pr-4">{e.department}</td>
                   <td className="py-2 pr-4 text-xs font-semibold">
-                    {e.role === 'SITE_SUPERVISOR' ? 'AE' : (e.role === 'CLIENT_RELATIONSHIP_EXECUTIVE' ? 'CRE' : e.role)}
+                    {e.role === 'SITE_SUPERVISOR' ? 'AE' : (e.role === 'CLIENT_RELATIONSHIP_EXECUTIVE' ? 'CRE' : (e.role === 'LEAD_OPERATION' ? 'Lead Op' : e.role))}
                   </td>
                   <td className="py-2 pr-4">{e.phone}</td>
                   <td className="py-2 pr-4">
@@ -266,6 +266,7 @@ const Employees = () => {
                     <option value="SITE_SUPERVISOR">AE (Application Engineer)</option>
                     <option value="CLIENT_RELATIONSHIP_EXECUTIVE">Client Relationship Executive (CRE)</option>
                     <option value="BUSINESS_HEAD">Business Head (BH)</option>
+                    <option value="LEAD_OPERATION">Lead Operation</option>
                   </select>
                 </div>
 
