@@ -68,7 +68,7 @@ export const downloadTemplate = async (type, options = {}) => {
     
     // Default options
     const showrooms = options.showrooms || ['MTRS', 'OMR', 'PORUR', 'COIMBATORE'];
-    const bhs = options.bhs && options.bhs.length > 0 ? options.bhs : ['Leo Jenison', 'Sanghatamizh', 'Rajkumar', 'Pughazh', 'Shanmugham'];
+    const bhs = options.bhs && options.bhs.length > 0 ? options.bhs : ['Leo Jenison', 'Sanghatamizh', 'Rajkumar', 'Pugazh', 'Shanmugham'];
     const statuses = ['Y', 'N'];
     const walkinStatuses = ['ACTIVE', 'COMPLETED'];
 

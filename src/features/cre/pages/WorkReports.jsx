@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Search, Filter, Phone, MapPin, User, Star, Calendar, Download, Upload, Briefcase, ChevronRight, Check, FileText, Edit2, Clock, Activity } from 'lucide-react';
@@ -51,6 +51,25 @@ const WorkReports = ({ hideHeader = false }) => {
         "July", "August", "September", "October", "November", "December"
     ];
 
+    const uniqueBhs = useMemo(() => {
+        const names = new Set(['Leo Jenison', 'Sanghatamizh', 'Rajkumar', 'Pugazh', 'Shanmugham']);
+        bhs.forEach(b => names.add(b.name));
+        reports.forEach(r => {
+            if (r.bh?.name) names.add(r.bh.name);
+            if (r.bhName) names.add(r.bhName);
+        });
+        return Array.from(names).sort();
+    }, [bhs, reports]);
+
+    const uniqueCres = useMemo(() => {
+        const names = new Set();
+        cres.forEach(c => names.add(c.name));
+        reports.forEach(r => {
+            if (r.cre?.name) names.add(r.cre.name);
+        });
+        return Array.from(names).sort();
+    }, [cres, reports]);
+
     const currentReports = reports.filter(r => {
         const date = new Date(r.date);
         const matchMonth = !filter.month || date.getMonth() + 1 === parseInt(filter.month);
@@ -59,11 +78,11 @@ const WorkReports = ({ hideHeader = false }) => {
         const matchDate = matchMonth && matchYear;
         
         const matchCre = !filter.cre || 
-                        r.cre?.name.toLowerCase().includes(filter.cre.toLowerCase());
+                        (r.cre?.name.toLowerCase() === filter.cre.toLowerCase());
         
         const matchBh = !filter.bh || 
-                       (r.bh?.name.toLowerCase().includes(filter.bh.toLowerCase()) || 
-                        r.bhName?.toLowerCase().includes(filter.bh.toLowerCase()));
+                       (r.bh?.name.toLowerCase() === filter.bh.toLowerCase() || 
+                        r.bhName?.toLowerCase() === filter.bh.toLowerCase());
         
         return matchDate && matchCre && matchBh;
     });
@@ -281,20 +300,26 @@ const WorkReports = ({ hideHeader = false }) => {
                         <option value="2030">2030</option>
                     </select>
                 </div>
-                <input 
-                    type="text"
-                    placeholder="Filter by CRE Name..."
+                <select 
                     value={filter.cre}
                     onChange={(e) => setFilter({...filter, cre: e.target.value})}
-                    className="border border-slate-100 bg-slate-50/50 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-orange-500/50 min-w-[180px]"
-                />
-                <input 
-                    type="text"
-                    placeholder="Filter by BH Name..."
+                    className={`border rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-orange-500/50 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M5%207.5L10%2012.5L15%207.5%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%221.66667%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E')] bg-no-repeat bg-[right_1rem_center] min-w-[180px] ${isDark ? 'bg-slate-900 border-white/5 text-white' : 'bg-slate-50 border-slate-100 text-slate-900 shadow-sm'}`}
+                >
+                    <option value="">ALL CRE NAMES</option>
+                    {uniqueCres.map((name, i) => (
+                        <option key={i} value={name}>{name}</option>
+                    ))}
+                </select>
+                <select 
                     value={filter.bh}
                     onChange={(e) => setFilter({...filter, bh: e.target.value})}
-                    className="border border-slate-100 bg-slate-50/50 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-orange-500/50 min-w-[180px]"
-                />
+                    className={`border rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-orange-500/50 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M5%207.5L10%2012.5L15%207.5%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%221.66667%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E')] bg-no-repeat bg-[right_1rem_center] min-w-[180px] ${isDark ? 'bg-slate-900 border-white/5 text-white' : 'bg-slate-50 border-slate-100 text-slate-900 shadow-sm'}`}
+                >
+                    <option value="">ALL BH NAMES</option>
+                    {uniqueBhs.map((name, i) => (
+                        <option key={i} value={name}>{name}</option>
+                    ))}
+                </select>
                 <button 
                     onClick={() => setFilter({ month: new Date().getMonth() + 1, year: new Date().getFullYear(), cre: '', bh: '' })}
                     className="text-[10px] font-black uppercase tracking-widest text-orange-500 hover:text-orange-600 ml-auto"
@@ -593,7 +618,7 @@ const WorkReports = ({ hideHeader = false }) => {
                                                 <option value="Leo Jenison">Leo Jenison</option>
                                                 <option value="Sanghatamizh">Sanghatamizh</option>
                                                 <option value="Rajkumar">Rajkumar</option>
-                                                <option value="Pughazh">Pughazh</option>
+                                                <option value="Pugazh">Pugazh</option>
                                                 <option value="Shanmugham">Shanmugham</option>
                                                 <option value="EXISTING">Registered BH User</option>
                                                 <option value="MANUAL">Manual Input...</option>
