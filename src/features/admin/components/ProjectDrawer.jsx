@@ -746,7 +746,11 @@ Project Created Successfully.
                                                                 exit={{ opacity: 0, height: 0 }}
                                                                 className="flex flex-wrap gap-1.5 mb-4 p-2 bg-amber-50/50 rounded-2xl border border-amber-100/50"
                                                             >
-                                                                {form.recipients.map(email => {
+                                                                {[...form.recipients].sort((a, b) => {
+                                                                    const nameA = employees.find(e => e.email === a)?.name || a;
+                                                                    const nameB = employees.find(e => e.email === b)?.name || b;
+                                                                    return nameA.localeCompare(nameB);
+                                                                }).map(email => {
                                                                     const emp = employees.find(e => e.email === email);
                                                                     return (
                                                                         <motion.div 
@@ -824,11 +828,13 @@ Project Created Successfully.
                                                         <div className="max-height-[300px] overflow-y-auto no-scrollbar p-2 space-y-4" style={{ maxHeight: '300px' }}>
                                                             {/* Group by Roles dynamically or simple filtered list */}
                                                             {['SUPER_ADMIN', 'EMPLOYEE'].map(role => {
-                                                                const roleFiltered = employees.filter(e => 
-                                                                    e.status === 'ACTIVE' && 
-                                                                    e.role === role && 
-                                                                    (e.name.toLowerCase().includes(searchTerm.toLowerCase()) || e.email.toLowerCase().includes(searchTerm.toLowerCase()))
-                                                                );
+                                                                const roleFiltered = employees
+                                                                    .filter(e => 
+                                                                        e.status === 'ACTIVE' && 
+                                                                        e.role === role && 
+                                                                        (e.name.toLowerCase().includes(searchTerm.toLowerCase()) || e.email.toLowerCase().includes(searchTerm.toLowerCase()))
+                                                                    )
+                                                                    .sort((a, b) => a.name.localeCompare(b.name));
                                                                 
                                                                 if (roleFiltered.length === 0) return null;
 
