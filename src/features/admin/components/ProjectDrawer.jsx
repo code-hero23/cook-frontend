@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { X, Check, Trash2, CloudUpload } from "lucide-react";
+import { X, Check, Trash2, CloudUpload, Search, UserCheck, UserPlus, Users, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "../../../shared/utils/axios";
 import { useApp } from "../context/AppContext";
@@ -7,6 +7,7 @@ import { useApp } from "../context/AppContext";
 const ProjectDrawer = ({ isOpen, onClose, onSubmit, initialData, isEditing }) => {
     const { employees } = useApp();
     const [form, setForm] = useState(initialData);
+    const [searchTerm, setSearchTerm] = useState("");
 
     // Auto-Select Superadmins as recipients for NEW projects
     useEffect(() => {
@@ -717,36 +718,180 @@ Project Created Successfully.
                                                 </div>
                                             </div>
 
-                                            {/* Recipients & Attachments UI can go here or below */}
-                                            <div className="space-y-4 pt-4 border-t border-amber-100">
+                                            {/* Recipients & Attachments UI */}
+                                            <div className="space-y-6 pt-6 border-t border-amber-100">
                                                 <div>
-                                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Send Freezing Mail to:</label>
+                                                    <div className="flex items-center justify-between mb-3">
+                                                        <label className="block text-xs font-bold text-slate-500 uppercase flex items-center gap-2">
+                                                            <Users size={14} className="text-amber-500" />
+                                                            Send Freezing Mail to:
+                                                        </label>
+                                                        {form.recipients?.length > 0 && (
+                                                            <button 
+                                                                type="button"
+                                                                onClick={() => setForm(prev => ({ ...prev, recipients: [] }))}
+                                                                className="text-[10px] font-bold text-red-500 hover:text-red-600 transition-colors uppercase tracking-tight"
+                                                            >
+                                                                Clear All ({form.recipients.length})
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                     
-                                                    {/* Recipients List with Auto-Select Logic */}
-                                                    <div className="flex flex-wrap gap-2 mb-4">
-                                                        {employees.filter(e => e.status === 'ACTIVE').map(emp => {
-                                                            const isSelected = (form.recipients || []).includes(emp.email);
-                                                            return (
-                                                                <button
-                                                                    key={emp.id}
-                                                                    type="button"
-                                                                    onClick={() => {
-                                                                        const current = form.recipients || [];
-                                                                        const next = isSelected 
-                                                                            ? current.filter(e => e !== emp.email) 
-                                                                            : [...current, emp.email];
-                                                                        setForm(prev => ({ ...prev, recipients: next }));
-                                                                    }}
-                                                                    className={`px-3 py-1.5 rounded-full text-[10px] font-bold transition-all border ${
-                                                                        isSelected
-                                                                            ? "bg-amber-100 border-amber-400 text-amber-700 shadow-sm"
-                                                                            : "bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300"
-                                                                    }`}
-                                                                >
-                                                                    {emp.name}
-                                                                </button>
-                                                            );
-                                                        })}
+                                                    {/* Selected Recipients Chips */}
+                                                    <AnimatePresence>
+                                                        {form.recipients?.length > 0 && (
+                                                            <motion.div 
+                                                                initial={{ opacity: 0, y: -10 }}
+                                                                animate={{ opacity: 1, y: 0 }}
+                                                                exit={{ opacity: 0, height: 0 }}
+                                                                className="flex flex-wrap gap-1.5 mb-4 p-2 bg-amber-50/50 rounded-2xl border border-amber-100/50"
+                                                            >
+                                                                {form.recipients.map(email => {
+                                                                    const emp = employees.find(e => e.email === email);
+                                                                    return (
+                                                                        <motion.div 
+                                                                            layout
+                                                                            key={email}
+                                                                            className="flex items-center gap-1.5 px-2.5 py-1 bg-white border border-amber-200 text-amber-800 rounded-full text-[10px] font-bold shadow-sm"
+                                                                        >
+                                                                            <span>{emp?.name || email}</span>
+                                                                            <button 
+                                                                                type="button"
+                                                                                onClick={() => setForm(prev => ({ ...prev, recipients: prev.recipients.filter(e => e !== email) }))}
+                                                                                className="hover:text-red-500 transition-colors"
+                                                                            >
+                                                                                <X size={12} />
+                                                                            </button>
+                                                                        </motion.div>
+                                                                    );
+                                                                })}
+                                                            </motion.div>
+                                                        )}
+                                                    </AnimatePresence>
+
+                                                    {/* Search & Selection Controls */}
+                                                    <div className="flex flex-col gap-3">
+                                                        <div className="relative group">
+                                                            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400 group-focus-within:text-amber-500 transition-colors">
+                                                                <Search size={14} />
+                                                            </div>
+                                                            <input
+                                                                type="text"
+                                                                placeholder="Search recipients by name or email..."
+                                                                value={searchTerm}
+                                                                onChange={(e) => setSearchTerm(e.target.value)}
+                                                                className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition-all shadow-sm"
+                                                            />
+                                                        </div>
+
+                                                        <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    const superadmins = employees.filter(e => e.role === 'SUPER_ADMIN' && e.status === 'ACTIVE').map(e => e.email);
+                                                                    const current = form.recipients || [];
+                                                                    const missing = superadmins.filter(e => !current.includes(e));
+                                                                    if (missing.length === 0) {
+                                                                        // If all already selected, maybe deselect them? (TBD)
+                                                                        setForm(prev => ({ ...prev, recipients: prev.recipients.filter(e => !superadmins.includes(e)) }));
+                                                                    } else {
+                                                                        setForm(prev => ({ ...prev, recipients: [...current, ...missing] }));
+                                                                    }
+                                                                }}
+                                                                className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-[10px] font-bold text-slate-600 hover:bg-amber-50 hover:border-amber-400 hover:text-amber-700 transition-all"
+                                                            >
+                                                                <UserCheck size={12} />
+                                                                Select All Superadmins
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    const architects = employees.filter(e => (e.department === 'FA' || e.department === 'LA') && e.status === 'ACTIVE').map(e => e.email);
+                                                                    const current = form.recipients || [];
+                                                                    const missing = architects.filter(e => !current.includes(e));
+                                                                    setForm(prev => ({ ...prev, recipients: [...current, ...missing] }));
+                                                                }}
+                                                                className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-[10px] font-bold text-slate-600 hover:bg-amber-50 hover:border-amber-400 hover:text-amber-700 transition-all"
+                                                            >
+                                                                <Users size={12} />
+                                                                Select all Architects
+                                                            </button>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Filtered Recipients List */}
+                                                    <div className="mt-4 border border-slate-100 rounded-2xl overflow-hidden bg-white/50 backdrop-blur-sm shadow-inner">
+                                                        <div className="max-height-[300px] overflow-y-auto no-scrollbar p-2 space-y-4" style={{ maxHeight: '300px' }}>
+                                                            {/* Group by Roles dynamically or simple filtered list */}
+                                                            {['SUPER_ADMIN', 'EMPLOYEE'].map(role => {
+                                                                const roleFiltered = employees.filter(e => 
+                                                                    e.status === 'ACTIVE' && 
+                                                                    e.role === role && 
+                                                                    (e.name.toLowerCase().includes(searchTerm.toLowerCase()) || e.email.toLowerCase().includes(searchTerm.toLowerCase()))
+                                                                );
+                                                                
+                                                                if (roleFiltered.length === 0) return null;
+
+                                                                return (
+                                                                    <div key={role} className="space-y-1.5">
+                                                                        <h4 className="px-2 text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                                                            <span className="w-1 h-3 bg-slate-200 rounded-full"></span>
+                                                                            {role === 'SUPER_ADMIN' ? 'Management / Super Admins' : 'Employees & Staff'}
+                                                                        </h4>
+                                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                                                                            {roleFiltered.map(emp => {
+                                                                                const isSelected = (form.recipients || []).includes(emp.email);
+                                                                                return (
+                                                                                    <button
+                                                                                        key={emp.id}
+                                                                                        type="button"
+                                                                                        onClick={() => {
+                                                                                            const current = form.recipients || [];
+                                                                                            const next = isSelected 
+                                                                                                ? current.filter(e => e !== emp.email) 
+                                                                                                : [...current, emp.email];
+                                                                                            setForm(prev => ({ ...prev, recipients: next }));
+                                                                                        }}
+                                                                                        className={`flex items-center gap-3 p-2 rounded-xl border text-left transition-all ${
+                                                                                            isSelected
+                                                                                                ? "bg-amber-50 border-amber-400 shadow-sm ring-1 ring-amber-100"
+                                                                                                : "bg-white border-slate-100 hover:border-slate-300 hover:shadow-sm"
+                                                                                        }`}
+                                                                                    >
+                                                                                        <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                                                                                            isSelected ? "bg-amber-400 text-white" : "bg-slate-100 text-slate-500"
+                                                                                        }`}>
+                                                                                            {isSelected ? <CheckCircle2 size={14} /> : emp.name.charAt(0)}
+                                                                                        </div>
+                                                                                        <div className="flex-1 min-w-0">
+                                                                                            <p className={`text-[11px] font-bold truncate ${isSelected ? "text-amber-900" : "text-slate-700"}`}>
+                                                                                                {emp.name}
+                                                                                            </p>
+                                                                                            <p className="text-[9px] text-slate-400 truncate font-medium">
+                                                                                                {emp.email}
+                                                                                            </p>
+                                                                                        </div>
+                                                                                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors ${
+                                                                                            isSelected ? "border-amber-500 bg-amber-500" : "border-slate-200"
+                                                                                        }`}>
+                                                                                            {isSelected && <Check size={10} className="text-white" />}
+                                                                                        </div>
+                                                                                    </button>
+                                                                                );
+                                                                            })}
+                                                                        </div>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                            
+                                                            {/* Placeholder if no results */}
+                                                            {employees.filter(e => e.status === 'ACTIVE' && (e.name.toLowerCase().includes(searchTerm.toLowerCase()) || e.email.toLowerCase().includes(searchTerm.toLowerCase()))).length === 0 && (
+                                                                <div className="py-8 text-center text-slate-400">
+                                                                    <Users size={32} className="mx-auto mb-2 opacity-20" />
+                                                                    <p className="text-xs font-medium">No results found for "{searchTerm}"</p>
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
 
