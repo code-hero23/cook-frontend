@@ -175,9 +175,12 @@ exports.createProject = async (req, res) => {
         // await seedProjectTasks(project.id);
 
         // --- NEW: Handle Freezing Mail Trigger ---
-        console.log(`[DEBUG] Final check - recipients:`, recipients, "type:", typeof recipients);
+        const sendEmail = req.body.sendEmail === 'true' || req.body.sendEmail === true;
+        const sendWhatsApp = req.body.sendWhatsApp === 'true' || req.body.sendWhatsApp === true;
+
+        console.log(`[DEBUG] Final check - recipients:`, recipients, "sendEmail:", sendEmail, "sendWhatsApp:", sendWhatsApp);
         
-        if (recipients && Array.isArray(recipients) && recipients.length > 0) {
+        if (sendEmail && recipients && Array.isArray(recipients) && recipients.length > 0) {
             try {
                 // Attachments handling (from multer req.files)
                 const files = req.files || [];
@@ -204,7 +207,7 @@ exports.createProject = async (req, res) => {
 
         // --- WhatsApp Notification to FA ---
         // Uses the custom message provided from the frontend (Editable in Drawer)
-        if (project.faId && req.body.whatsappMessage) {
+        if (sendWhatsApp && project.faId && req.body.whatsappMessage) {
             try {
                 const fa = await prisma.user.findUnique({
                     where: { id: project.faId },

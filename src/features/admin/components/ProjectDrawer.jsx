@@ -606,6 +606,43 @@ Project Created Successfully.
                                                         placeholder="Windmare..."
                                                     />
                                                 </div>
+
+                                                {/* Notification Toggles */}
+                                                <div className="col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3 py-3 border-y border-amber-100/50 my-2">
+                                                    <div className="flex items-center justify-between bg-white/50 p-3 rounded-2xl border border-slate-100 shadow-sm">
+                                                        <div className="flex flex-col">
+                                                            <span className="text-[10px] font-bold text-slate-700 uppercase leading-none mb-1">Send Freezing Mail</span>
+                                                            <span className="text-[9px] text-slate-400 font-medium">Auto-Email to Superadmins</span>
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setForm(prev => ({ ...prev, sendEmail: !prev.sendEmail }))}
+                                                            className={`w-10 h-6 p-1 rounded-full relative transition-colors duration-200 outline-none ${form.sendEmail ? 'bg-indigo-500' : 'bg-slate-200'}`}
+                                                        >
+                                                            <motion.div
+                                                                animate={{ x: form.sendEmail ? 16 : 0 }}
+                                                                className="w-4 h-4 bg-white rounded-full shadow-sm"
+                                                            />
+                                                        </button>
+                                                    </div>
+
+                                                    <div className="flex items-center justify-between bg-white/50 p-3 rounded-2xl border border-slate-100 shadow-sm">
+                                                        <div className="flex flex-col">
+                                                            <span className="text-[10px] font-bold text-slate-700 uppercase leading-none mb-1">WhatsApp Notification</span>
+                                                            <span className="text-[9px] text-slate-400 font-medium">Direct alert to FA</span>
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setForm(prev => ({ ...prev, sendWhatsApp: !prev.sendWhatsApp }))}
+                                                            className={`w-10 h-6 p-1 rounded-full relative transition-colors duration-200 outline-none ${form.sendWhatsApp ? 'bg-green-500' : 'bg-slate-200'}`}
+                                                        >
+                                                            <motion.div
+                                                                animate={{ x: form.sendWhatsApp ? 16 : 0 }}
+                                                                className="w-4 h-4 bg-white rounded-full shadow-sm"
+                                                            />
+                                                        </button>
+                                                    </div>
+                                                </div>
                                                 <div className="col-span-1">
                                                     <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Lead Source (FM)</label>
                                                     <input

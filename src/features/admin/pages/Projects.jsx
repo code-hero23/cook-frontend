@@ -51,7 +51,10 @@ const emptyProject = {
   freezingMailNote: "",
   whatsappMessage: "",
   recipients: [],
-  attachments: []
+  attachments: [],
+  // Notification Toggles
+  sendEmail: true,
+  sendWhatsApp: true
 };
 
 const Projects = () => {
