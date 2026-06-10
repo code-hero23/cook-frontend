@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Menu, Bell, UserCircle2, LogOut, Search, X, FileText, Download, ChevronDown } from "lucide-react";
+import { Menu, Bell, UserCircle2, LogOut, Search, X, FileText, Download, ChevronDown, ExternalLink } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { useApp } from "../../context/AppContext.jsx";
 import { downloadCsv } from "../../utils/exportToCsv";
@@ -221,6 +221,17 @@ const Topbar = ({ onToggleSidebar }) => {
 
       {/* Right Side Buttons */}
       <div className="flex items-center gap-3 sm:gap-5">
+        {/* Switch to CRM Button */}
+        <a
+          href="https://crm.orbixdesigns.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full text-xs font-bold transition-all shadow-md shadow-indigo-600/10 cursor-pointer"
+        >
+          <span className="hidden sm:inline">Switch to CRM</span>
+          <span className="sm:hidden">CRM</span>
+          <ExternalLink size={14} />
+        </a>
 
         {/* GLOBAL REPORTS/EXPORT DROPDOWN */}
         <div className="relative" ref={exportRef}>

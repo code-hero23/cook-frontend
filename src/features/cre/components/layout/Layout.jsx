@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Sidebar from './Sidebar';
-import { Menu } from 'lucide-react';
+import { Menu, ExternalLink } from 'lucide-react';
 
 const Layout = ({ children }) => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -25,10 +25,22 @@ const Layout = ({ children }) => {
                         <span className="ml-4 text-xs font-bold tracking-widest text-orange-500 uppercase">COOKSCAPE</span>
                     </div>
                     
-                    <div className="flex items-center bg-orange-50 px-3 py-1.5 rounded-xl border border-orange-100">
-                        <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest mr-2">{user.name?.split(' ')[0] || 'User'}</span>
-                        <div className="w-6 h-6 rounded-lg bg-orange-500 text-white flex items-center justify-center text-[10px] font-black">
-                            {user.name?.charAt(0) || 'U'}
+                    <div className="flex items-center gap-2">
+                        <a
+                            href="https://crm.orbixdesigns.com/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-orange-500/10 cursor-pointer"
+                        >
+                            <span>CRM</span>
+                            <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+
+                        <div className="flex items-center bg-orange-50 px-3 py-1.5 rounded-xl border border-orange-100">
+                            <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest mr-2">{user.name?.split(' ')[0] || 'User'}</span>
+                            <div className="w-6 h-6 rounded-lg bg-orange-500 text-white flex items-center justify-center text-[10px] font-black">
+                                {user.name?.charAt(0) || 'U'}
+                            </div>
                         </div>
                     </div>
                 </header>

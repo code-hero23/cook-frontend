@@ -7,6 +7,7 @@ import {
   Mail,
   Menu,
   Search,
+  ExternalLink,
 } from "lucide-react";
 
 const Navbar = ({ setSidebarOpen }) => {
@@ -115,6 +116,18 @@ const Navbar = ({ setSidebarOpen }) => {
 
       {/* RIGHT SECTION - COMPACT ON MOBILE */}
       <div className="flex gap-1.5 sm:gap-5 items-center flex-shrink-0">
+        {/* Switch to CRM Button */}
+        <a
+          href="https://crm.orbixdesigns.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-[#FF7A00] hover:bg-[#e06c00] text-white rounded-full text-xs font-bold transition-all shadow-md shadow-[#FF7A00]/20 cursor-pointer"
+        >
+          <span className="hidden sm:inline">Switch to CRM</span>
+          <span className="sm:hidden">CRM</span>
+          <ExternalLink size={14} />
+        </a>
+
         <div className="hidden sm:flex items-center gap-4">
           <button
             onClick={() => navigate("/employee/issues")}

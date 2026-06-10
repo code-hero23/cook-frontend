@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { User, Bell, Menu, LogOut } from "lucide-react";
+import { User, Bell, Menu, LogOut, ExternalLink } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import useHaptics from "../../../shared/hooks/useHaptics";
@@ -73,6 +73,20 @@ const TopNavbar = ({ setSelected, menuOpen, setMenuOpen, handleLogout }) => {
 
       {/* RIGHT SIDE ICONS */}
       <div className="relative flex items-center gap-3 sm:gap-6 flex-shrink-0">
+        {/* Switch to CRM Button */}
+        <motion.a
+          href="https://crm.orbixdesigns.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-indigo-600/10 cursor-pointer"
+        >
+          <span className="hidden sm:inline">Switch to CRM</span>
+          <span className="sm:hidden">CRM</span>
+          <ExternalLink size={14} />
+        </motion.a>
+
         {/* Mobile Menu Button */}
         <motion.button
           whileTap={{ scale: 0.9 }}

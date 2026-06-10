@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, FileText, LogOut, History } from 'lucide-react';
+import { LayoutDashboard, FileText, LogOut, History, ExternalLink } from 'lucide-react';
 
 const Sidebar = ({ open, onClose }) => {
     const handleLogout = () => {
@@ -46,6 +46,16 @@ const Sidebar = ({ open, onClose }) => {
                             {link.name}
                         </NavLink>
                     ))}
+
+                    <a
+                        href="https://crm.orbixdesigns.com/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center px-4 py-3 text-xs font-black rounded-2xl transition-all duration-300 uppercase tracking-widest text-orange-500 hover:bg-orange-50 hover:text-orange-600 border border-orange-200/50 hover:border-orange-200 bg-orange-50/20"
+                    >
+                        <ExternalLink className="w-4 h-4 mr-3" />
+                        Switch to CRM
+                    </a>
                 </nav>
 
                 <div className="p-4 border-t border-slate-50">

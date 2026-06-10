@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, Bell, Search, MapPin } from 'lucide-react';
+import { Menu, Bell, Search, MapPin, ExternalLink } from 'lucide-react';
 
 const Navbar = ({ setSidebarOpen, searchTerm, setSearchTerm }) => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -21,6 +21,17 @@ const Navbar = ({ setSidebarOpen, searchTerm, setSearchTerm }) => {
             </div>
 
             <div className="flex items-center gap-3 sm:gap-6">
+                {/* Switch to CRM Button */}
+                <a
+                    href="https://crm.orbixdesigns.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full text-xs font-bold transition-all shadow-md shadow-indigo-600/10 cursor-pointer"
+                >
+                    <span className="hidden sm:inline">Switch to CRM</span>
+                    <span className="sm:hidden">CRM</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                </a>
                 {/* Search Bar (Visual only for now) */}
                 <div className="hidden sm:flex items-center bg-slate-100 rounded-full px-4 py-2 border border-slate-200 focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all">
                     <Search className="w-4 h-4 text-slate-400" />
