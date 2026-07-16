@@ -1,74 +1,381 @@
-# Unified Cookscape 🍳
+# Cookscape Enterprise Platform
 
-Unified Cookscape is a high-performance, full-stack business management platform designed to streamline internal operations, employee management, and financial workflows. Built with a modern architecture, it integrates real-time data visualization, automated reporting, and secure authentication to provide a seamless administrative experience.
+[![Status](https://img.shields.io/badge/Status-Active-success.svg)]
+[![Frontend](https://img.shields.io/badge/Frontend-React%20(Vite)-61DAFB.svg)]
+[![Backend](https://img.shields.io/badge/Backend-Node.js%20%26%20Express-339933.svg)]
+[![Database](https://img.shields.io/badge/Database-PostgreSQL-336791.svg)]
 
-## 🚀 Features
+A centralized Enterprise Management Platform developed for **Cookscape Interiors** that manages the complete business workflow from lead generation to project completion.
 
-- **Advanced CRM (Walk-in Hub):** Track leads, manage visitor logs, and monitor conversion metrics.
-- **Comprehensive HRMS:** Full employee lifecycle management, including documents, assets, and Background Verification (BGV).
-- **Expense Hub:** Hierarchical voucher approval system (Submitted → AM Review → COO Review → Paid → Completed) with Excel export capabilities.
-- **Automated Reporting:** Daily HR summaries and work reports with automated email triggers via Node-cron.
-- **Interactive Dashboards:** Real-time analytics using Recharts and Framer Motion for fluid UI transitions.
-- **Push Notifications:** Integrated Web-Push API for real-time browser alerts.
-- **Geospatial Tracking:** Integrated Leaflet maps for location-based services.
-- **Hybrid Authentication:** Secure login via JWT-based credentials and Google OAuth 2.0.
+The platform combines **CRM, Project Management, Employee Management, Client Portal, Task Tracking, Issue Management, Reports, Chat, and Email** into a single application.
 
-## 🛠 Tech Stack
+---
 
-### Frontend
-- **Framework:** React 19 (Vite)
-- **Styling:** Tailwind CSS 4.0 (Modern utility-first CSS)
-- **State/Routing:** React Router 7
-- **Animations:** Framer Motion
-- **Icons:** Lucide React
-- **Data Viz:** Recharts
-
-### Backend
-- **Runtime:** Node.js
-- **Framework:** Express.js
-- **ORM:** Prisma (Type-safe database access)
-- **Authentication:** JSON Web Tokens (JWT) & bcryptjs
-- **Services:** Google APIs (OAuth), Nodemailer (Email), Web-Push
-
-### Database
-- **Primary DB:** PostgreSQL (via Prisma)
-
-## 📂 Folder Structure
+# Business Workflow
 
 ```text
-unified-cookscape/
-├── server/                 # Backend Node.js Service
-│   ├── prisma/             # Database Schema & Migrations
-│   ├── src/
-│   │   ├── config/         # Server configurations
-│   │   ├── controllers/    # Request handlers
-│   │   ├── routes/         # API Route definitions
-│   │   └── app.js          # Entry point
-│   └── package.json
-├── src/                    # Frontend React Application
-│   ├── features/           # Modularized feature folders (Admin, CRE, etc.)
-│   │   ├── admin/          # Admin-specific components & pages
-│   │   └── cre/            # CRE-specific workflows
-│   ├── shared/             # Reusable components, hooks, and utils
-│   ├── components/         # UI Design System
-│   └── main.jsx            # Entry point
-├── public/                 # Static assets & Service Workers
-└── package.json            # Frontend dependencies
+Lead / Walk-in
+      │
+      ▼
+CRM
+      │
+      ▼
+Client Confirmation
+      │
+      ▼
+Project Creation
+      │
+      ▼
+Assign Business Head
+Assign Supervisor
+Assign Employees
+      │
+      ▼
+Task Planning
+      │
+      ▼
+Daily Progress Updates
+      │
+      ▼
+Issue Tracking
+      │
+      ▼
+Client Portal
+      │
+      ▼
+Project Completion
 ```
 
-## 🔌 API Overview
+---
 
-| Endpoint | Method | Description | Auth |
-| :--- | :--- | :--- | :--- |
-| `/api/auth/login` | POST | User authentication | Public |
-| `/api/employees` | GET | Fetch all employee records | Admin |
-| `/api/expenses` | POST | Submit new expense voucher | User |
-| `/api/reports` | GET | Generate daily summary reports | Admin/AM |
+# Modules
 
-## 🔮 Future Enhancements
-- [ ] Mobile Application (React Native) integration.
-- [ ] AI-driven lead conversion prediction.
-- [ ] Multi-currency support for international operations.
+## Dashboard
 
-## 📄 License
-Internal Proprietary License - Cookscape.
+Displays real-time business statistics.
+
+- Total Projects
+- Open Projects
+- Closed Projects
+- Open Tasks
+- Closed Tasks
+- Open Issues
+- Closed Issues
+- Overdue Projects
+- Overdue Tasks
+
+---
+
+## CRM
+
+Manage customer leads.
+
+Features
+
+- Walk-in Management
+- Lead Tracking
+- Customer Details
+- Conversion Tracking
+
+---
+
+## Project Management
+
+Once the client confirms the quotation, a project is created.
+
+Each project contains
+
+- Project Name
+- Project Code
+- Client Details
+- Site Location
+- Budget
+- Project Type
+- Start Date
+- Deadline
+- Business Head
+- Supervisor
+- Assigned Employees
+- Project Status
+- Payment Progress
+
+Features
+
+- Create Project
+- Edit Project
+- Bulk Import
+- Search
+- Filters
+- Grid/List View
+- Progress Tracking
+
+---
+
+## Task Management
+
+Tasks are created for each project.
+
+Each task contains
+
+- Task Name
+- Assigned Employee
+- Priority
+- Deadline
+- Status
+- Progress
+- Notes
+
+Supports
+
+- Pending
+- In Progress
+- Completed
+- Overdue
+
+---
+
+## Issue Management
+
+Track project issues and bugs.
+
+Features
+
+- Create Issues
+- Assign Issues
+- Priority Levels
+- Resolution Tracking
+- Status Updates
+
+---
+
+## Client Portal
+
+One of the major features of the application.
+
+The admin can generate a secure access link for each client.
+
+Clients can
+
+- View Project Progress
+- Track Tasks
+- View Timeline
+- View Documents
+- Raise Queries
+- Monitor Site Progress
+
+without logging into the admin dashboard.
+
+---
+
+## Employee Management
+
+Manage employees working on projects.
+
+Features
+
+- Employee Profiles
+- Project Assignment
+- Task Assignment
+- Department
+- Role Management
+
+---
+
+## Communication
+
+Internal communication system.
+
+- Chat
+- Email
+- Notifications
+
+---
+
+## CRE Reports
+
+Generate business reports.
+
+Includes
+
+- Walk-in Reports
+- Monthly Reports
+- Branch Reports
+- CRE Performance
+
+---
+
+# User Roles
+
+| Role | Access |
+|------|--------|
+| Super Admin | Complete System |
+| Admin | Projects, Employees, Reports |
+| Business Head | Assigned Projects |
+| Supervisor | Site Progress & Tasks |
+| Employee | Assigned Tasks |
+| CRE | CRM & Reports |
+| Client | Client Portal |
+
+---
+
+# Technology Stack
+
+## Frontend
+
+- React
+- Vite
+- Tailwind CSS
+- React Router
+- Framer Motion
+- Recharts
+- Lucide React
+
+## Backend
+
+- Node.js
+- Express.js
+- Prisma ORM
+
+## Database
+
+- PostgreSQL
+
+## Authentication
+
+- JWT
+- Google OAuth
+
+## Other Services
+
+- Nodemailer
+- Web Push Notifications
+
+---
+
+# Folder Structure
+
+```
+cookscape-enterprise/
+
+├── server/
+│
+│   ├── prisma/
+│   ├── src/
+│   │   ├── config/
+│   │   ├── controllers/
+│   │   ├── middleware/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   ├── utils/
+│   │   ├── jobs/
+│   │   ├── uploads/
+│   │   ├── app.js
+│   │   └── server.js
+│   │
+│   └── package.json
+│
+├── src/
+│   ├── assets/
+│   ├── components/
+│   ├── layouts/
+│   ├── pages/
+│   ├── hooks/
+│   ├── services/
+│   ├── api/
+│   ├── utils/
+│   ├── features/
+│   │   ├── admin/
+│   │   ├── employee/
+│   │   ├── supervisor/
+│   │   ├── client/
+│   │   └── cre/
+│   ├── App.jsx
+│   └── main.jsx
+│
+├── public/
+├── package.json
+├── README.md
+└── .env
+```
+
+---
+
+# Installation
+
+## Backend
+
+```bash
+cd server
+npm install
+npm run dev
+```
+
+Runs on
+
+```
+http://localhost:5000
+```
+
+---
+
+## Frontend
+
+```bash
+npm install
+npm run dev
+```
+
+Runs on
+
+```
+http://localhost:5173
+```
+
+---
+
+# Environment Variables
+
+Backend
+
+```env
+PORT=5000
+
+DATABASE_URL=
+
+JWT_SECRET=
+
+EMAIL_USER=
+
+EMAIL_PASS=
+
+GOOGLE_CLIENT_ID=
+```
+
+Frontend
+
+```env
+VITE_API_URL=http://localhost:5000/api
+
+VITE_GOOGLE_CLIENT_ID=
+```
+
+---
+
+# Future Enhancements
+
+- Mobile Application
+- Attendance Module
+- Payroll Module
+- AI Reports
+- Live Project Tracking
+- Mobile Notifications
+
+---
+
+# License
+
+Internal Proprietary Software
+
+Developed for Cookscape Interiors.
+
+© 2026 Cookscape Enterprise Platform.
