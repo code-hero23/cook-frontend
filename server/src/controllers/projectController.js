@@ -293,6 +293,7 @@ exports.updateProject = async (req, res) => {
         
         if (data.startDate) data.startDate = new Date(data.startDate);
         if (data.deadline) data.deadline = new Date(data.deadline);
+        if (data.handoverDate) data.handoverDate = new Date(data.handoverDate);
 
         // Sanitization: Unify Status Casing
         if (data.status) {
@@ -300,11 +301,22 @@ exports.updateProject = async (req, res) => {
         }
 
         // Clean empty optional fields
-        ['cpNumber', 'gstin', 'spouseName', 'spousePhone', 'location', 'businessHeadId', 'propertyType', 'scopeOfWork', 'leadSource', 'salesRep', 'faId', 'laId', 'unitNumber', 'block', 'floor', 'area'].forEach(field => {
+        ['cpNumber', 'gstin', 'spouseName', 'spousePhone', 'location', 'businessHeadId', 'propertyType', 'scopeOfWork', 'leadSource', 'salesRep', 'faId', 'laId', 'unitNumber', 'block', 'floor', 'area', 'clientPassword'].forEach(field => {
             if (data[field] === "" || (typeof data[field] === 'string' && data[field].trim() === "") || data[field] === "null" || data[field] === "undefined") {
-                data[field] = null;
+                if (field === 'clientPassword') {
+                    delete data[field]; // Don't update password if empty
+                } else {
+                    data[field] = null;
+                }
             } else if (typeof data[field] === 'string') {
                 data[field] = data[field].trim();
+            }
+        });
+
+        // Strip any remaining objects/arrays (relations) that might cause Prisma update errors
+        Object.keys(data).forEach(key => {
+            if (data[key] !== null && typeof data[key] === 'object' && !(data[key] instanceof Date)) {
+                delete data[key];
             }
         });
 
