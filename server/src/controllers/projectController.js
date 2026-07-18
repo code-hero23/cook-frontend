@@ -352,13 +352,13 @@ exports.updateProject = async (req, res) => {
         res.json(project);
     } catch (error) {
         console.error("PRISMA UPDATE ERROR", error);
-        console.error("FAILED DATA PAYLOAD:", JSON.stringify(data, null, 2));
+        console.error("FAILED DATA PAYLOAD:", JSON.stringify(req.body, null, 2));
         if (error.code === 'P2002') {
             const target = error.meta?.target || [];
             return res.status(400).json({ error: `Unique constraint failed: A project with this ${target.join(', ')} already exists.` });
         }
         // Send the stringified data in the error message so we can see it in the frontend alert
-        res.status(400).json({ error: error.message + "\n\nPayload: " + JSON.stringify(data) });
+        res.status(400).json({ error: error.message + "\n\nPayload: " + JSON.stringify(req.body) });
     }
 };
 
