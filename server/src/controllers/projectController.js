@@ -265,6 +265,13 @@ exports.updateProject = async (req, res) => {
             businessHead,
             fa,
             la,
+            activityLogs,
+            magicLinks,
+            messages,
+            paymentTransactions,
+            documents,
+            images,
+            tickets,
             id,
             createdAt,
             updatedAt,
@@ -274,10 +281,16 @@ exports.updateProject = async (req, res) => {
         const data = { ...cleanData };
 
         // Sanitize types
-        if (data.budget) data.budget = parseFloat(data.budget);
-        if (data.timelineDuration) data.timelineDuration = parseInt(data.timelineDuration, 10);
-        if (data.latitude) data.latitude = parseFloat(data.latitude);
-        if (data.longitude) data.longitude = parseFloat(data.longitude);
+        if (data.budget !== undefined && data.budget !== null) data.budget = parseFloat(data.budget);
+        if (data.timelineDuration !== undefined && data.timelineDuration !== null) data.timelineDuration = parseInt(data.timelineDuration, 10);
+        if (data.latitude !== undefined && data.latitude !== null) data.latitude = parseFloat(data.latitude);
+        if (data.longitude !== undefined && data.longitude !== null) data.longitude = parseFloat(data.longitude);
+        if (data.paymentPercentage !== undefined && data.paymentPercentage !== null) data.paymentPercentage = parseInt(data.paymentPercentage, 10);
+        if (data.executionPercentage !== undefined && data.executionPercentage !== null) data.executionPercentage = parseInt(data.executionPercentage, 10);
+        if (data.addOnsAmount !== undefined && data.addOnsAmount !== null) data.addOnsAmount = parseFloat(data.addOnsAmount);
+        if (data.freezingAmount !== undefined && data.freezingAmount !== null) data.freezingAmount = parseFloat(data.freezingAmount);
+        if (data.woodworkAmount !== undefined && data.woodworkAmount !== null) data.woodworkAmount = parseFloat(data.woodworkAmount);
+        
         if (data.startDate) data.startDate = new Date(data.startDate);
         if (data.deadline) data.deadline = new Date(data.deadline);
 
