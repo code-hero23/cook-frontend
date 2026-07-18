@@ -312,35 +312,49 @@ exports.updateProject = async (req, res) => {
                 data[field] = data[field].trim();
             }
         });
+        // Strict Whitelist of scalar fields allowed in the update
+        const allowedFields = [
+            'projectCode', 'clientPassword', 'name', 'clientFirstName', 'clientLastName', 
+            'clientEmail', 'clientPhone', 'spouseName', 'spousePhone', 'location', 
+            'budget', 'paymentPercentage', 'cpNumber', 'billingName', 'billingAddress', 
+            'billingPhone', 'gstin', 'latitude', 'longitude', 'startDate', 'deadline', 
+            'handoverDate', 'handingOverMonth', 'handingOverYear', 'timelineDuration', 
+            'status', 'businessHeadId', 'faId', 'laId', 'leadSource', 'propertyType', 
+            'salesRep', 'scopeOfWork', 'area', 'block', 'executionPercentage', 'floor', 
+            'unitNumber', 'createdBy', 'addOnsAmount', 'freezingAmount', 'freezingMailNote', 
+            'quoteLink', 'variant', 'woodworkAmount'
+        ];
 
-        // Strip any remaining objects/arrays (relations) that might cause Prisma update errors
-        Object.keys(data).forEach(key => {
-            if (data[key] !== null && typeof data[key] === 'object' && !(data[key] instanceof Date)) {
-                delete data[key];
+        const safeData = {};
+        allowedFields.forEach(field => {
+            if (data[field] !== undefined) {
+                safeData[field] = data[field];
             }
         });
 
+        const projectData = safeData;
+
         // Prevent updating projectCode to the same value (Prisma bug/quirk avoidance)
         // or attempting to hijack another project code
-        if (data.projectCode) {
+        if (projectData.projectCode) {
             const existing = await prisma.project.findUnique({ where: { id: req.params.id } });
-            if (existing && existing.projectCode === data.projectCode) {
-                delete data.projectCode; // Don't update if same
+            if (existing && existing.projectCode === projectData.projectCode) {
+                delete projectData.projectCode; // Don't update if same
             } else {
                 // If changing, ensure new code is unique
-                const duplicate = await prisma.project.findUnique({ where: { projectCode: data.projectCode } });
+                const duplicate = await prisma.project.findUnique({ where: { projectCode: projectData.projectCode } });
                 if (duplicate) {
-                    return res.status(400).json({ error: `Project Code ${data.projectCode} is already taken.` });
+                    return res.status(400).json({ error: `Project Code ${projectData.projectCode} is already taken.` });
                 }
             }
         }
 
-        if (data.clientPassword) {
-            data.clientPassword = await bcrypt.hash(data.clientPassword, 10);
+        if (projectData.clientPassword) {
+            projectData.clientPassword = await bcrypt.hash(projectData.clientPassword, 10);
         }
         const project = await prisma.project.update({
             where: { id: req.params.id },
-            data: data,
+            data: projectData,
             include: {
                 tasks: true,
                 assignedEmployees: true,
