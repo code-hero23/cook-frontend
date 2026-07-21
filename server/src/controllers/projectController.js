@@ -265,6 +265,13 @@ exports.updateProject = async (req, res) => {
             businessHead,
             fa,
             la,
+            activityLogs,
+            magicLinks,
+            messages,
+            paymentTransactions,
+            documents,
+            images,
+            tickets,
             id,
             createdAt,
             updatedAt,
@@ -274,12 +281,19 @@ exports.updateProject = async (req, res) => {
         const data = { ...cleanData };
 
         // Sanitize types
-        if (data.budget) data.budget = parseFloat(data.budget);
-        if (data.timelineDuration) data.timelineDuration = parseInt(data.timelineDuration, 10);
-        if (data.latitude) data.latitude = parseFloat(data.latitude);
-        if (data.longitude) data.longitude = parseFloat(data.longitude);
+        if (data.budget !== undefined && data.budget !== null) data.budget = parseFloat(data.budget);
+        if (data.timelineDuration !== undefined && data.timelineDuration !== null) data.timelineDuration = parseInt(data.timelineDuration, 10);
+        if (data.latitude !== undefined && data.latitude !== null) data.latitude = parseFloat(data.latitude);
+        if (data.longitude !== undefined && data.longitude !== null) data.longitude = parseFloat(data.longitude);
+        if (data.paymentPercentage !== undefined && data.paymentPercentage !== null) data.paymentPercentage = parseInt(data.paymentPercentage, 10);
+        if (data.executionPercentage !== undefined && data.executionPercentage !== null) data.executionPercentage = parseInt(data.executionPercentage, 10);
+        if (data.addOnsAmount !== undefined && data.addOnsAmount !== null) data.addOnsAmount = parseFloat(data.addOnsAmount);
+        if (data.freezingAmount !== undefined && data.freezingAmount !== null) data.freezingAmount = parseFloat(data.freezingAmount);
+        if (data.woodworkAmount !== undefined && data.woodworkAmount !== null) data.woodworkAmount = parseFloat(data.woodworkAmount);
+        
         if (data.startDate) data.startDate = new Date(data.startDate);
         if (data.deadline) data.deadline = new Date(data.deadline);
+        if (data.handoverDate) data.handoverDate = new Date(data.handoverDate);
 
         // Sanitization: Unify Status Casing
         if (data.status) {
@@ -287,35 +301,60 @@ exports.updateProject = async (req, res) => {
         }
 
         // Clean empty optional fields
-        ['cpNumber', 'gstin', 'spouseName', 'spousePhone', 'location', 'businessHeadId', 'propertyType', 'scopeOfWork', 'leadSource', 'salesRep', 'faId', 'laId', 'unitNumber', 'block', 'floor', 'area'].forEach(field => {
+        ['cpNumber', 'gstin', 'spouseName', 'spousePhone', 'location', 'businessHeadId', 'propertyType', 'scopeOfWork', 'leadSource', 'salesRep', 'faId', 'laId', 'unitNumber', 'block', 'floor', 'area', 'clientPassword'].forEach(field => {
             if (data[field] === "" || (typeof data[field] === 'string' && data[field].trim() === "") || data[field] === "null" || data[field] === "undefined") {
-                data[field] = null;
+                if (field === 'clientPassword') {
+                    delete data[field]; // Don't update password if empty
+                } else {
+                    data[field] = null;
+                }
             } else if (typeof data[field] === 'string') {
                 data[field] = data[field].trim();
             }
         });
+        // Strict Whitelist of scalar fields allowed in the update
+        const allowedFields = [
+            'projectCode', 'clientPassword', 'name', 'clientFirstName', 'clientLastName', 
+            'clientEmail', 'clientPhone', 'spouseName', 'spousePhone', 'location', 
+            'budget', 'paymentPercentage', 'cpNumber', 'billingName', 'billingAddress', 
+            'billingPhone', 'gstin', 'latitude', 'longitude', 'startDate', 'deadline', 
+            'handoverDate', 'handingOverMonth', 'handingOverYear', 'timelineDuration', 
+            'status', 'businessHeadId', 'faId', 'laId', 'leadSource', 'propertyType', 
+            'salesRep', 'scopeOfWork', 'area', 'block', 'executionPercentage', 'floor', 
+            'unitNumber', 'createdBy', 'addOnsAmount', 'freezingAmount', 'freezingMailNote', 
+            'quoteLink', 'variant', 'woodworkAmount'
+        ];
+
+        const safeData = {};
+        allowedFields.forEach(field => {
+            if (data[field] !== undefined) {
+                safeData[field] = data[field];
+            }
+        });
+
+        const projectData = safeData;
 
         // Prevent updating projectCode to the same value (Prisma bug/quirk avoidance)
         // or attempting to hijack another project code
-        if (data.projectCode) {
+        if (projectData.projectCode) {
             const existing = await prisma.project.findUnique({ where: { id: req.params.id } });
-            if (existing && existing.projectCode === data.projectCode) {
-                delete data.projectCode; // Don't update if same
+            if (existing && existing.projectCode === projectData.projectCode) {
+                delete projectData.projectCode; // Don't update if same
             } else {
                 // If changing, ensure new code is unique
-                const duplicate = await prisma.project.findUnique({ where: { projectCode: data.projectCode } });
+                const duplicate = await prisma.project.findUnique({ where: { projectCode: projectData.projectCode } });
                 if (duplicate) {
-                    return res.status(400).json({ error: `Project Code ${data.projectCode} is already taken.` });
+                    return res.status(400).json({ error: `Project Code ${projectData.projectCode} is already taken.` });
                 }
             }
         }
 
-        if (data.clientPassword) {
-            data.clientPassword = await bcrypt.hash(data.clientPassword, 10);
+        if (projectData.clientPassword) {
+            projectData.clientPassword = await bcrypt.hash(projectData.clientPassword, 10);
         }
         const project = await prisma.project.update({
             where: { id: req.params.id },
-            data: data,
+            data: projectData,
             include: {
                 tasks: true,
                 assignedEmployees: true,
@@ -326,11 +365,14 @@ exports.updateProject = async (req, res) => {
         });
         res.json(project);
     } catch (error) {
+        console.error("PRISMA UPDATE ERROR", error);
+        console.error("FAILED DATA PAYLOAD:", JSON.stringify(req.body, null, 2));
         if (error.code === 'P2002') {
             const target = error.meta?.target || [];
             return res.status(400).json({ error: `Unique constraint failed: A project with this ${target.join(', ')} already exists.` });
         }
-        res.status(400).json({ error: error.message });
+        // Send the stringified data in the error message so we can see it in the frontend alert
+        res.status(400).json({ error: error.message + "\n\nPayload: " + JSON.stringify(req.body) });
     }
 };
 
