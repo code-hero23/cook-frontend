@@ -1,14 +1,14 @@
 import { useNavigate } from 'react-router-dom';
 import { User, Mail, Phone, Shield, LogOut } from 'lucide-react';
+import { clearInternalAuth } from '../../../shared/utils/auth';
 
 const Profile = () => {
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem('user') || '{}');
 
     const handleLogout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        navigate('/login');
+        clearInternalAuth();
+        navigate('/login', { replace: true });
     };
 
     return (

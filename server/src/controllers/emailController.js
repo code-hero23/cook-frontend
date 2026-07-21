@@ -6,7 +6,7 @@ const { sendNotificationEmail, getEmailTemplate } = require('../services/emailSe
 // Send an email (or draft)
 exports.sendEmail = async (req, res) => {
     try {
-        const { subject, content, senderId, receiverId, isDraft, attachments } = req.body;
+        const { draftId, subject, content, senderId, receiverId, isDraft, attachments } = req.body;
 
         if (!senderId) {
             return res.status(400).json({ error: "Sender ID is required." });
@@ -17,21 +17,43 @@ exports.sendEmail = async (req, res) => {
             return res.status(400).json({ error: "Receiver is required for sending." });
         }
 
-        const email = await prisma.email.create({
-            data: {
-                subject,
-                content,
-                senderId,
-                receiverId: receiverId || undefined,
-                isDraft: isDraft || false,
-                isRead: false,
-                attachments: attachments ? JSON.stringify(attachments) : null
-            },
-            include: {
-                sender: { select: { name: true, email: true } },
-                receiver: { select: { name: true, email: true } }
-            }
-        });
+        let email;
+
+        if (draftId) {
+            email = await prisma.email.update({
+                where: { id: draftId },
+                data: {
+                    subject,
+                    content,
+                    senderId,
+                    receiverId: receiverId || null,
+                    isDraft: isDraft || false,
+                    isRead: false,
+                    isDeleted: false,
+                    attachments: attachments ? JSON.stringify(attachments) : null
+                },
+                include: {
+                    sender: { select: { name: true, email: true } },
+                    receiver: { select: { name: true, email: true } }
+                }
+            });
+        } else {
+            email = await prisma.email.create({
+                data: {
+                    subject,
+                    content,
+                    senderId,
+                    receiverId: receiverId || undefined,
+                    isDraft: isDraft || false,
+                    isRead: false,
+                    attachments: attachments ? JSON.stringify(attachments) : null
+                },
+                include: {
+                    sender: { select: { name: true, email: true } },
+                    receiver: { select: { name: true, email: true } }
+                }
+            });
+        }
 
         // Return success response immediately once internal record is created
         // Background Gmail Relay (SYNCHRONIZED for Production Reliability)

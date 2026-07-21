@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { dispatchSafeEvent } from "../../../shared/utils/eventUtils";
 import { NavLink } from "react-router-dom";
 import axios from "../../../shared/utils/axios";
+import { clearInternalAuth } from "../../../shared/utils/auth";
 import {
   LayoutDashboard,
   ListTodo,
@@ -56,6 +57,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
       ? "bg-[#FF7A00] text-white shadow-lg shadow-[#FF7A00]/20"
       : "text-gray-400 hover:bg-white/5 hover:text-white"
     } ${isCollapsed ? 'justify-center px-0' : ''}`;
+
+  const handleLogout = () => {
+    clearInternalAuth();
+    setSidebarOpen(false);
+  };
 
   return (
     <>
@@ -167,10 +173,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
         <div className="border-t border-white/5 p-4 mt-auto">
           <NavLink
-            to="/login" onClick={() => setSidebarOpen(false)}
+            to="/login" onClick={handleLogout}
             className={`flex items-center gap-3 text-[13px] font-bold px-4 py-3 rounded-xl 
             text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all active:scale-95 ${isCollapsed ? 'justify-center px-0' : ''}`}
             title={isCollapsed ? "Sign Out" : ""}
+            replace
           >
             <LogOut size={18} className="shrink-0" />
             {!isCollapsed && <span>Sign Out</span>}

@@ -12,6 +12,7 @@ const EmailPage = () => {
     const [showCompose, setShowCompose] = useState(false);
     const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
     const [selectedEmail, setSelectedEmail] = useState(null);
+    const [editingDraftId, setEditingDraftId] = useState(null);
 
     // Compose State
     const [toUser, setToUser] = useState(null); // { id, name, email }
@@ -80,6 +81,7 @@ const EmailPage = () => {
 
         try {
             await axios.post('/emails', {
+                draftId: editingDraftId,
                 senderId: user.id,
                 receiverId: toUser?.id,
                 subject,
@@ -91,8 +93,8 @@ const EmailPage = () => {
             toast.success(isDraft ? "Draft saved" : "Email sent successfully");
             setShowCompose(false);
             resetCompose();
-            if (activeTab === (isDraft ? 'draft' : 'sent')) {
-                fetchEmails(); // Refresh if in relevant folder
+            if (activeTab === 'draft' || activeTab === 'sent') {
+                fetchEmails();
             }
         } catch (error) {
             console.error("Error sending email:", error);
@@ -101,11 +103,36 @@ const EmailPage = () => {
     };
 
     const resetCompose = () => {
+        setEditingDraftId(null);
         setToUser(null);
         setUserSearchQuery('');
         setSubject('');
         setMessage('');
         setAttachments([]);
+    };
+
+    const openDraftForEditing = (email) => {
+        setEditingDraftId(email.id);
+        setSelectedEmail(null);
+        setToUser(email.receiver ? {
+            id: email.receiverId,
+            name: email.receiver.name,
+            email: email.receiver.email,
+        } : null);
+        setUserSearchQuery('');
+        setSubject(email.subject || '');
+        setMessage(email.content || '');
+
+        try {
+            const parsedAttachments = typeof email.attachments === 'string'
+                ? JSON.parse(email.attachments)
+                : (email.attachments || []);
+            setAttachments(Array.isArray(parsedAttachments) ? parsedAttachments : []);
+        } catch (error) {
+            setAttachments([]);
+        }
+
+        setShowCompose(true);
     };
 
     const handleFileChange = async (e) => {
@@ -387,7 +414,7 @@ const EmailPage = () => {
                                 {emails.map(email => (
                                     <div
                                         key={email.id}
-                                        onClick={() => setSelectedEmail(email)}
+                                        onClick={() => activeTab === 'draft' ? openDraftForEditing(email) : setSelectedEmail(email)}
                                         className="p-4 hover:bg-orange-50/30 transition-all cursor-pointer group rounded-xl sm:rounded-none mb-2 sm:mb-0 bg-white sm:bg-transparent border border-gray-100 sm:border-0 shadow-sm sm:shadow-none mx-2 sm:mx-0"
                                     >
                                         <div className="flex justify-between items-start mb-2">
@@ -451,7 +478,7 @@ const EmailPage = () => {
                         <div className="bg-white w-full h-[100dvh] sm:h-auto sm:max-h-[85vh] sm:max-w-xl rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col animate-slide-up sm:animate-zoom-in">
                             {/* Modal Header */}
                             <div className="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-2xl">
-                                <h3 className="font-bold text-lg text-gray-800">New Message</h3>
+                                <h3 className="font-bold text-lg text-gray-800">{editingDraftId ? "Edit Draft" : "New Message"}</h3>
                                 <button
                                     onClick={() => setShowCompose(false)}
                                     className="text-gray-400 hover:text-gray-600 hover:bg-gray-200 p-2 rounded-full transition-colors"

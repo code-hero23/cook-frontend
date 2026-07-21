@@ -17,6 +17,7 @@ import {
     ChevronRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { clearInternalAuth } from '../../../shared/utils/auth';
 
 const Sidebar = ({ isOpen, setIsOpen, isMobile }) => {
     const navigate = useNavigate();
@@ -41,9 +42,8 @@ const Sidebar = ({ isOpen, setIsOpen, isMobile }) => {
     }, [user.id]);
 
     const handleLogout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        navigate('/login');
+        clearInternalAuth();
+        navigate('/login', { replace: true });
     };
 
     const toggleCollapse = () => {

@@ -9,6 +9,7 @@ export const AppProvider = ({ children }) => {
   const [projects, setProjects] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0); // Added refreshKey state
 
   const fetchData = async () => {
     try {
@@ -105,6 +106,8 @@ export const AppProvider = ({ children }) => {
     try {
       const res = await axios.post("/projects", project);
       setProjects((prev) => [...prev, res.data]);
+  setRefreshKey(prev => prev + 1);
+
     } catch (err) {
       console.error("Error adding project:", err);
       const msg = err.response?.data?.error || err.message || "Failed to add project";

@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 
 import AdminApp from '@admin/App';
 import EmployeeApp from '@employee/App';
@@ -11,30 +11,73 @@ import Login from './pages/Login';
 import ClientLogin from './pages/ClientLogin';
 import ForgotPassword from './pages/ForgotPassword';
 import { Toaster } from 'react-hot-toast';
+import ReloadPrompt from './components/pwa/ReloadPrompt';
+import {
+    ADMIN_ROLES,
+    CRE_ROLES,
+    EMPLOYEE_ROLES,
+    SUPERVISOR_ROLES,
+    clearInternalAuth,
+    getClientToken,
+    getDefaultAppRoute,
+    getDefaultInternalRoute,
+    getInternalToken,
+    getStoredUser,
+    hasAllowedRole,
+} from './shared/utils/auth';
 
 // Smart Redirect Component
 const RootRedirect = () => {
-    const clientToken = localStorage.getItem("clientToken");
-    const token = localStorage.getItem("token");
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-
-    if (clientToken) {
-        return <Navigate to="/client" replace />;
-    }
-
-    if (token) {
-        if (['SUPER_ADMIN', 'MANAGER', 'VIEW_ONLY_ADMIN', 'BUSINESS_HEAD'].includes(user.role)) return <Navigate to="/admin/dashboard" replace />;
-        if (user.role === 'LEAD_OPERATION') return <Navigate to="/cre" replace />;
-        if (user.role === 'EMPLOYEE') return <Navigate to="/employee" replace />;
-        if (user.role === 'SITE_SUPERVISOR') return <Navigate to="/supervisor" replace />;
-        if (user.role === 'CLIENT_RELATIONSHIP_EXECUTIVE') return <Navigate to="/cre" replace />;
-    }
-
-
-    return <Navigate to="/login" replace />;
+    return <Navigate to={getDefaultAppRoute()} replace />;
 };
 
-import ReloadPrompt from './components/pwa/ReloadPrompt';
+const PublicOnlyRoute = ({ children }) => {
+    const target = getDefaultAppRoute();
+    return target === "/login" ? children : <Navigate to={target} replace />;
+};
+
+const RequireInternalAuth = ({ allowedRoles, children }) => {
+    const token = getInternalToken();
+    const user = getStoredUser();
+
+    if (!token) {
+        return <Navigate to="/login" replace />;
+    }
+
+    if (!hasAllowedRole(allowedRoles, user)) {
+        return <Navigate to={getDefaultInternalRoute(user)} replace />;
+    }
+
+    return children;
+};
+
+const RequireClientAuth = ({ children }) => {
+    if (!getClientToken()) {
+        return <Navigate to="/client/login" replace />;
+    }
+
+    return children;
+};
+
+const AuthEventBridge = () => {
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    React.useEffect(() => {
+        const handleAuthError = () => {
+            const isClientArea = location.pathname.startsWith("/client");
+            if (!isClientArea) {
+                clearInternalAuth();
+            }
+            navigate(isClientArea ? "/client/login" : "/login", { replace: true });
+        };
+
+        window.addEventListener("auth-error", handleAuthError);
+        return () => window.removeEventListener("auth-error", handleAuthError);
+    }, [location.pathname, navigate]);
+
+    return null;
+};
 
 function App() {
     return (
@@ -42,22 +85,58 @@ function App() {
             <ReloadPrompt />
             <Toaster position="top-center" />
             <BrowserRouter>
+                <AuthEventBridge />
                 <Routes>
                     <Route path="/" element={<RootRedirect />} />
-                    <Route path="/login" element={<Login />} />
+                    <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
                     <Route path="/forgot-password" element={<ForgotPassword />} />
-                    <Route path="/client/login" element={<ClientLogin />} />
+                    <Route path="/client/login" element={<PublicOnlyRoute><ClientLogin /></PublicOnlyRoute>} />
 
                     {/* Feature Routes */}
-                    <Route path="/admin/*" element={<AdminApp />} />
-                    <Route path="/employee/*" element={<EmployeeApp />} />
-                    <Route path="/supervisor/*" element={<SupervisorApp />} />
-                    <Route path="/client/*" element={<ClientApp />} />
-                    <Route path="/cre/*" element={<CREApp />} />
+                    <Route
+                        path="/admin/*"
+                        element={
+                            <RequireInternalAuth allowedRoles={ADMIN_ROLES}>
+                                <AdminApp />
+                            </RequireInternalAuth>
+                        }
+                    />
+                    <Route
+                        path="/employee/*"
+                        element={
+                            <RequireInternalAuth allowedRoles={EMPLOYEE_ROLES}>
+                                <EmployeeApp />
+                            </RequireInternalAuth>
+                        }
+                    />
+                    <Route
+                        path="/supervisor/*"
+                        element={
+                            <RequireInternalAuth allowedRoles={SUPERVISOR_ROLES}>
+                                <SupervisorApp />
+                            </RequireInternalAuth>
+                        }
+                    />
+                    <Route
+                        path="/client/*"
+                        element={
+                            <RequireClientAuth>
+                                <ClientApp />
+                            </RequireClientAuth>
+                        }
+                    />
+                    <Route
+                        path="/cre/*"
+                        element={
+                            <RequireInternalAuth allowedRoles={CRE_ROLES}>
+                                <CREApp />
+                            </RequireInternalAuth>
+                        }
+                    />
 
 
                     {/* Fallback */}
-                    <Route path="*" element={<Navigate to="/login" replace />} />
+                    <Route path="*" element={<RootRedirect />} />
                 </Routes>
             </BrowserRouter>
         </>

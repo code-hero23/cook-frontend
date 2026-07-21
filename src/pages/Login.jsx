@@ -15,6 +15,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "../shared/utils/axios";
 import { GoogleLogin } from '@react-oauth/google';
+import { getDefaultAppRoute } from "../shared/utils/auth";
 
 const UnifiedLogin = () => {
     const navigate = useNavigate();
@@ -27,6 +28,13 @@ const UnifiedLogin = () => {
         email: "",
         password: ""
     });
+
+    useEffect(() => {
+        const target = getDefaultAppRoute();
+        if (target !== "/login") {
+            navigate(target, { replace: true });
+        }
+    }, [navigate]);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -56,13 +64,13 @@ const UnifiedLogin = () => {
             localStorage.setItem("user", JSON.stringify(res.data.user));
 
             if (userRole === 'SUPER_ADMIN' || userRole === 'MANAGER' || userRole === 'VIEW_ONLY_ADMIN') {
-                navigate("/admin/dashboard");
+                navigate("/admin/dashboard", { replace: true });
             } else if (userRole === 'EMPLOYEE') {
-                navigate("/employee");
+                navigate("/employee", { replace: true });
             } else if (userRole === 'SITE_SUPERVISOR') {
-                navigate("/supervisor");
+                navigate("/supervisor/dashboard", { replace: true });
             } else if (userRole === 'CLIENT_RELATIONSHIP_EXECUTIVE' || userRole === 'LEAD_OPERATION') {
-                navigate("/cre");
+                navigate("/cre/reports", { replace: true });
             }
         } catch (err) {
             setError(err.response?.data?.message || "Google Sign-In failed.");
@@ -100,13 +108,13 @@ const UnifiedLogin = () => {
             localStorage.setItem("user", JSON.stringify(res.data.user));
 
             if (userRole === 'SUPER_ADMIN' || userRole === 'MANAGER' || userRole === 'VIEW_ONLY_ADMIN') {
-                navigate("/admin/dashboard");
+                navigate("/admin/dashboard", { replace: true });
             } else if (userRole === 'EMPLOYEE') {
-                navigate("/employee");
+                navigate("/employee", { replace: true });
             } else if (userRole === 'SITE_SUPERVISOR') {
-                navigate("/supervisor");
+                navigate("/supervisor/dashboard", { replace: true });
             } else if (userRole === 'CLIENT_RELATIONSHIP_EXECUTIVE' || userRole === 'LEAD_OPERATION') {
-                navigate("/cre");
+                navigate("/cre/reports", { replace: true });
             }
         } catch (err) {
             setError(err.response?.data?.message || "Invalid credentials. Please try again.");
@@ -124,21 +132,21 @@ const UnifiedLogin = () => {
 
             {/* Grid Pattern */}
             {/* Background pattern removed to fix 403 error */}
-            <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(#4b5563_1px,transparent_1px)] bg-[size:20px_20px]" />
+            <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(#4b5563_1px,transparent_1px)] bg-size:20px_20px" />
 
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="w-full max-w-[440px] relative z-10"
+                className="w-full max-w-110 relative z-10"
             >
                 {/* Brand Logo */}
                 <div className="flex flex-col items-center mb-10">
                     <motion.div 
                         initial={{ y: -20 }}
                         animate={{ y: 0 }}
-                        className="w-20 h-20 bg-white/5 backdrop-blur-xl rounded-[32px] border border-white/10 flex items-center justify-center mb-6 shadow-2xl relative group"
+                        className="w-20 h-20 bg-white/5 backdrop-blur-xl rounded-4xl border border-white/10 flex items-center justify-center mb-6 shadow-2xl relative group"
                     >
-                        <div className="absolute inset-0 bg-orange-500/20 rounded-[32px] blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                        <div className="absolute inset-0 bg-orange-500/20 rounded-4xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                         <img src="/FINAL_LOGO.png" alt="Bix" className="w-12 h-12 object-contain relative z-10" />
                     </motion.div>
                     <h1 className="text-4xl font-black text-white tracking-[0.2em] mb-2">BIX <span className="text-orange-500">PROJECTS</span></h1>
@@ -146,7 +154,7 @@ const UnifiedLogin = () => {
                 </div>
 
                 {/* Login Card */}
-                <div className="bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-[48px] p-10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] overflow-hidden">
+                <div className="bg-white/3 backdrop-blur-3xl border border-white/10 rounded-[48px] p-10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] overflow-hidden">
                     {/* Portal Switcher */}
                     <div className="flex p-1.5 bg-black/40 rounded-[28px] mb-8 border border-white/5">
                         <button
@@ -190,7 +198,7 @@ const UnifiedLogin = () => {
                                         value={formData.email}
                                         onChange={handleChange}
                                         required
-                                        className="w-full bg-white/5 border border-white/5 rounded-[24px] py-4 pl-12 pr-6 text-sm text-white focus:outline-none focus:border-orange-500/50 focus:bg-white/10 transition-all placeholder:text-slate-600"
+                                        className="w-full bg-white/5 border border-white/5 rounded-3xl py-4 pl-12 pr-6 text-sm text-white focus:outline-none focus:border-orange-500/50 focus:bg-white/10 transition-all placeholder:text-slate-600"
                                         placeholder="Enter your email"
                                     />
                                 </div>
@@ -209,7 +217,7 @@ const UnifiedLogin = () => {
                                         value={formData.password}
                                         onChange={handleChange}
                                         required
-                                        className="w-full bg-white/5 border border-white/5 rounded-[24px] py-4 pl-12 pr-12 text-sm text-white focus:outline-none focus:border-orange-500/50 focus:bg-white/10 transition-all placeholder:text-slate-600"
+                                        className="w-full bg-white/5 border border-white/5 rounded-3xl py-4 pl-12 pr-12 text-sm text-white focus:outline-none focus:border-orange-500/50 focus:bg-white/10 transition-all placeholder:text-slate-600"
                                         placeholder="••••••••"
                                     />
                                     <button
@@ -226,7 +234,7 @@ const UnifiedLogin = () => {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full py-4.5 bg-orange-500 hover:bg-orange-600 text-white rounded-[24px] text-xs font-black uppercase tracking-[0.2em] shadow-lg shadow-orange-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                            className="w-full py-4.5 bg-orange-500 hover:bg-orange-600 text-white rounded-3xl text-xs font-black uppercase tracking-[0.2em] shadow-lg shadow-orange-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50"
                         >
                             {loading ? <Loader2 className="animate-spin" size={18} /> : (
                                 <>
@@ -237,9 +245,9 @@ const UnifiedLogin = () => {
                         </button>
 
                         <div className="relative flex items-center gap-4 my-8">
-                            <div className="flex-1 h-[1px] bg-white/5" />
+                            <div className="flex-1 h-px bg-white/5" />
                             <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Cloud Access</span>
-                            <div className="flex-1 h-[1px] bg-white/5" />
+                            <div className="flex-1 h-px bg-white/5" />
                         </div>
 
                         <div className="flex justify-center scale-110">

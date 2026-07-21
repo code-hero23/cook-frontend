@@ -66,6 +66,7 @@ const Projects = () => {
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyProject);
   const [bulkImportOpen, setBulkImportOpen] = useState(false);
+const [refreshKey, setRefreshKey] = useState(0);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const isManager = (user.role || "").toUpperCase() === "MANAGER";

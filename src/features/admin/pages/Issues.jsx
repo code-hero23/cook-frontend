@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useApp } from "../context/AppContext.jsx";
 import StatusBadge from "../components/common/StatusBadge.jsx";
@@ -33,6 +33,7 @@ const Issues = () => {
 
   // Navigation State
   const [selectedProject, setSelectedProject] = useState(null);
+  const selectedProjectId = searchParams.get("projectId");
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const isManager = (user.role || "").toUpperCase() === "MANAGER";
@@ -87,6 +88,16 @@ const Issues = () => {
       return matchesSearch && matchesFilter;
     });
   }, [issuesOnly, selectedProject, search, activeFilter, projects, employees]);
+
+  useEffect(() => {
+    if (!selectedProjectId) {
+      setSelectedProject(null);
+      return;
+    }
+
+    const matchedProject = projects.find((project) => project.id === selectedProjectId || project.projectId === selectedProjectId);
+    setSelectedProject(matchedProject || null);
+  }, [projects, selectedProjectId]);
 
 
   const openCreate = () => {

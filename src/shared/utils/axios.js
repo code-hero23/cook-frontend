@@ -1,5 +1,6 @@
 import axios from "axios";
 import { dispatchSafeEvent } from "./eventUtils";
+import { clearClientAuth, clearInternalAuth } from "./auth";
 
 const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL || (import.meta.env.PROD ? "/api" : "http://localhost:5000/api"),
@@ -57,7 +58,12 @@ api.interceptors.response.use(
 
         if (error.response && error.response.status === 401) {
             dispatchSafeEvent('auth-error', { message: 'Unauthorized' });
-            localStorage.removeItem("token");
+            const isClientRoute = window.location.pathname.startsWith('/client');
+            if (isClientRoute) {
+                clearClientAuth();
+            } else {
+                clearInternalAuth();
+            }
         }
         return Promise.reject(error);
     }

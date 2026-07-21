@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useApp } from "../context/AppContext.jsx";
@@ -22,6 +22,12 @@ import {
 
 import { isProjectOverdue } from "../utils/dateUtils.js";
 
+const getProjectRowId = (project) => project?.id || project?.projectId || "";
+const getProjectDeadline = (project) => project?.deadline || project?.endDate || null;
+const getProjectStartDate = (project) => project?.startDate || project?.createdAt || null;
+const getProjectCode = (project) => project?.projectCode || project?.projectId || project?.id || "-";
+const getProjectClientName = (project) =>
+  [project?.clientFirstName, project?.clientLastName].filter(Boolean).join(" ") || "-";
 
 
 // ====================== Dashboard Component ======================
@@ -41,10 +47,7 @@ const Dashboard = () => {
     pendingTasks: metrics?.pendingTasks ?? 0,
     overdueTasks: metrics?.overdueTasks ?? 0,
   };
-
-
-
-  const latestProjects = (projects || []).slice(0, 5);
+  const latestProjects = (projects || []).slice(0,5);
 
   const statsClickActions = {
     "Open Projects": () => navigate("/admin/projects"),
@@ -167,10 +170,13 @@ const Dashboard = () => {
             {latestProjects.length > 0 ? (
               latestProjects.map((p, index) => {
                 const overdue = isProjectOverdue(p);
+                const projectId = getProjectRowId(p);
+                const deadline = getProjectDeadline(p);
+                const startDate = getProjectStartDate(p);
 
                 return (
                   <motion.div
-                    key={p.id}
+                    key={projectId || p.name || index}
                     onClick={() => navigate("/admin/projects")}
                     className="
                 grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_60px_60px]
@@ -187,13 +193,13 @@ const Dashboard = () => {
                   >
                     <div>
                       <p className="font-medium text-sm text-slate-800">{p.name}</p>
-                      <p className="text-[10px] text-slate-500">{p.projectCode}</p>
+                      <p className="text-[10px] text-slate-500">{getProjectCode(p)}</p>
                     </div>
 
-                    <p>{p.clientFirstName} {p.clientLastName}</p>
-                    <p>{p.location}</p>
-                    <p className="text-center">{p.startDate ? formatDate(p.startDate) : '-'}</p>
-                    <p className="text-center">{p.deadline ? formatDate(p.deadline) : '-'}</p>
+                    <p>{getProjectClientName(p)}</p>
+                    <p>{p.location || "-"}</p>
+                    <p className="text-center">{startDate ? formatDate(startDate) : '-'}</p>
+                    <p className="text-center">{deadline ? formatDate(deadline) : '-'}</p>
 
                     <div className="text-center">
                       <StatusBadge status={overdue ? "Overdue" : "Active"} />
@@ -202,7 +208,7 @@ const Dashboard = () => {
                     <div
                       onClick={(e) => {
                         e.stopPropagation();
-                        navigate(`/admin/issues/${p.projectId}`);
+                        navigate(`/admin/issues?projectId=${encodeURIComponent(projectId)}`);
                       }}
                       className="flex justify-center"
                     >
@@ -215,7 +221,7 @@ const Dashboard = () => {
                     <div
                       onClick={(e) => {
                         e.stopPropagation();
-                        navigate(`/admin/project/${p.projectId}/chat`);
+                        navigate(`/admin/project/${projectId}/chat`);
                       }}
                       className="flex justify-center"
                     >
@@ -239,7 +245,10 @@ const Dashboard = () => {
         <div className="md:hidden space-y-4">
           {latestProjects.map((p, index) => {
             const today = new Date();
-            const due = p.deadline ? new Date(p.deadline) : null;
+            const projectId = getProjectRowId(p);
+            const deadline = getProjectDeadline(p);
+            const startDate = getProjectStartDate(p);
+            const due = deadline ? new Date(deadline) : null;
             const overdueDays =
               due && due < today
                 ? Math.ceil((today - due) / (1000 * 60 * 60 * 24))
@@ -247,7 +256,7 @@ const Dashboard = () => {
 
             return (
               <motion.div
-                key={p.id}
+                key={projectId || p.name || index}
                 initial={{ opacity: 0, scale: 0.97 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.05 }}
@@ -264,7 +273,7 @@ const Dashboard = () => {
                     <p className="text-indigo-600 font-semibold text-lg leading-tight">
                       {p.name}
                     </p>
-                    <p className="text-xs text-gray-400">ID: {p.projectCode}</p>
+                    <p className="text-xs text-gray-400">ID: {getProjectCode(p)}</p>
                   </div>
 
                   <span
@@ -285,7 +294,7 @@ const Dashboard = () => {
                   <div>
                     <p className="text-gray-400 text-xs">Start</p>
                     <p className="font-semibold text-gray-700 mt-1">
-                      {p.startDate ? formatDate(p.startDate) : '-'}
+                      {startDate ? formatDate(startDate) : '-'}
                     </p>
                   </div>
                   <div className="text-right">
@@ -294,7 +303,7 @@ const Dashboard = () => {
                       className={`font-semibold mt-1 ${due < today ? "text-red-600" : "text-gray-700"
                         }`}
                     >
-                      {p.deadline ? formatDate(p.deadline) : '-'}
+                      {deadline ? formatDate(deadline) : '-'}
                     </p>
                   </div>
                 </div>
@@ -304,7 +313,7 @@ const Dashboard = () => {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      navigate(`/admin/issues/${p.projectId}`);
+                      navigate(`/admin/issues?projectId=${encodeURIComponent(projectId)}`);
                     }}
                     className="
                 w-9 h-9 flex items-center justify-center
@@ -318,7 +327,7 @@ const Dashboard = () => {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      navigate(`/admin/project/${p.projectId}/chat`);
+                      navigate(`/admin/project/${projectId}/chat`);
                     }}
                     className="
                 w-9 h-9 flex items-center justify-center

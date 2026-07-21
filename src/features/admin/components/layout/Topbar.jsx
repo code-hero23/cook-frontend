@@ -4,6 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useApp } from "../../context/AppContext.jsx";
 import { downloadCsv } from "../../utils/exportToCsv";
 import logo from "../../assets/logo.png";
+import { clearInternalAuth } from "../../../../shared/utils/auth";
 
 const Topbar = ({ onToggleSidebar }) => {
   const navigate = useNavigate();
@@ -62,9 +63,8 @@ const Topbar = ({ onToggleSidebar }) => {
   }, [query, projects, employees, tasks]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/login");
+    clearInternalAuth();
+    navigate("/login", { replace: true });
   };
 
   const handleSelect = (item) => {
