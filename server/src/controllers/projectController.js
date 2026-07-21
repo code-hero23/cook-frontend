@@ -6,6 +6,9 @@ const path = require('path');
 
 // Get all projects
 // Get all projects (Optional: Filter by employee)
+function helloworld() {
+    console.log('say hello')
+}
 exports.getProjects = async (req, res) => {
     try {
         const { employeeId } = req.query;
